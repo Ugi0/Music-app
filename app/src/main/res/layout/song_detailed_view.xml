@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fragment_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/song_information_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/name_of_the_song"
+        android:textSize="25sp"
+        android:paddingTop="20dp"
+        android:gravity="center_horizontal"
+        android:layout_centerHorizontal="true"
+        android:textStyle="bold"
+        android:textColor="@color/text_on_background" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/detailed_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:minHeight="?attr/actionBarSize"
+            android:theme="@style/Theme.MusicApp.ActionBar">
+
+            <ImageButton
+                android:minHeight="30dp"
+                android:minWidth="30dp"
+                android:background="@drawable/ic_baseline_arrow_left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:paddingLeft="25dp"
+                android:textSize="20dp"
+                android:textColor="@color/white"/>
+        </androidx.appcompat.widget.Toolbar>
+    </LinearLayout>
+
+    <com.tsevaj.musicapp.CircularSeekBar
+        android:id="@+id/progress_bar"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="100dp"
+        app:circle_x_radius="50dp"
+        app:circle_y_radius="50dp"
+        app:end_angle="60"
+        app:start_angle="120" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/progress_bar"
+        android:paddingTop="20dp"
+        android:gravity="center">
+        <ImageButton
+            android:id="@+id/detailed_add_to_favorites"
+            android:src="@drawable/favorites_selector"
+            android:background="@drawable/favorites_border"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/song_information_bottom_bar"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="30dp"
+        android:layout_marginBottom="20dp"
+        android:gravity="start"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/song_information_author"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawablePadding="5dp"
+            android:text="@string/author_artist"
+            android:textColor="@color/text_on_background"
+            android:textSize="20sp"
+            app:drawableLeftCompat="@drawable/ic_author" />
+
+        <TextView
+            android:id="@+id/song_information_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawablePadding="5dp"
+            android:text="@string/location"
+            android:textColor="@color/text_on_background"
+            android:textSize="20sp"
+            app:drawableLeftCompat="@drawable/ic_location" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/song_information_bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="15dp"
+        android:divider="@drawable/linearlayouttopdivider"
+        android:showDividers="beginning"
+        android:layout_alignParentBottom="true">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="5dp"
+            android:gravity="center"
+            android:layout_gravity="center">
+            <ImageButton
+                android:id="@+id/detailed_shuffle"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginEnd="45dp"
+                android:background="@drawable/shuffle_selector" />
+            <ImageButton
+                android:id="@+id/BtnPrev"
+                android:background="@drawable/ic_baseline_skip_previous_24"
+                android:layout_width="50dp"
+                android:layout_height="50dp"/>
+            <ImageButton
+                android:id="@+id/BtnPause"
+                android:background="@drawable/custom_playicon"
+                android:scaleType="fitCenter"
+                android:layout_width="60dp"
+                android:layout_height="60dp"/>
+            <ImageButton
+                android:id="@+id/BtnNext"
+                android:background="@drawable/ic_baseline_skip_next_24"
+                android:layout_width="50dp"
+                android:layout_height="50dp"/>
+            <ImageButton
+                android:id="@+id/detailed_replay"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginLeft="45dp"
+                android:background="@drawable/replay_selector"/>
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

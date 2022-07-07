@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Music Player</string>
+    <string name="library">Library</string>
+    <string name="music_app">Music Player</string>
+    <string name="settings">Settings</string>
+    <string name="playlists">Playlists</string>
+    <string name="favorites">Favorites</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="play">Play</string>
+    <string name="stop">Stop</string>
+    <string name="sort">Sort</string>
+    <string name="search">Search</string>
+    <string name="add_to_queue">Add to queue</string>
+    <string name="add_to_a_playlist">Add to a playlist</string>
+    <string name="delete">Delete</string>
+    <string name="properties">Properties</string>
+    <string name="add_to_favorites">Add to favorites</string>
+    <string name="playlist_name">Playlist name</string>
+    <string name="song_information">Song information</string>
+    <string name="song_name">Song name</string>
+    <string name="author_artist">Author/Artist</string>
+    <string name="location">Location</string>
+    <string name="name_of_the_song">Name of the song</string>
+    <string name="sort_by_length">Sort by length</string>
+    <string name="sort_by_title">Sort by title</string>
+    <string name="sort_by_date_added">Sort by date added</string>
+    <string name="ascending">Ascending</string>
+</resources>

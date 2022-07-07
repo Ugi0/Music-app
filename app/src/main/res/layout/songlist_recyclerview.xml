@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/recyclerView_root"
+    android:layout_width="match_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/music_bar"
+        android:scrollbars="vertical" />
+
+    <RelativeLayout
+        android:id="@+id/music_bar"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone"
+        android:layout_gravity="bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="70dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/Song_name"
+                    android:layout_width="248dp"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="20dp"
+                    android:ellipsize="end"
+                    android:paddingTop="10dp"
+                    android:maxLines="1"
+                    android:text="@string/song_name"
+                    android:textAppearance="?android:textAppearanceLarge"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/Song_desc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/Song_name"
+                    android:paddingTop="5dp"
+                    android:paddingStart="20dp"
+                    android:text="@string/song_information"
+                    android:textAppearance="?android:textAppearanceSmall" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dp"
+                    android:layout_alignParentEnd="true">
+                    <ImageButton
+                        android:id="@+id/BtnPrev"
+                        android:background="@drawable/ic_baseline_skip_previous_24"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:paddingTop="10dp"/>
+                    <ImageButton
+                        android:id="@+id/BtnPause"
+                        android:background="@drawable/ic_baseline_pause_24"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:paddingTop="10dp"/>
+                    <ImageButton
+                        android:id="@+id/BtnNext"
+                        android:background="@drawable/ic_baseline_skip_next_24"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:paddingTop="10dp"/>
+                </LinearLayout>
+
+                <SeekBar
+                    android:id="@+id/progress_bar"
+                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="15dp"
+                    android:layout_alignParentBottom="true"
+                    android:max="1000"
+                    android:paddingTop="10dp"
+                    android:thumb="@android:color/transparent" />
+
+
+            </RelativeLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </RelativeLayout>
+
+</RelativeLayout>
