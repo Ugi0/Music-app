@@ -73,7 +73,7 @@ public class Detailed_song extends Fragment {
 
     public void initWindowElements(View parentView) {
         currentView = parentView;
-        SharedPreferences settings = main.getBaseContext().getSharedPreferences("SAVEDATA", 0);;
+        SharedPreferences settings = main.getBaseContext().getSharedPreferences("SAVEDATA", 0);
 
         ArrayList<String> favo = main.getFavorites();
 
@@ -114,7 +114,12 @@ public class Detailed_song extends Fragment {
                 break;
             }
         }
-        shuffle.setOnClickListener(view -> shuffle.setActivated(!shuffle.isActivated()));
+        if (settings.getBoolean("SHUFFLE",false)) shuffle.setActivated(true);
+        shuffle.setOnClickListener(view -> {
+                    shuffle.setActivated(!shuffle.isActivated());
+                    editor.putBoolean("SHUFFLE",shuffle.isActivated());
+                    editor.apply();
+                });
         replay.setOnClickListener(view -> {
             //TODO Replay controls
             if (replay.isActivated()) {
@@ -129,12 +134,15 @@ public class Detailed_song extends Fragment {
                 replay.setSelected(false);
                 editor.putInt("REPLAY_MODE",0);
                 editor.apply();
+                //TODO Keep Current first PrevNExtList.LIST_SIZE Amount of songs in Next and Prev list
+                // -> Make method in PrevNextList
             }
             else {
                 //Keep playing songs again
                 replay.setActivated(true);
                 editor.putInt("REPLAY_MODE",-1);
                 editor.apply();
+                main.PrevAndNextSongs.reRoll();
             }
         });
         favoriteButton.setOnClickListener(view -> {

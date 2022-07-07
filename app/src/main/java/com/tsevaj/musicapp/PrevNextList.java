@@ -41,10 +41,30 @@ public class PrevNextList {
         settings = c.getSharedPreferences("SAVEDATA", 0);
         editor = settings.edit();
 
+        if (settings.getBoolean("SHUFFLE",false)) {
+            //TODO Make shuffle change if songs are being played in order or randomly
+            // Edge case when choosing first or last song
+            // Best way to split tempList into two -> Need to find the index of current song and manipulate lists
+        }
+
         this.tempList = songList;
         int chosen;
         this.tempList.remove(current);
         int LIST_SIZE = 20;
+        if (settings.getInt("REPLAY_MODE",0) == -1) {
+            int i = 0;
+            while (tempList.size() != 0) {
+                chosen = rand.nextInt(this.tempList.size());
+                if (i % 2 == 0) {
+                    this.Next.add(this.tempList.get(chosen));
+                }
+                else {
+                    this.Prev.add(tempList.get(chosen));
+                }
+                i++;
+                tempList.remove(chosen);
+            }
+        }
         for (int i = 0; i < 2* LIST_SIZE && !this.tempList.isEmpty() ; i ++) {
             chosen = rand.nextInt(this.tempList.size());
             if (i % 2 == 0) {
