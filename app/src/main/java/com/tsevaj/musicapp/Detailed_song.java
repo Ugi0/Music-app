@@ -36,10 +36,6 @@ import java.util.ArrayList;
 public class Detailed_song extends Fragment {
     View ll;
     private final MusicPlayer player;
-    private double progressBarValue;
-    private BigDecimal playedSoFar;
-    private boolean stopProgressBarUpdates = false;
-    private final Handler mHandler = new Handler();
     private final MainActivity main;
     private View currentView;
 
@@ -48,6 +44,7 @@ public class Detailed_song extends Fragment {
         this.main = main;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -68,9 +65,12 @@ public class Detailed_song extends Fragment {
     }
 
     public void initWindowElements() {
-        initWindowElements(currentView);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            initWindowElements(currentView);
+        }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void initWindowElements(View parentView) {
         currentView = parentView;
         SharedPreferences settings = main.getBaseContext().getSharedPreferences("SAVEDATA", 0);
@@ -100,9 +100,8 @@ public class Detailed_song extends Fragment {
         else {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         }
-        stopProgressBarUpdates = false;
+        main.t.resumeThread();
         SharedPreferences.Editor editor = settings.edit();
-        //TODO Shuffle control -> save in settings
         switch (settings.getInt("REPLAY_MODE",0)) {
             case -1: {
                 replay.setActivated(true);
@@ -119,9 +118,10 @@ public class Detailed_song extends Fragment {
                     shuffle.setActivated(!shuffle.isActivated());
                     editor.putBoolean("SHUFFLE",shuffle.isActivated());
                     editor.apply();
+                    main.PrevAndNextSongs.reRoll();
+                    player.prepareButtons();
                 });
         replay.setOnClickListener(view -> {
-            //TODO Replay controls
             if (replay.isActivated()) {
                 //Play just one song
                 replay.setActivated(false);
@@ -134,8 +134,7 @@ public class Detailed_song extends Fragment {
                 replay.setSelected(false);
                 editor.putInt("REPLAY_MODE",0);
                 editor.apply();
-                //TODO Keep Current first PrevNExtList.LIST_SIZE Amount of songs in Next and Prev list
-                // -> Make method in PrevNextList
+                main.PrevAndNextSongs.reduceInSize();
             }
             else {
                 //Keep playing songs again
@@ -160,59 +159,24 @@ public class Detailed_song extends Fragment {
         BtnPause.setOnClickListener(view -> {
             if (player.playing) {
                 player.pause();
+                player.playing = false;
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
             }
             else {
                 player.resume();
+                player.playing = true;
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
             }
         });
         progressBar.setOnSeekBarChangeListener(new CircleSeekBarListener(progressBar, BtnPause));
-        main.t.cancel(true);
-        main.t = new AsyncTask<Void, Void, Void>() {
-            @SuppressLint("StaticFieldLeak")
-            @Override
-            protected Void doInBackground(final Void... params) {
-                try {
-                    progressBarValue = (player.getCurrentPosition() / player.currentDuration.intValue());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                while (progressBarValue < 10000) {
-                    if(isCancelled()) {
-                        break;
-                    }
-                    if (stopProgressBarUpdates) {
-                        try {
-                            Thread.sleep(300);
-                            continue;
-                        } catch (InterruptedException ignored) {
-                        }
-                    }
-                    try {
-                        Thread.sleep(300);
-                    } catch (InterruptedException ignored) {
-                    }
-                    try {
-                        playedSoFar = new BigDecimal(player.getCurrentPosition() + "0000");
-                        progressBarValue = (
-                                playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());
-                    } catch (Exception ignored) {
-                    }
-                    mHandler.post(() -> progressBar.setProgress((int) progressBarValue));
-                }
-                return null;
-            }
-        };
-        try {
-            main.t.execute();
-        }
-        catch (Exception ignored) {}
+        main.t = new ProgressBarThread(progressBar, main);
     }
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void detailed_next() {
         player.playNext(true);
         initWindowElements(ll);
     }
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void detailed_prev() {
         player.playPrev(true);
         initWindowElements(ll);
@@ -240,14 +204,14 @@ public class Detailed_song extends Fragment {
 
         @Override
         public void onStartTrackingTouch(CircularSeekBar seekBar) {
-            stopProgressBarUpdates = true;
             player.pause();
+            main.t.stopThread();
         }
 
         @Override
         public void onStopTrackingTouch(CircularSeekBar seekBar) {
-            stopProgressBarUpdates = false;
-            player.start();
+            player.resume();
+            main.t.resumeThread();
         }
     }
 }

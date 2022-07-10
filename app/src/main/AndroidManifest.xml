@@ -24,6 +24,7 @@
         android:theme="@style/Theme.MusicApp">
         <activity
             android:name=".MainActivity"
+            android:launchMode="singleTop"
             android:windowSoftInputMode="stateVisible|adjustPan"
             android:theme="@style/Theme.MusicApp.NoActionBar"
             android:exported="true">
@@ -32,15 +33,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".NotificationUtils$NotificationActionService"
-            tools:ignore="Instantiatable" />
         <service android:name=".MusicPlayer"
             tools:ignore="Instantiatable"
             android:exported="false">
             <intent-filter >
                 <action android:name="PAUSE" />
+                <action android:name="PREVIOUS" />
+                <action android:name="NEXT" />
             </intent-filter>
         </service>
+        <receiver android:name=".NotificationReceiver"
+            android:exported="false"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="PREVIOUS" />
+                <action android:name="PAUSE" />
+                <action android:name="NEXT" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

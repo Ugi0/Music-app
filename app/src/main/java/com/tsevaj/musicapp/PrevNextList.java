@@ -2,12 +2,18 @@ package com.tsevaj.musicapp;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PrevNextList {
     private ArrayList<MyList> songList;
@@ -18,10 +24,12 @@ public class PrevNextList {
     private MyList current;
     public Fragment createdFragment;
     public Context c;
+    int LIST_SIZE = 10;
     SharedPreferences settings;
     SharedPreferences.Editor editor;
 
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public PrevNextList(ArrayList<MyList> list, MyList current, Fragment currentFragment, Context c) {
         this.songList = list;
         this.current = current;
@@ -37,20 +45,17 @@ public class PrevNextList {
         this.c = c;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void reRoll() {
         settings = c.getSharedPreferences("SAVEDATA", 0);
         editor = settings.edit();
 
-        if (settings.getBoolean("SHUFFLE",false)) {
-            //TODO Make shuffle change if songs are being played in order or randomly
-            // Edge case when choosing first or last song
-            // Best way to split tempList into two -> Need to find the index of current song and manipulate lists
-        }
-
-        this.tempList = songList;
+        Next = new ArrayList<>();
+        Prev = new ArrayList<>();
+        this.tempList = new ArrayList<>(songList);
         int chosen;
         this.tempList.remove(current);
-        int LIST_SIZE = 20;
+
         if (settings.getInt("REPLAY_MODE",0) == -1) {
             int i = 0;
             while (tempList.size() != 0) {
@@ -64,6 +69,7 @@ public class PrevNextList {
                 i++;
                 tempList.remove(chosen);
             }
+            return;
         }
         for (int i = 0; i < 2* LIST_SIZE && !this.tempList.isEmpty() ; i ++) {
             chosen = rand.nextInt(this.tempList.size());
@@ -77,11 +83,27 @@ public class PrevNextList {
         }
     }
 
+    public MyList Next(MyList next) {
+        if (Next.size() == 0) return current;
+        Prev.add(0,current);
+        tempList.add(Prev.get(Prev.size()-1));
+        Prev.remove(Prev.size()-1);
+        int chosen = rand.nextInt(tempList.size());
+        Next.add(tempList.get(chosen));
+        tempList.remove(chosen);
+        Next.remove(0);
+        current = next;
+        return next;
+    }
     public MyList Next(Boolean force) {
         settings = c.getSharedPreferences("SAVEDATA", 0);
         editor = settings.edit();
         if (settings.getInt("REPLAY_MODE",0) == 1 && !force) {
             return current;
+        }
+        if (!settings.getBoolean("SHUFFLE",false)) {
+            int curInd = songList.indexOf(current);
+            return Next(songList.get((curInd+1)%songList.size()));
         }
 
      /*   Log.d("Next", "");
@@ -100,11 +122,27 @@ public class PrevNextList {
         return next;
     }
 
+    public MyList Prev(MyList prev) {
+        Next.add(0,current);
+        tempList.add(Next.get(Next.size()-1));
+        Next.remove(Next.size()-1);
+        int chosen = rand.nextInt(tempList.size());
+        Prev.add(tempList.get(chosen));
+        tempList.remove(chosen);
+        Prev.remove(0);
+        current = prev;
+        return prev;
+    }
+
     public MyList Prev(Boolean force) {
         settings = c.getSharedPreferences("SAVEDATA", 0);
         editor = settings.edit();
         if (settings.getInt("REPLAY_MODE",0) == 1 && !force) {
             return current;
+        }
+        if (!settings.getBoolean("SHUFFLE",false)) {
+            int curInd = songList.indexOf(current);
+            return Prev(songList.get((curInd-1+songList.size())%songList.size()));
         }
 
       /*  Log.d("Prev", "");
@@ -121,5 +159,16 @@ public class PrevNextList {
         Prev.remove(0);
         current = prev;
         return prev;
+    }
+
+    public void reduceInSize() {
+        while (this.Prev.size() > LIST_SIZE) {
+            tempList.add(Prev.get(Prev.size()-1));
+            Prev.remove(Prev.get(Prev.size()-1));
+        }
+        while (this.Next.size() > LIST_SIZE) {
+            tempList.add(Next.get(Next.size()-1));
+            Next.remove(Next.get(Next.size()-1));
+        }
     }
 }

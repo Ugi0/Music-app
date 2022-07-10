@@ -4,32 +4,37 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.media.session.MediaSessionCompat;
+import android.media.session.MediaSession;
+import android.os.Build;
 import android.util.Log;
 import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.media.session.MediaButtonReceiver;
 
 //TODO Listen to calls from other apps
 public class MyController extends BroadcastReceiver {
     MusicPlayer player;
     Context c;
-    MediaSessionCompat ms;
+    MediaSession ms;
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.d("test", "onReceive: ");
     }
 
     public MyController(MusicPlayer player, Context c) {
         this.c = c;
         this.player = player;
-        this.ms = new MediaSessionCompat(c, c.getPackageName());
+        this.ms = new MediaSession(c, c.getPackageName());
+        this.player.sessionToken = ms.getSessionToken();
         Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         mediaButtonIntent.setClass(c, MediaButtonReceiver.class);
         PendingIntent mbrIntent = PendingIntent.getBroadcast(c, 0, mediaButtonIntent, 0);
         ms.setMediaButtonReceiver(mbrIntent);
-        ms.setCallback(new MediaSessionCompat.Callback() {
+        ms.setCallback(new MediaSession.Callback() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public boolean onMediaButtonEvent(@NonNull Intent mediaButtonIntent) {
                 if (player.songDone) return super.onMediaButtonEvent(mediaButtonIntent);
@@ -48,7 +53,7 @@ public class MyController extends BroadcastReceiver {
                         player.playPrev(true);
                         break;
                 }
-                return super.onMediaButtonEvent(mediaButtonIntent);
+                return true;
             }
         });
     }

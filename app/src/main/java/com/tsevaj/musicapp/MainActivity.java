@@ -7,25 +7,20 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.MediaMetadata;
-import android.media.session.MediaSession;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.IBinder;
 import android.provider.Settings;
-import android.support.v4.media.session.MediaSessionCompat;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -41,22 +36,22 @@ import androidx.core.view.MenuItemCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.media.app.NotificationCompat;
-import androidx.media.session.MediaButtonReceiver;
 
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
     public MusicPlayer player;
+    private NotificationService mService;
     private DrawerLayout drawer;
     public static Fragment currentFragment;
     NavigationView navigationView;
     public ArrayList<MyList> songList = new ArrayList<>();
     public PrevNextList PrevAndNextSongs = new PrevNextList(getBaseContext());
-    AsyncTask<Void, Void, Void> t;
+    ProgressBarThread t;
     ActionBarDrawerToggle toggle;
     BroadcastReceiver receiver;
 
@@ -77,7 +72,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         PrevAndNextSongs.c = getBaseContext();
 
-        this.player = new MusicPlayer(this);
+        this.player = new MusicPlayer();
+        this.player.c = this;
         this.player.main = this;
         this.player.manager = getSupportFragmentManager();
 
@@ -95,39 +91,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void showNotification(int playPauseButton, String songName) {
         NotificationUtils utils = new NotificationUtils(player);
         utils.displayNotification(this, songName);
-      /* Intent intent = new Intent(this, MainActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, 0);
-
-        session = new MediaSession(this, "test");
-        session.setMetadata(new MediaMetadata.Builder()
-                .putString(MediaMetadata.METADATA_KEY_TITLE, songName)
-                .build());
-
-        Notification notification = new Notification.Builder(getBaseContext(), NotificationClass.Channel)
-                .setContentTitle(songName)
-                .setSmallIcon(R.mipmap.app_icon)
-                .setStyle(new Notification.DecoratedMediaCustomViewStyle())
-               // .setStyle(new Notification.MediaStyle().setMediaSession(session.getSessionToken())) // sets the notification in the top bar
-                .addAction(generateAction(R.drawable.ic_baseline_skip_previous_24, "PREVIOUS", NotificationClass.ACTION_PREV))
-                .addAction(generateAction(R.drawable.ic_baseline_pause_24, "PAUSE", NotificationClass.ACTION_PAUSE))
-                .addAction(generateAction(R.drawable.ic_baseline_skip_next_24, "NEXT", NotificationClass.ACTION_NEXT))
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
-                .setOnlyAlertOnce(true)
-                .setContentIntent(contentIntent)
-                .setPriority(Notification.PRIORITY_MAX)
-                .build();
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(0, notification); */
     }
-
-
-    private Notification.Action generateAction( int icon, String title, String intentAction ) {
-        Intent intent = new Intent( this, NotificationClass.class );
-        intent.setAction( intentAction );
-        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 1, intent, 0);
-        return new Notification.Action.Builder( icon, title, pendingIntent ).build();
-    }
-
 
     public void setClickable() {
 
@@ -357,5 +321,4 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         setFavorites(li);
     }
-
 }

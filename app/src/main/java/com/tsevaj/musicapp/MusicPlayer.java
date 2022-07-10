@@ -3,15 +3,20 @@ package com.tsevaj.musicapp;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.session.MediaSession;
 import android.os.AsyncTask;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -19,6 +24,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,8 +34,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 
-public class MusicPlayer extends Service {
-    private MediaPlayer player;
+public class MusicPlayer implements NotificationController, ServiceConnection {
+    public MediaPlayer player;
+    public MediaSession.Token sessionToken;
     private String currentSong;
     public MyList currentPlayingSong = new MyList("","","",0);
     public CustomAdapter adapter = null;
@@ -40,13 +47,10 @@ public class MusicPlayer extends Service {
     public boolean playing = false;
     public FragmentManager manager;
     public MainActivity main;
-    private final Handler mHandler = new Handler();
-    private double progressBarValue = 0;
-    private boolean stopProgressBarUpdates = false;
     public BigDecimal currentDuration;
-    private BigDecimal playedSoFar;
     MyController controller;
-    Context c;
+    NotificationService notificationService;
+    public Context c;
 
     TextView songNameView;
     TextView songDescView;
@@ -56,20 +60,17 @@ public class MusicPlayer extends Service {
 
     Detailed_song newFragment;
 
-    public MusicPlayer(Context context) {
+    public MusicPlayer() {
         player = new MediaPlayer();
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         this.currentSong = null;
-        this.c = context;
     }
 
     public void stopPlayer() {
         if (this.player != null) {
-            //TODO Stop/resume the progressbar thread instead of using stopProgressBarUpdates
-            stopProgressBarUpdates = true;
+            if (main.t != null) main.t.stopThread();
             this.player.reset();
             this.player.release();
-            this.player = null;
             currentSong = null;
             if (controller != null) {
                 c.unregisterReceiver(controller);
@@ -83,39 +84,72 @@ public class MusicPlayer extends Service {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void play(MyList mylist) {
+        if (BtnPause != null) {
+            BtnPause.setOnClickListener(null);
+            BtnNext.setOnClickListener(null);
+            BtnPrev.setOnClickListener(null);
+        }
+
         String song = mylist.getLocation();
         if (currentSong != null) if (currentSong.equals(song) && this.player.isPlaying()) return;
         relativeLayout = ((Activity) c).findViewById(R.id.music_bar);
-        this.stopPlayer();
-        this.player = new MediaPlayer();
+        player.stop();
+        player.reset();
+        player.setOnErrorListener((mediaPlayer, i, i1) -> true);
         this.songDone = false;
         currentSong = song;
         currentDuration = new BigDecimal(String.valueOf(mylist.getDuration()));
         currentPlayingSong = mylist;
-        c.registerReceiver(new MyController(this, c), new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
-        this.playing = true;
-        this.player.setOnCompletionListener(mp -> donePlayNext());
-        if (!MainActivity.currentFragment.equals(main.PrevAndNextSongs.createdFragment)) {
-            main.PrevAndNextSongs = new PrevNextList(new ArrayList<>(visibleSongs), mylist, MainActivity.currentFragment, c);
-        }
+
         try {
             player.setDataSource(song);
             player.prepare();
-            player.start();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                c.registerReceiver(new MyController(main.player, c), new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
+                playing = true;
+                player.setOnCompletionListener(mp -> donePlayNext());
+                if (!MainActivity.currentFragment.equals(main.PrevAndNextSongs.createdFragment)) {
+                    main.PrevAndNextSongs = new PrevNextList(new ArrayList<>(visibleSongs), mylist, MainActivity.currentFragment, c);
+                }
+                player.start();
+                prepareButtons();
+            }
+        });
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void prepareButtons() {
+        if (!MainActivity.currentFragment.getClass().equals(Detailed_song.class)) {
+            BtnNext.setOnClickListener(view -> {
+                playNext(true);
+                showBar();
+            });
+            BtnPrev.setOnClickListener(view -> {
+                playPrev(true);
+                showBar();
+            });
+            BtnPause.setOnClickListener(view -> playPause());
         }
     }
 
     public void setNext(MyList mylist) { main.songList.add(mylist); }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void donePlayNext() {
         playNext(false);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void playNext(Boolean force) {
-        if (!playing) BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
+        if (!playing) try { BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);  } catch (Exception ignored) {}
         if (main.songList.isEmpty()) {
             play(main.PrevAndNextSongs.Next(force));
         }
@@ -129,8 +163,9 @@ public class MusicPlayer extends Service {
         else { showBar(); }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void playPrev(Boolean force) {
-        if (!playing) BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
+        if (!playing) try { BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);  } catch (Exception ignored) {}
         play(main.PrevAndNextSongs.Prev(force));
         adapter.reset();
         adapter.notifyDataSetChanged();
@@ -138,8 +173,10 @@ public class MusicPlayer extends Service {
     }
 
     public void playPause() {
-        if (playing) {
+        if (this.playing) {
             pause();
+            try { BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24); } catch (Exception ignored) {}
+            if (MainActivity.currentFragment.getClass().equals(Detailed_song.class)) newFragment.initWindowElements();
         }
         else {
             resume();
@@ -147,18 +184,22 @@ public class MusicPlayer extends Service {
     }
 
     public void pause() {
-        playing = false;
-        BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
-        if (MainActivity.currentFragment.getClass().equals(Detailed_song.class)) newFragment.initWindowElements();
+        this.playing = false;
+        try {
+            main.t.stopThread();
+        }
+        catch (Exception ignored) {}
         player.pause();
     }
 
     public void resume() {
-        playing = true;
-        BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
+        this.playing = true;
+        try { BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24); } catch (Exception ignored) {}
         if (MainActivity.currentFragment.getClass().equals(Detailed_song.class)) newFragment.initWindowElements();
         player.start();
+        main.t.resumeThread();
     }
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void showBar() {
         try {
             this.relativeLayout.setVisibility(View.VISIBLE);
@@ -185,23 +226,8 @@ public class MusicPlayer extends Service {
             }
         }
         progressBar.setProgress(0);
-        stopProgressBarUpdates = false;
-        BtnNext.setOnClickListener(view -> {
-            playNext(true);
-            showBar();
-        });
-        BtnPrev.setOnClickListener(view -> {
-            playPrev(true);
-            showBar();
-        });
-        BtnPause.setOnClickListener(view -> {
-            if (playing) {
-                pause();
-            }
-            else {
-                resume();
-            }
-        });
+     //   if (main.t != null && main.t.getStatus() != AsyncTask.Status.RUNNING) main.t.execute();
+
         progressBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -216,58 +242,16 @@ public class MusicPlayer extends Service {
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                stopProgressBarUpdates = true;
+                main.t.stopThread();
                 player.pause();
             }
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                stopProgressBarUpdates = false;
-                player.start();
+                main.t.resumeThread();
+                    player.start();
             }
         });
-        if (main.t != null && !main.t.isCancelled()) {
-            main.t.cancel(true);
-        }
-        main.t = new AsyncTask<Void, Void, Void>() {
-            @SuppressLint("StaticFieldLeak")
-            @Override
-            protected Void doInBackground(final Void... params) {
-                try {
-                    progressBarValue = (player.getCurrentPosition() / currentDuration.intValue());
-                } catch (Exception e) {
-                    return null;
-                }
-                while (progressBarValue < 1000) {
-                    if(isCancelled()) {
-                        break;
-                    }
-                    if (stopProgressBarUpdates) {
-                        try {
-                            Thread.sleep(300);
-                            continue;
-                        } catch (InterruptedException ignored) {
-                        }
-                    }
-                    try {
-                        Thread.sleep(300);
-                    } catch (InterruptedException ignored) {
-                    }
-                    try {
-                        playedSoFar = new BigDecimal(player.getCurrentPosition() + "000");
-                        progressBarValue = (
-                                playedSoFar.divide(currentDuration, 2, RoundingMode.HALF_UP).doubleValue());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    mHandler.post(() -> progressBar.setProgress((int) progressBarValue));
-                }
-                return null;
-            }
-        };
-        try {
-            main.t.execute();
-        }
-        catch (Exception ignored) {}
+        main.t = new ProgressBarThread(progressBar, main);
         this.relativeLayout.setOnClickListener(view -> {
             newFragment = new Detailed_song(c, main.player, main);
             FragmentTransaction transaction = manager.beginTransaction();
@@ -278,28 +262,34 @@ public class MusicPlayer extends Service {
 
             main.setClickable();
         });
+        prepareButtons();
     }
 
     public void seekTo(int i) { this.player.seekTo(i); }
 
     public void start() {
-        this.player.start();
+        try {
+            this.player.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public int getCurrentPosition() {
-        return this.player.getCurrentPosition();
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+        try { return this.player.getCurrentPosition(); }
+        catch (Exception e) { return 0; }
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        //TODO Crashes because Intent doesn't reach this part
-        Log.d("test", intent.getAction());
-        return super.onStartCommand(intent, flags, startId);
+    public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+        NotificationService.myBinder binder = (NotificationService.myBinder) iBinder;
+        notificationService = binder.getService();
+        notificationService.setCallBack(MusicPlayer.this);
+        Log.d("test", "Service Connected");
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName componentName) {
+        notificationService = null;
     }
 }
