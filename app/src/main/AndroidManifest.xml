@@ -33,15 +33,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".MusicPlayer"
-            tools:ignore="Instantiatable"
-            android:exported="false">
-            <intent-filter >
-                <action android:name="PAUSE" />
-                <action android:name="PREVIOUS" />
-                <action android:name="NEXT" />
-            </intent-filter>
-        </service>
+        <service android:name=".NotificationService" />
+
         <receiver android:name=".NotificationReceiver"
             android:exported="false"
             android:enabled="true">

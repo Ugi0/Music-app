@@ -1,5 +1,7 @@
 package com.tsevaj.musicapp;
 
+import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -7,12 +9,15 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.Objects;
 
 public class LibraryFragment extends Fragment {
     private RecyclerView recyclerView;
@@ -25,16 +30,18 @@ public class LibraryFragment extends Fragment {
         this.nameFilter = nameFilter;
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View ll = inflater.inflate(R.layout.songlist_recyclerview, container, false);
-        recyclerView = (RecyclerView) ll.findViewById(R.id.recyclerView);
+        recyclerView = ll.findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        ll.setBackground(getContext().getDrawable(R.drawable.background));
+        ll.setBackground(requireContext().getDrawable(R.drawable.background));
 
-        FunctionClass.getMusic(recyclerView, getActivity(), player, getActivity(), this.filter, nameFilter);
+        FunctionClass.getMusic(recyclerView, getActivity(), player, requireActivity(), this.filter, nameFilter);
         MainActivity.currentFragment = this;
 
         if (!player.songDone) {
@@ -48,7 +55,7 @@ public class LibraryFragment extends Fragment {
     @Override
     public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getActivity().getMenuInflater();
+        MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.popup_menu, menu);
     }
 

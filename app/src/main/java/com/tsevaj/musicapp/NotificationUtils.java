@@ -6,6 +6,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -20,13 +21,16 @@ public class NotificationUtils {
     public static final String ACTION_NEXT  = "NEXT";
     public static final String ACTION_PAUSE  = "PAUSE";
 
+    private NotificationManagerCompat notificationManager;
     private MusicPlayer player;
+    private boolean firstTime = true;
+    Notification.Builder notification;
 
     public NotificationUtils(MusicPlayer player) {
         this.player = player;
     }
 
-    @SuppressLint("UnspecifiedImmutableFlag")
+    @SuppressLint({"UnspecifiedImmutableFlag", "NewApi"})
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void displayNotification(MainActivity main, String songName) {
 
@@ -34,7 +38,6 @@ public class NotificationUtils {
         Intent intent = new Intent(main.getBaseContext(), MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(main.getBaseContext(), 0, intent, 0);
 
-        Notification notification = null;
         Intent prevIntent = new Intent(main.getApplicationContext(), NotificationReceiver.class)
                 .setAction("PREVIOUS");
         Intent pauseIntent = new Intent(main.getApplicationContext(), NotificationReceiver.class)
@@ -42,20 +45,23 @@ public class NotificationUtils {
         Intent nextIntent = new Intent(main.getApplicationContext(), NotificationReceiver.class)
                 .setAction("NEXT");
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            notification = new Notification.Builder(main.getBaseContext(), NotificationClass.Channel)
-                    .setContentTitle(songName)
+        notificationManager = NotificationManagerCompat.from(main.getApplicationContext());
+        notification = new Notification.Builder(main.getBaseContext(), NotificationClass.Channel)
                     .setSmallIcon(R.mipmap.app_icon)
-                    .setStyle(new Notification.MediaStyle().setMediaSession(player.sessionToken))
+                    .setColor(0xae27ff)
+                    .setStyle(new Notification.MediaStyle()
+                        .setMediaSession(player.sessionToken)
+                        .setShowActionsInCompactView(0,1,2))
                     .addAction(new Notification.Action(R.drawable.ic_baseline_skip_previous_24, ACTION_PREV, PendingIntent.getBroadcast(main.getApplicationContext(), 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
                     .addAction(new Notification.Action(R.drawable.ic_baseline_pause_24, ACTION_PAUSE, PendingIntent.getBroadcast(main.getApplicationContext(), 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
                     .addAction(new Notification.Action(R.drawable.ic_baseline_skip_next_24, ACTION_NEXT, PendingIntent.getBroadcast(main.getApplicationContext(), 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
                     .setVisibility(Notification.VISIBILITY_PUBLIC)
+                    .setChannelId("Control Notification")
                     .setContentIntent(contentIntent)
                     .setOnlyAlertOnce(true)
-                    .build();
-        }
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(main.getBaseContext());
-        notificationManager.notify(NOTIFICATION_ID, notification);
+                    .setAutoCancel(false);
+        notification.setContentTitle(songName);
+        Log.d("test", "displayNotification: "+songName);
+        notificationManager.notify(NOTIFICATION_ID, notification.build());
     }
     }

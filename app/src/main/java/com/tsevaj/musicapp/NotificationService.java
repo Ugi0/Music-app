@@ -15,7 +15,6 @@ public class NotificationService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d("test", "onBind: ");
         return mBinder;
     }
 
@@ -26,25 +25,25 @@ public class NotificationService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent.getAction() != null) {
-            Log.d("test", "onStartCommand: ");
             switch (intent.getAction()) {
                 case "PREVIOUS": {
                     if (notificationController != null) {
                         notificationController.playPrev(true);
                     }
+                    break;
                 }
                 case "PAUSE": {
                     if (notificationController != null) {
-                        Log.d("test", "onStartCommand: ");
                         notificationController.playPause();
                     }
+                    break;
                 }
                 case "NEXT": {
                     if (notificationController != null) {
                         notificationController.playNext(true);
                     }
+                    break;
                 }
-
             }
         }
         return START_STICKY;

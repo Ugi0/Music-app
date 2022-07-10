@@ -44,12 +44,13 @@ public class Detailed_song extends Fragment {
         this.main = main;
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ll = inflater.inflate(R.layout.song_detailed_view, container, false);
-        ll.setBackground(getContext().getDrawable(R.drawable.background));
+        ll.setBackground(requireContext().getDrawable(R.drawable.background));
         MainActivity.currentFragment = this;
 
         initWindowElements(ll);
@@ -60,7 +61,7 @@ public class Detailed_song extends Fragment {
     @Override
     public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getActivity().getMenuInflater();
+        MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.popup_menu, menu);
     }
 
@@ -94,7 +95,6 @@ public class Detailed_song extends Fragment {
         songDescView.setText(player.currentPlayingSong.getDesc());
         songLocView.setText(player.currentPlayingSong.getLocation().split("/")[player.currentPlayingSong.getLocation().split("/").length-2]);
         if (!player.playing) {
-            player.playing = true;
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
         }
         else {

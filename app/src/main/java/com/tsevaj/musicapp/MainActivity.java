@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity
     NavigationView navigationView;
     public ArrayList<MyList> songList = new ArrayList<>();
     public PrevNextList PrevAndNextSongs = new PrevNextList(getBaseContext());
+    public NotificationUtils utils;
     ProgressBarThread t;
     ActionBarDrawerToggle toggle;
     BroadcastReceiver receiver;
@@ -72,11 +73,11 @@ public class MainActivity extends AppCompatActivity
 
         PrevAndNextSongs.c = getBaseContext();
 
-        this.player = new MusicPlayer();
+        this.player = new MusicPlayer(getBaseContext());
         this.player.c = this;
         this.player.main = this;
         this.player.manager = getSupportFragmentManager();
-
+        utils = new NotificationUtils(player);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
@@ -86,10 +87,13 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    //TODO Style the notification better
+    // TODO Style the notification better
+    // Notification currently only created once -> Make pause button change depending on state and change song name
+    // -> Need to update the notification
+    // TODO A first click is needed on one of the notification buttons for the service to connect
+    // -> Make it so the extra click isn't needed
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void showNotification(int playPauseButton, String songName) {
-        NotificationUtils utils = new NotificationUtils(player);
         utils.displayNotification(this, songName);
     }
 
@@ -97,6 +101,7 @@ public class MainActivity extends AppCompatActivity
 
         ActionBar actionBar = getSupportActionBar();
         toggle.setDrawerIndicatorEnabled(false);
+        assert actionBar != null;
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
 
@@ -110,6 +115,7 @@ public class MainActivity extends AppCompatActivity
         setTitle("");
 
         ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
         actionBar.setDisplayHomeAsUpEnabled(false);
         actionBar.setDisplayShowHomeEnabled(false);
 
@@ -180,7 +186,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 2909) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -246,6 +252,7 @@ public class MainActivity extends AppCompatActivity
                 newFragment = new FavoritesFragment(player,"", this);
             }
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            assert newFragment != null;
             transaction.replace(R.id.fragment_container, newFragment);
             transaction.addToBackStack(null);
 
@@ -260,7 +267,7 @@ public class MainActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.options_menu, menu);
         menu.getItem(0).setVisible(!(currentFragment.getClass().equals(Detailed_song.class) || currentFragment.getClass().equals(PlaylistsFragment.class)));
         menu.getItem(1).setVisible(!(currentFragment.getClass().equals(Detailed_song.class) || currentFragment.getClass().equals(PlaylistsFragment.class)));
-        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
+        final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {

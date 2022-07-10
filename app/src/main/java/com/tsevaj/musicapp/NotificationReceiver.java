@@ -12,21 +12,19 @@ public class NotificationReceiver extends BroadcastReceiver {
         if (intent.getAction() != null) {
             switch (intent.getAction()) {
                 case "PREVIOUS": {
-                    intent1.putExtra("myActionName", intent.getAction());
-                    context.startService(intent1);
+                    intent1.setAction("PREVIOUS");
                     break;
                 }
                 case "PAUSE": {
-                    intent1.putExtra("myActionName", intent.getAction());
-                    context.startService(intent1);
+                    intent1.setAction("PAUSE");
                     break;
                 }
                 case "NEXT": {
-                    intent1.putExtra("myActionName", intent.getAction());
-                    context.startService(intent1);
+                    intent1.setAction("NEXT");
                     break;
                 }
             }
+            context.startService(intent1);
         }
     }
 }
