@@ -22,20 +22,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     public void onCreate() {
         super.onCreate();
 
-        // Create a MediaSessionCompat
         mediaSession = new MediaSessionCompat(getApplicationContext(), "test");
 
-        // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
         stateBuilder = new PlaybackStateCompat.Builder()
                 .setActions(
                         PlaybackStateCompat.ACTION_PLAY |
                                 PlaybackStateCompat.ACTION_PLAY_PAUSE);
         mediaSession.setPlaybackState(stateBuilder.build());
-
-        // MySessionCallback() has methods that handle callbacks from a media controller
-      //  mediaSession.setCallback(new MySessionCallback());
-
-        // Set the session's token so that client activities can communicate with it.
         setSessionToken(mediaSession.getSessionToken());
     }
 

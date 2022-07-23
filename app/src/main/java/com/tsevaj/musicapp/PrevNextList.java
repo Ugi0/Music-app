@@ -1,5 +1,6 @@
 package com.tsevaj.musicapp;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -24,7 +25,7 @@ public class PrevNextList {
     private MyList current;
     public Fragment createdFragment;
     public Context c;
-    int LIST_SIZE = 10;
+    int LIST_SIZE;
     SharedPreferences settings;
     SharedPreferences.Editor editor;
 
@@ -37,6 +38,7 @@ public class PrevNextList {
         this.Next = new ArrayList<>();
         this.tempList = new ArrayList<>();
         this.createdFragment = currentFragment;
+        LIST_SIZE = ((Activity) c).getSharedPreferences("SAVEDATA", 0).getInt("LOOPING_SIZE",20);
         this.c = c;
         this.reRoll();
     }

@@ -1,11 +1,13 @@
 package com.tsevaj.musicapp;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.media.session.MediaSession;
 import android.os.Build;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -17,7 +19,7 @@ import androidx.media.session.MediaButtonReceiver;
 public class MyController extends BroadcastReceiver {
     MusicPlayer player;
     Context c;
-    MediaSession ms;
+    MediaSessionCompat ms;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -27,13 +29,14 @@ public class MyController extends BroadcastReceiver {
     public MyController(MusicPlayer player, Context c) {
         this.c = c;
         this.player = player;
-        this.ms = new MediaSession(c, c.getPackageName());
+        this.ms = new MediaSessionCompat(c, c.getPackageName());
         this.player.sessionToken = ms.getSessionToken();
         Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         mediaButtonIntent.setClass(c, MediaButtonReceiver.class);
         PendingIntent mbrIntent = PendingIntent.getBroadcast(c, 0, mediaButtonIntent, 0);
         ms.setMediaButtonReceiver(mbrIntent);
-        ms.setCallback(new MediaSession.Callback() {
+        ms.setCallback(new MediaSessionCompat.Callback() {
+            @SuppressLint("NewApi")
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public boolean onMediaButtonEvent(@NonNull Intent mediaButtonIntent) {
@@ -41,10 +44,8 @@ public class MyController extends BroadcastReceiver {
                 KeyEvent event = mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
                 switch (event.getKeyCode()) {
                     case KeyEvent.KEYCODE_MEDIA_PLAY:
-                        player.resume();
-                        break;
                     case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                        player.pause();
+                        player.playPause();
                         break;
                     case KeyEvent.KEYCODE_MEDIA_NEXT:
                         player.playNext(true);

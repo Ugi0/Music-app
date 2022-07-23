@@ -4,6 +4,10 @@ import android.annotation.SuppressLint;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -50,7 +54,7 @@ public class Detailed_song extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ll = inflater.inflate(R.layout.song_detailed_view, container, false);
-        ll.setBackground(requireContext().getDrawable(R.drawable.background));
+        MainActivity.setBackground(ll, getResources());
         MainActivity.currentFragment = this;
 
         initWindowElements(ll);
@@ -71,8 +75,11 @@ public class Detailed_song extends Fragment {
         }
     }
 
+    @SuppressLint({"UseCompatTextViewDrawableApis", "NewApi"})
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void initWindowElements(View parentView) {
+        int textColor = Color.parseColor(main.getBaseContext().getSharedPreferences("SAVEDATA", 0).getString("THEME_COLOR", "#FFFFFF"));
+
         currentView = parentView;
         SharedPreferences settings = main.getBaseContext().getSharedPreferences("SAVEDATA", 0);
 
@@ -88,6 +95,12 @@ public class Detailed_song extends Fragment {
         ImageButton shuffle = parentView.findViewById(R.id.detailed_shuffle);
         ImageButton replay = parentView.findViewById(R.id.detailed_replay);
         ImageButton favoriteButton = parentView.findViewById(R.id.detailed_add_to_favorites);
+
+        songNameView.setTextColor(textColor);
+        songDescView.setTextColor(textColor);
+        songLocView.setTextColor(textColor);
+        songDescView.setCompoundDrawableTintList(ColorStateList.valueOf(textColor));
+        songLocView.setCompoundDrawableTintList(ColorStateList.valueOf(textColor));
 
         favoriteButton.setActivated(favo.contains(player.currentPlayingSong.getHead()));
 

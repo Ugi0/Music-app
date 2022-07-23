@@ -37,6 +37,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
         return new ViewHolder(v);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onBindViewHolder(ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         holder.textViewHead.setText(list.get(position).getHead());
@@ -65,7 +66,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                                 editor.putString("PLAYLISTS", "");
                                 editor.apply();
                                 list = new ArrayList<>();
-                                list.add(new MyList("Create a new playlist","","", 0));
+                                list.add(new MyList("Create a new playlist","","",0, "", 0, "", 0));
                                 dialog.cancel();
                                 notifyDataSetChanged();
                             }
@@ -77,7 +78,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                                 else { editor.putString("PLAYLISTS", playlists + "\n" + input.getText().toString()); }
                                 editor.putString("PLAYLIST_"+ input.getText().toString(),"");
                                 editor.apply();
-                                list.add(0, new MyList(input.getText().toString(),"","", 0));
+                                list.add(0, new MyList(input.getText().toString(),"","",0, "", 0, "", 0));
                                 dialog.cancel();
                                 notifyDataSetChanged();
                             }

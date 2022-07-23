@@ -1,5 +1,7 @@
 package com.tsevaj.musicapp;
 
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -29,13 +31,13 @@ public class PlaylistsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View ll = inflater.inflate(R.layout.songlist_recyclerview, container, false);
         RecyclerView recyclerView = ll.findViewById(R.id.recyclerView);
-        ll.setBackground(getContext().getDrawable(R.drawable.background));
+        MainActivity.setBackground(ll, getResources());
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
 
         main.setDrawer();
 
-        FunctionClass.playlistView(recyclerView, getActivity(), player, getActivity(), this);
+        FunctionClass.playlistView(recyclerView, getActivity(), player, requireActivity(), this);
         MainActivity.currentFragment = this;
         return ll;
     }
@@ -43,12 +45,12 @@ public class PlaylistsFragment extends Fragment {
     @Override
     public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getActivity().getMenuInflater();
+        MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.popup_menu, menu);
     }
 
     public void changeFragments(Fragment newFragment) {
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, newFragment).commit();
     }
 }

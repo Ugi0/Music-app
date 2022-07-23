@@ -1,7 +1,9 @@
 package com.tsevaj.musicapp;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -28,7 +30,6 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
     private ArrayList<MyList> list;
     private final ArrayList<MyList> backupList;
     private final Context mCtx;
-    public ArrayList<String> locationList;
     MusicPlayer player;
     FragmentActivity c;
     private CustomAdapter.ViewHolder lastClicked = null;
@@ -43,7 +44,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
         this.mCtx = mCtx;
         this.c = c;
         this.player = player;
-        this.defaultColor = Color.parseColor(c.getString(R.color.text_on_background));
+        this.defaultColor = Color.parseColor(mCtx.getSharedPreferences("SAVEDATA", 0).getString("THEME_COLOR", "#FFFFFF"));
     }
 
     @Override
@@ -68,92 +69,98 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
             holder.textViewHead.setTextColor(defaultColor);
             holder.textViewDesc.setTextColor(defaultColor);
         }
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (lastClicked != null) {
-                    lastClicked.textViewHead.setTextColor(defaultColor);
-                    lastClicked.textViewDesc.setTextColor(defaultColor);
-                }
-                holder.textViewHead.setTextColor(Color.parseColor("#DC143C"));
-                holder.textViewDesc.setTextColor(Color.parseColor("#DC143C"));
-                player.visibleSongs = list;
-                player.play(myList);
-                player.showBar();
-                lastClicked = holder;
+        holder.itemView.setOnClickListener(view -> {
+            if (lastClicked != null) {
+                lastClicked.textViewHead.setTextColor(defaultColor);
+                lastClicked.textViewDesc.setTextColor(defaultColor);
             }
+            holder.textViewHead.setTextColor(Color.parseColor("#DC143C"));
+            holder.textViewDesc.setTextColor(Color.parseColor("#DC143C"));
+            player.visibleSongs = list;
+            player.play(myList);
+            player.showBar();
+            lastClicked = holder;
         });
-        holder.buttonViewOption.setOnClickListener(new View.OnClickListener() {
-
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onClick(View view) {
-                //creating a popup menu
-                PopupMenu popup = new PopupMenu(mCtx, holder.buttonViewOption);
-                //inflating menu from xml resource
-                popup.inflate(R.menu.popup_menu);
-                //adding click listener
-                popup.setOnMenuItemClickListener(item -> {
-                    int itemId = item.getItemId();
-                    if (itemId == R.id.addtofavorites) {
-                        SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
-                        SharedPreferences.Editor editor = settings.edit();
-                        String favorites = settings.getString("FAVORITES", "");
-                        if (Arrays.asList(favorites.split("\n")).contains(myList.getHead()) && MainActivity.currentFragment.getClass().equals(FavoritesFragment.class)) {
-                            ArrayList<String> li = new ArrayList<>(Arrays.asList(favorites.split("\n")));
-                            li.remove(myList.getHead());
-                            int ind = 0;
-                            editor.putString("FAVORITES", String.join("\n", li));
-                            editor.apply();
-                            for (int i = 0; i < getList().size(); i++) {
-                                MyList listItem = getList().get(i);
-                                if (listItem.getHead().equals(myList.getHead())) {
-                                    ind = i;
-                                    break;
-                                }
-                            }
-                            removeFromList(ind);
-                            notifyItemRemoved(ind);
-                            return false;
-                        }
-                        editor.putString("FAVORITES", favorites + "\n" + myList.getHead());
+        holder.buttonViewOption.setOnClickListener(view -> {
+            PopupMenu popup = new PopupMenu(mCtx, holder.buttonViewOption);
+            popup.inflate(R.menu.popup_menu);
+            popup.setOnMenuItemClickListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.addtofavorites) {
+                    SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
+                    SharedPreferences.Editor editor = settings.edit();
+                    String favorites = settings.getString("FAVORITES", "");
+                    if (Arrays.asList(favorites.split("\n")).contains(myList.getHead()) && MainActivity.currentFragment.getClass().equals(FavoritesFragment.class)) {
+                        ArrayList<String> li = new ArrayList<>(Arrays.asList(favorites.split("\n")));
+                        li.remove(myList.getHead());
+                        int ind = 0;
+                        editor.putString("FAVORITES", String.join("\n", li));
                         editor.apply();
-                    } else if (itemId == R.id.addtoqueue) {
-                        player.setNext(myList);
-                    } else if (itemId == R.id.addtoplaylist) {
-                        SharedPreferences settings;
-                        PopupMenu menu = new PopupMenu(c, view);
-                        settings = c.getSharedPreferences("SAVEDATA", 0);
-                        for (String menuItem : settings.getString("PLAYLISTS", "").split("\n")) {
-                            menu.getMenu().add(menuItem);
-                        }
-                        menu.setOnMenuItemClickListener(item1 -> {
-                            SharedPreferences.Editor editor2 = settings.edit();
-                            String currentPlaylist = settings.getString("PLAYLIST_" + item1.getTitle(), "");
-                            if (currentPlaylist.isEmpty())
-                                editor2.putString("PLAYLIST_" + item1.getTitle(), myList.getHead());
-                            else {
-                                editor2.putString("PLAYLIST_" + item1.getTitle(), currentPlaylist + "\n" + myList.getHead());
+                        for (int i = 0; i < getList().size(); i++) {
+                            MyList listItem = getList().get(i);
+                            if (listItem.getHead().equals(myList.getHead())) {
+                                ind = i;
+                                break;
                             }
-                            editor2.apply();
-                            return true;
-                        });
-                        menu.show();
-                    } else if (itemId == R.id.song_delete) {
-                        try {
-                            Files.delete(Paths.get(myList.getLocation()));
-                            list.remove(position);
-                            locationList.remove(position);
-                            notifyItemRemoved(position);
-                        } catch (IOException e) {
-                            e.printStackTrace();
                         }
-                    } else if (itemId == R.id.song_properties) {//handle menu4 click
+                        removeFromList(ind);
+                        notifyItemRemoved(ind);
+                        return false;
                     }
-                    return false;
-                });
-                popup.show();
-            }
+                    editor.putString("FAVORITES", favorites + "\n" + myList.getHead());
+                    editor.apply();
+                } else if (itemId == R.id.addtoqueue) {
+                    player.setNext(myList);
+                } else if (itemId == R.id.addtoplaylist) {
+                    SharedPreferences settings;
+                    PopupMenu menu = new PopupMenu(c, view);
+                    settings = c.getSharedPreferences("SAVEDATA", 0);
+                    for (String menuItem : settings.getString("PLAYLISTS", "").split("\n")) {
+                        menu.getMenu().add(menuItem);
+                    }
+                    menu.setOnMenuItemClickListener(item1 -> {
+                        SharedPreferences.Editor editor2 = settings.edit();
+                        String currentPlaylist = settings.getString("PLAYLIST_" + item1.getTitle(), "");
+                        if (currentPlaylist.isEmpty())
+                            editor2.putString("PLAYLIST_" + item1.getTitle(), myList.getHead());
+                        else {
+                            editor2.putString("PLAYLIST_" + item1.getTitle(), currentPlaylist + "\n" + myList.getHead());
+                        }
+                        editor2.apply();
+                        return true;
+                    });
+                    menu.show();
+                } else if (itemId == R.id.song_delete) {
+                    try {
+                        Files.delete(Paths.get(myList.getLocation()));
+                        list.remove(position);
+                        notifyItemRemoved(position);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if (itemId == R.id.song_properties) {//handle menu4 click
+                    AlertDialog.Builder builder = new AlertDialog.Builder(c);
+                    builder.setTitle("Song properties")
+                            .setMessage( "\n" +
+                                    "Song name: "+myList.getHead() + "\n" + "\n" +
+                                    "Artist name: "+myList.getArtist()  + "\n" + "\n" +
+                                    "Song duration: "+ FunctionClass.milliSecondsToTime(myList.getDuration())  + "\n" + "\n" +
+                                    "Song location: "+myList.getLocation()  + "\n" + "\n" +
+                                    "File size: "+ myList.getCurrentSize() + "\n" + "\n" +
+                                    "File type: "+ myList.getType() + "\n" + "\n" +
+                                    "Modified date: " + myList.getDateModified()
+                            )
+                            .setNegativeButton("Back", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    //close dialog
+                                }
+                            });
+                    builder.create().show();
+                }
+                return false;
+            });
+            popup.show();
         });
     }
 

@@ -1,6 +1,8 @@
 package com.tsevaj.musicapp;
 
 import android.annotation.SuppressLint;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -39,9 +41,9 @@ public class LibraryFragment extends Fragment {
         recyclerView = ll.findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        ll.setBackground(requireContext().getDrawable(R.drawable.background));
+        MainActivity.setBackground(ll, getResources());
 
-        FunctionClass.getMusic(recyclerView, getActivity(), player, requireActivity(), this.filter, nameFilter);
+        FunctionClass.getMusic(recyclerView, requireActivity(), player, requireActivity(), this.filter, nameFilter);
         MainActivity.currentFragment = this;
 
         if (!player.songDone) {

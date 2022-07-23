@@ -9,6 +9,7 @@
         <entry key="..\:/MusicApp/app/src/main/res/drawable/favorites_selector.xml" value="0.1835" />
         <entry key="..\:/MusicApp/app/src/main/res/drawable/ic_author.xml" value="0.271" />
         <entry key="..\:/MusicApp/app/src/main/res/drawable/ic_baseline_arrow_left.xml" value="0.1835" />
+        <entry key="..\:/MusicApp/app/src/main/res/drawable/ic_baseline_check_box_24.xml" value="0.3075" />
         <entry key="..\:/MusicApp/app/src/main/res/drawable/ic_baseline_pause_24.xml" value="0.173" />
         <entry key="..\:/MusicApp/app/src/main/res/drawable/ic_baseline_play_arrow_24.xml" value="0.173" />
         <entry key="..\:/MusicApp/app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.2095" />
@@ -38,8 +39,10 @@
         <entry key="..\:/MusicApp/app/src/main/res/drawable/replay_selector.xml" value="0.1765" />
         <entry key="..\:/MusicApp/app/src/main/res/drawable/roundcorner.xml" value="0.271" />
         <entry key="..\:/MusicApp/app/src/main/res/drawable/selector.xml" value="0.229" />
+        <entry key="..\:/MusicApp/app/src/main/res/drawable/settings_checkbox.xml" value="0.3075" />
         <entry key="..\:/MusicApp/app/src/main/res/font/cutefont.xml" value="0.396875" />
         <entry key="..\:/MusicApp/app/src/main/res/font/cutenotes.xml" value="0.39076923076923076" />
+        <entry key="..\:/MusicApp/app/src/main/res/layout-v31/settings_fragment.xml" value="0.34782608695652173" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/activity_main.xml" value="0.34782608695652173" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/arrayadapter_layout.xml" value="0.15" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/border.xml" value="0.36666666666666664" />
@@ -53,6 +56,7 @@
         <entry key="..\:/MusicApp/app/src/main/res/layout/playlists_item.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/playlists_prompt_new.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/seekcircle.xml" value="0.36666666666666664" />
+        <entry key="..\:/MusicApp/app/src/main/res/layout/settings_fragment.xml" value="0.1" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/song_detailed_view.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/song_list_item.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/songlist_item.xml" value="0.36666666666666664" />

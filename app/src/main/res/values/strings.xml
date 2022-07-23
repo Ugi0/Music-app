@@ -26,4 +26,12 @@
     <string name="sort_by_title">Sort by title</string>
     <string name="sort_by_date_added">Sort by date added</string>
     <string name="ascending">Ascending</string>
+    <string name="looping_size">Looping size</string>
+    <string name="dark_theme">Dark theme</string>
+    <string name="set_background">Set background</string>
+    <string name="songs_folder">Songs folder</string>
+    <string name="name_of_the_folder">Name of the folder</string>
+    <string name="song_minimum_length">Song minimum length</string>
+    <string name="color_rbg">#FFFFFF</string>
+    <string name="text_color">Text color</string>
 </resources>

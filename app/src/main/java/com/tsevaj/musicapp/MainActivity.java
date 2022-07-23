@@ -15,6 +15,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -39,13 +42,13 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     public MusicPlayer player;
-    private NotificationService mService;
     private DrawerLayout drawer;
     public static Fragment currentFragment;
     NavigationView navigationView;
@@ -55,7 +58,6 @@ public class MainActivity extends AppCompatActivity
     ProgressBarThread t;
     ActionBarDrawerToggle toggle;
     BroadcastReceiver receiver;
-
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
@@ -86,15 +88,22 @@ public class MainActivity extends AppCompatActivity
         }
 
     }
-
-    // TODO Style the notification better
-    // Notification currently only created once -> Make pause button change depending on state and change song name
-    // -> Need to update the notification
     // TODO A first click is needed on one of the notification buttons for the service to connect
     // -> Make it so the extra click isn't needed
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void showNotification(int playPauseButton, String songName) {
-        utils.displayNotification(this, songName);
+        utils.displayNotification(this, songName, playPauseButton);
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    public static void setBackground(View view, Resources resources) {
+        if (new File(SettingsFragment.destination).exists()) {
+            view.setBackgroundDrawable(new BitmapDrawable(resources, BitmapFactory.decodeFile(SettingsFragment.destination)));
+        }
+        else {
+            view.setBackground(resources.getDrawable(R.drawable.background));
+        }
     }
 
     public void setClickable() {
@@ -199,11 +208,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        utils.destroyNotification();
         if (receiver != null) {
             unregisterReceiver(receiver);
             receiver = null;
         }
+        super.onDestroy();
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -254,6 +264,7 @@ public class MainActivity extends AppCompatActivity
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             assert newFragment != null;
             transaction.replace(R.id.fragment_container, newFragment);
+            //TODO Fix BackStack to be consistent
             transaction.addToBackStack(null);
 
             transaction.commit();
