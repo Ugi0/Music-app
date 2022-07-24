@@ -23,7 +23,6 @@ public class MyController extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("test", "onReceive: ");
     }
 
     public MyController(MusicPlayer player, Context c) {

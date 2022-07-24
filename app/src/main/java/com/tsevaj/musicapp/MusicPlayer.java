@@ -48,7 +48,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     public FragmentManager manager;
     public MainActivity main;
     public BigDecimal currentDuration;
-    MyController controller;
     NotificationService notificationService;
     public Context c;
 
@@ -68,6 +67,8 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         this.currentSong = null;
         Intent intent = new Intent(c, NotificationService.class);
         c.bindService(intent, this, 0);
+        Intent intent1 = new Intent(c, NotificationService.class);
+        c.startService(intent1);
     }
 
     @SuppressLint("NewApi")
