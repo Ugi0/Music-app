@@ -38,18 +38,20 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     public MediaPlayer player;
     public MediaSessionCompat.Token sessionToken;
     private String currentSong;
-    public MyList currentPlayingSong = new MyList("","","",0, "", 0, "", 0);
+    public MyList currentPlayingSong = new MyList("", "", "", 0, "", 0, "", 0);
     public CustomAdapter adapter = null;
     public ArrayList<MyList> visibleSongs;
     public RecyclerView recyclerview;
     public View relativeLayout;
     public boolean songDone = true;
-    public boolean playing = false;
+    public static boolean playing = false;
+    public static String songName;
     public FragmentManager manager;
     public MainActivity main;
     public BigDecimal currentDuration;
     NotificationService notificationService;
     public Context c;
+    private boolean serviceStarted = false;
 
     TextView songNameView;
     TextView songDescView;
@@ -65,19 +67,10 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         player = new MediaPlayer();
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         this.currentSong = null;
-        Intent intent = new Intent(c, NotificationService.class);
-        c.bindService(intent, this, 0);
-        Intent intent1 = new Intent(c, NotificationService.class);
-        c.startService(intent1);
     }
 
     @SuppressLint("NewApi")
     public void play(MyList mylist) {
-        if (BtnPause != null) {
-            BtnPause.setOnClickListener(null);
-            BtnNext.setOnClickListener(null);
-            BtnPrev.setOnClickListener(null);
-        }
         String song = mylist.getLocation();
         if (currentSong != null) if (currentSong.equals(song) && this.player.isPlaying()) return;
         relativeLayout = ((Activity) c).findViewById(R.id.music_bar);
@@ -88,6 +81,14 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         this.songDone = false;
         playing = true;
         currentSong = song;
+        songName = mylist.getHead();
+        if (!serviceStarted) {
+            Intent intent = new Intent(c, NotificationService.class);
+            c.bindService(intent, this, 0);
+            Intent intent1 = new Intent(c, NotificationService.class);
+            c.startService(intent1);
+            serviceStarted = true;
+        }
         currentDuration = new BigDecimal(String.valueOf(mylist.getDuration()));
         currentPlayingSong = mylist;
         main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
@@ -125,7 +126,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         }
     }
 
-    public void setNext(MyList mylist) { main.songList.add(mylist); }
+    public void setNext(MyList mylist) {
+        main.songList.add(mylist);
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void donePlayNext() {
@@ -135,29 +138,40 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     @SuppressLint("NotifyDataSetChanged")
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void playNext(Boolean force) {
-        if (!playing) try { BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);  } catch (Exception ignored) {}
+        if (!playing) try {
+            BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
+        } catch (Exception ignored) {
+        }
         if (main.songList.isEmpty()) {
             play(main.PrevAndNextSongs.Next(force));
-        }
-        else {
+        } else {
             play(main.songList.get(0));
             main.songList.remove(0);
         }
         adapter.reset();
         adapter.notifyDataSetChanged();
-        if (MainActivity.currentFragment.getClass().equals(Detailed_song.class)) newFragment.initWindowElements();
-        else { showBar(); }
+        if (MainActivity.currentFragment.getClass().equals(Detailed_song.class))
+            newFragment.initWindowElements();
+        else {
+            showBar();
+        }
     }
 
     @SuppressLint({"NewApi", "NotifyDataSetChanged"})
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void playPrev(Boolean force) {
-        if (!playing) try { BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);  } catch (Exception ignored) {}
+        if (!playing) try {
+            BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
+        } catch (Exception ignored) {
+        }
         play(main.PrevAndNextSongs.Prev(force));
         adapter.reset();
         adapter.notifyDataSetChanged();
-        if (MainActivity.currentFragment.getClass().equals(Detailed_song.class)) newFragment.initWindowElements();
-        else { showBar(); }
+        if (MainActivity.currentFragment.getClass().equals(Detailed_song.class))
+            newFragment.initWindowElements();
+        else {
+            showBar();
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -165,14 +179,21 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         if (this.playing) {
             main.showNotification(R.drawable.ic_baseline_play_arrow_24, currentPlayingSong.getHead());
             pause();
-            try { BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24); } catch (Exception ignored) {}
-            if (MainActivity.currentFragment.getClass().equals(Detailed_song.class)) newFragment.initWindowElements();
-        }
-        else {
+            try {
+                BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
+            } catch (Exception ignored) {
+            }
+            if (MainActivity.currentFragment.getClass().equals(Detailed_song.class))
+                newFragment.initWindowElements();
+        } else {
             main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
             resume();
-            try { BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24); } catch (Exception ignored) {}
-            if (MainActivity.currentFragment.getClass().equals(Detailed_song.class)) newFragment.initWindowElements();
+            try {
+                BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
+            } catch (Exception ignored) {
+            }
+            if (MainActivity.currentFragment.getClass().equals(Detailed_song.class))
+                newFragment.initWindowElements();
         }
     }
 
@@ -185,17 +206,23 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void resume() {
         this.playing = true;
-        try { BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24); } catch (Exception ignored) {}
-        if (MainActivity.currentFragment.getClass().equals(Detailed_song.class)) newFragment.initWindowElements();
+        try {
+            BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
+        } catch (Exception ignored) {
+        }
+        if (MainActivity.currentFragment.getClass().equals(Detailed_song.class))
+            newFragment.initWindowElements();
         player.start();
         main.t.resumeThread();
     }
+
     @SuppressLint("NewApi")
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void showBar() {
         try {
             this.relativeLayout.setVisibility(View.VISIBLE);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         songNameView = relativeLayout.findViewById(R.id.Song_name);
         songDescView = relativeLayout.findViewById(R.id.Song_desc);
         BtnPrev = relativeLayout.findViewById(R.id.BtnPrev);
@@ -206,8 +233,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         songDescView.setText(currentPlayingSong.getDesc());
         if (!playing) {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
-        }
-        else {
+        } else {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         }
 
@@ -215,7 +241,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 if (b) {
-                    player.seekTo((int) (currentPlayingSong.getDuration()*(1.0*i/1000)));
+                    player.seekTo((int) (currentPlayingSong.getDuration() * (1.0 * i / 1000)));
                     progressBar.setProgress(i);
                     if (!playing) {
                         playing = true;
@@ -223,15 +249,17 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
                     }
                 }
             }
+
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 main.t.stopThread();
                 player.pause();
             }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 main.t.resumeThread();
-                    player.start();
+                player.start();
             }
         });
         main.t = new ProgressBarThread(progressBar, main);
@@ -248,11 +276,16 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         prepareButtons();
     }
 
-    public void seekTo(int i) { this.player.seekTo(i); }
+    public void seekTo(int i) {
+        this.player.seekTo(i);
+    }
 
     public int getCurrentPosition() {
-        try { return this.player.getCurrentPosition(); }
-        catch (Exception e) { return 0; }
+        try {
+            return this.player.getCurrentPosition();
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     @Override
@@ -260,10 +293,22 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         NotificationService.myBinder binder = (NotificationService.myBinder) iBinder;
         notificationService = binder.getService();
         notificationService.setCallBack(MusicPlayer.this);
+        Log.d("test", "onServiceConnected: ");
     }
 
     @Override
     public void onServiceDisconnected(ComponentName componentName) {
+        Log.d("test", "onServiceDisconnected: ");
         notificationService = null;
+    }
+
+    public void destroy() {
+        if (this.player != null) {
+            if (main.t != null) main.t.stopThread();
+            this.player.reset();
+            this.player.release();
+            this.player = null;
+            currentSong = null;
+        }
     }
 }

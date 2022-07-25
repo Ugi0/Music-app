@@ -1,5 +1,13 @@
 package com.tsevaj.musicapp;
 
+import static com.tsevaj.musicapp.MusicPlayer.songName;
+import static com.tsevaj.musicapp.NotificationClass.ACTION_NEXT;
+import static com.tsevaj.musicapp.NotificationClass.ACTION_PAUSE;
+import static com.tsevaj.musicapp.NotificationClass.ACTION_PREV;
+import static com.tsevaj.musicapp.NotificationUtils.OPEN_NOTIFICATION;
+
+import android.annotation.SuppressLint;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
@@ -7,6 +15,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 
 public class NotificationService extends Service {
     private IBinder mBinder = new myBinder();
@@ -22,6 +31,7 @@ public class NotificationService extends Service {
         NotificationService getService() { return NotificationService.this; }
     }
 
+    @SuppressLint("NewApi")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent.getAction() != null) {
@@ -47,6 +57,43 @@ public class NotificationService extends Service {
             }
         }
         return START_STICKY;
+    }
+
+    @Override
+    public void onCreate() {
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.setAction(OPEN_NOTIFICATION);
+        PendingIntent contentIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, 0);
+        Intent prevIntent = new Intent(getApplicationContext(), NotificationReceiver.class)
+                .setAction("PREVIOUS");
+        Intent pauseIntent = new Intent(getApplicationContext(), NotificationReceiver.class)
+                .setAction("PAUSE");
+        Intent nextIntent = new Intent(getApplicationContext(), NotificationReceiver.class)
+                .setAction("NEXT");
+        int playPauseButton;
+        if (MusicPlayer.playing) {
+            playPauseButton = R.drawable.ic_baseline_pause_24;
+        }
+        else {
+            playPauseButton = R.drawable.ic_baseline_play_arrow_24;
+        }
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(getApplicationContext(), NotificationClass.Channel)
+                .setSmallIcon(R.mipmap.app_icon)
+                .setColor(0xae27ff)
+                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
+                        .setShowActionsInCompactView(0, 1, 2))
+                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_previous_24, ACTION_PREV, PendingIntent.getBroadcast(getApplicationContext(), 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
+                .addAction(new NotificationCompat.Action(playPauseButton, ACTION_PAUSE, PendingIntent.getBroadcast(getApplicationContext(), 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
+                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_next_24, ACTION_NEXT, PendingIntent.getBroadcast(getApplicationContext(), 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setProgress(100, 50, false)
+                .setChannelId("Control Notification")
+                .setContentIntent(contentIntent)
+                .setOnlyAlertOnce(true)
+                .setAutoCancel(false);
+        notification.setContentTitle(songName);
+        startForeground(1, notification.build());
+        super.onCreate();
     }
 
     public void setCallBack(NotificationController notificationController) {

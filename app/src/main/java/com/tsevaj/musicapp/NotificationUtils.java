@@ -70,6 +70,8 @@ public class NotificationUtils {
     }
 
     public void destroyNotification() {
-        notificationManager.cancel(NOTIFICATION_ID);
+        try {   notificationManager.cancel(NOTIFICATION_ID); }
+        catch (Exception ignored) {}
     }
+
 }

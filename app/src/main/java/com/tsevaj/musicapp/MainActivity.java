@@ -88,8 +88,6 @@ public class MainActivity extends AppCompatActivity
         }
 
     }
-    // TODO A first click is needed on one of the notification buttons for the service to connect
-    // -> Make it so the extra click isn't needed
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void showNotification(int playPauseButton, String songName) {
@@ -208,7 +206,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        utils.destroyNotification();
+        Intent intent1 = new Intent(getApplicationContext(), NotificationService.class);
+        stopService(intent1);
+        player.destroy();
         if (receiver != null) {
             unregisterReceiver(receiver);
             receiver = null;
