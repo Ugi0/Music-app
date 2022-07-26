@@ -100,7 +100,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         }
 
         player.setOnPreparedListener(mediaPlayer -> {
-            c.registerReceiver(new MyController(main.player, c), new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
             player.setOnCompletionListener(mp -> donePlayNext());
             if (!MainActivity.currentFragment.equals(main.PrevAndNextSongs.createdFragment)) {
                 main.PrevAndNextSongs = new PrevNextList(new ArrayList<>(visibleSongs), mylist, MainActivity.currentFragment, c);
@@ -293,12 +292,10 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         NotificationService.myBinder binder = (NotificationService.myBinder) iBinder;
         notificationService = binder.getService();
         notificationService.setCallBack(MusicPlayer.this);
-        Log.d("test", "onServiceConnected: ");
     }
 
     @Override
     public void onServiceDisconnected(ComponentName componentName) {
-        Log.d("test", "onServiceDisconnected: ");
         notificationService = null;
     }
 

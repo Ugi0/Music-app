@@ -44,20 +44,17 @@ public class ProgressBarThread extends Thread {
             }
             });}
         else {
-            t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (progressBarValue < 10000) {
-                        if (!stopped) {
-                            BigDecimal playedSoFar = new BigDecimal(main.player.getCurrentPosition() + "0000");
-                            progressBarValue = (
-                                    playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());
-                            circularSeekBar.setProgress((int) progressBarValue);
-                        }
-                        try {
-                            sleep(100);
-                        } catch (Exception ignored) {
-                        }
+            t = new Thread(() -> {
+                while (progressBarValue < 10000) {
+                    if (!stopped) {
+                        BigDecimal playedSoFar = new BigDecimal(main.player.getCurrentPosition() + "0000");
+                        progressBarValue = (
+                                playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());
+                        circularSeekBar.setProgress((int) progressBarValue);
+                    }
+                    try {
+                        sleep(100);
+                    } catch (Exception ignored) {
                     }
                 }
             });}

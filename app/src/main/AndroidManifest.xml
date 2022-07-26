@@ -35,7 +35,6 @@
             </intent-filter>
         </activity>
         <service android:name=".NotificationService" />
-
         <receiver android:name=".NotificationReceiver"
             android:exported="false"
             android:enabled="true">

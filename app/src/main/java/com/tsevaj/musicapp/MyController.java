@@ -20,6 +20,7 @@ public class MyController extends BroadcastReceiver {
     MusicPlayer player;
     Context c;
     MediaSessionCompat ms;
+    long lastButtonPressTime;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -39,20 +40,24 @@ public class MyController extends BroadcastReceiver {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public boolean onMediaButtonEvent(@NonNull Intent mediaButtonIntent) {
-                if (player.songDone) return super.onMediaButtonEvent(mediaButtonIntent);
+                if (player.songDone) return true;
+                if (System.currentTimeMillis() - lastButtonPressTime < 300) return true;
+                lastButtonPressTime = System.currentTimeMillis();
                 KeyEvent event = mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                Intent intent1 = new Intent(c, NotificationService.class);
                 switch (event.getKeyCode()) {
                     case KeyEvent.KEYCODE_MEDIA_PLAY:
                     case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                        player.playPause();
+                        intent1.setAction("PAUSE");
                         break;
                     case KeyEvent.KEYCODE_MEDIA_NEXT:
-                        player.playNext(true);
+                        intent1.setAction("NEXT");
                         break;
                     case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-                        player.playPrev(true);
+                        intent1.setAction("PREVIOUS");
                         break;
                 }
+                c.startService(intent1);
                 return true;
             }
         });

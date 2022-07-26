@@ -12,6 +12,7 @@ import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -79,6 +80,8 @@ public class MainActivity extends AppCompatActivity
         this.player.c = this;
         this.player.main = this;
         this.player.manager = getSupportFragmentManager();
+        registerReceiver(new MyController(player, getApplicationContext()), new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
+
         utils = new NotificationUtils(player);
 
         if (savedInstanceState == null) {
