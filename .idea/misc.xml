@@ -56,13 +56,15 @@
         <entry key="..\:/MusicApp/app/src/main/res/layout/playlists_item.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/playlists_prompt_new.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/seekcircle.xml" value="0.36666666666666664" />
-        <entry key="..\:/MusicApp/app/src/main/res/layout/settings_fragment.xml" value="0.1" />
+        <entry key="..\:/MusicApp/app/src/main/res/layout/settings_fragment.xml" value="0.2463768115942029" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/song_detailed_view.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/song_list_item.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/songlist_item.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/songlist_recyclerview.xml" value="0.36666666666666664" />
+        <entry key="..\:/MusicApp/app/src/main/res/menu/detailed_menu.xml" value="0.365625" />
         <entry key="..\:/MusicApp/app/src/main/res/menu/drawer_menu.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/menu/options_menu.xml" value="0.36666666666666664" />
+        <entry key="..\:/MusicApp/app/src/main/res/menu/playlists_menu.xml" value="0.365625" />
         <entry key="..\:/MusicApp/app/src/main/res/menu/popup_menu.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/menu/sort_menu.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/mipmap-anydpi-v26/app_icon.xml" value="0.3075" />

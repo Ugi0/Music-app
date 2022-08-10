@@ -15,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.media.session.MediaButtonReceiver;
 
-//TODO Listen to calls from other apps
 public class MyController extends BroadcastReceiver {
     MusicPlayer player;
     Context c;

@@ -30,6 +30,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
@@ -63,9 +64,15 @@ public class SettingsFragment extends Fragment {
     NumberPicker songLengthSec;
     TextView themeText;
     TextView loopingText;
-    TextView lenghtText;
+    TextView lengthText;
     TextView folderText;
     TextView backgroundText;
+
+    MainActivity main;
+
+    public SettingsFragment(MainActivity main) {
+        this.main = main;
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Nullable
@@ -87,11 +94,12 @@ public class SettingsFragment extends Fragment {
 
         themeText = ll.findViewById(R.id.Theme_text);
         loopingText = ll.findViewById(R.id.looping_text);
-        lenghtText = ll.findViewById(R.id.min_length_text);
+        lengthText = ll.findViewById(R.id.min_length_text);
         folderText = ll.findViewById(R.id.folder_text);
         backgroundText = ll.findViewById(R.id.background_text);
 
         setTextColors(requireContext().getSharedPreferences("SAVEDATA", 0).getString("THEME_COLOR", "#FFFFFF"));
+        main.setClickable();
 
         numberPicker.setMaxValue(100);
         numberPicker.setMinValue(1);
@@ -190,7 +198,7 @@ public class SettingsFragment extends Fragment {
         int textColor = Color.parseColor(color);
         themeText.setTextColor(textColor);
         loopingText.setTextColor(textColor);
-        lenghtText.setTextColor(textColor);
+        lengthText.setTextColor(textColor);
         folderText.setTextColor(textColor);
         backgroundText.setTextColor(textColor);
         colorWheelText.setTextColor(textColor);
@@ -234,7 +242,6 @@ public class SettingsFragment extends Fragment {
     }
 
     public void copy(String source) throws IOException {
-        Log.d("test", source );
         FileChannel src = null;
         FileChannel dst = null;
         try {
@@ -249,7 +256,7 @@ public class SettingsFragment extends Fragment {
                 dst.close();
             }
         }
-        SettingsFragment newFragment = new SettingsFragment();
+        SettingsFragment newFragment = new SettingsFragment(main);
         FragmentTransaction transaction =  getParentFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, newFragment);
 

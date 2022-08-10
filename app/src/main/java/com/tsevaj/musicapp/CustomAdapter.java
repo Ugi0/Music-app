@@ -54,6 +54,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
         return new ViewHolder(v);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @SuppressLint("ResourceType")
     @Override
     public void onBindViewHolder(CustomAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {

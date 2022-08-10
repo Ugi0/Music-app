@@ -2,28 +2,20 @@ package com.tsevaj.musicapp;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.session.MediaSession;
-import android.os.AsyncTask;
-import android.os.Binder;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -31,7 +23,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 
 public class MusicPlayer implements NotificationController, ServiceConnection {
@@ -52,6 +43,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     NotificationService notificationService;
     public Context c;
     private boolean serviceStarted = false;
+    private static AudioManager audioManager;
+    private static int changedFocus;
+    private static boolean focusGranted;
 
     TextView songNameView;
     TextView songDescView;
@@ -87,6 +81,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             c.bindService(intent, this, 0);
             Intent intent1 = new Intent(c, NotificationService.class);
             c.startService(intent1);
+            requestFocus(c);
             serviceStarted = true;
         }
         currentDuration = new BigDecimal(String.valueOf(mylist.getDuration()));
@@ -175,7 +170,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void playPause() {
-        if (this.playing) {
+        if (playing) {
             main.showNotification(R.drawable.ic_baseline_play_arrow_24, currentPlayingSong.getHead());
             pause();
             try {
@@ -197,14 +192,14 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     public void pause() {
-        this.playing = false;
+        playing = false;
         main.t.stopThread();
         player.pause();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void resume() {
-        this.playing = true;
+        playing = true;
         try {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         } catch (Exception ignored) {
@@ -263,7 +258,8 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         });
         main.t = new ProgressBarThread(progressBar, main);
         this.relativeLayout.setOnClickListener(view -> {
-            newFragment = new Detailed_song(c, main.player, main);
+            newFragment = new Detailed_song(main.player, main);
+            MainActivity.currentFragment = newFragment;
             FragmentTransaction transaction = manager.beginTransaction();
             transaction.replace(R.id.fragment_container, newFragment);
             transaction.addToBackStack(null);
@@ -295,9 +291,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     @Override
-    public void onServiceDisconnected(ComponentName componentName) {
-        notificationService = null;
-    }
+    public void onServiceDisconnected(ComponentName componentName) { notificationService = null; }
 
     public void destroy() {
         if (this.player != null) {
@@ -306,6 +300,51 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             this.player.release();
             this.player = null;
             currentSong = null;
+        }
+    }
+    public void requestFocus(final Context context) {
+        if (audioManager == null) {
+            audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        }
+
+        switch (audioManager.requestAudioFocus((new OnFocusChangeListener()).getInstance(),
+                AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)) {
+            case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
+                focusGranted = true;
+                break;
+
+            case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
+                focusGranted = false;
+                break;
+        }
+    }
+
+    private final class OnFocusChangeListener implements AudioManager.OnAudioFocusChangeListener {
+
+        private OnFocusChangeListener instance;
+
+        protected OnFocusChangeListener getInstance() {
+            if (instance == null) {
+                instance = new OnFocusChangeListener();
+            }
+            return instance;
+        }
+
+        @Override
+        public void onAudioFocusChange(final int focusChange) {
+            changedFocus = focusChange;
+            switch (focusChange) {
+                case AudioManager.AUDIOFOCUS_GAIN:
+                    player.start();
+                    break;
+
+                case AudioManager.AUDIOFOCUS_LOSS:
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                    try {player.pause();}
+                    catch (Exception ignored) {}
+                    break;
+            }
         }
     }
 }

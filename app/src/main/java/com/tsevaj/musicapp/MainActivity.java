@@ -6,14 +6,10 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -23,7 +19,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
@@ -36,7 +31,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
-import androidx.core.view.MenuItemCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -108,15 +102,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void setClickable() {
+        toggle.setDrawerIndicatorEnabled(false);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
-        toggle.setDrawerIndicatorEnabled(false);
+
         assert actionBar != null;
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
     }
 
     public void setDrawer() {
@@ -169,19 +163,26 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         int itemId = item.getItemId();
+        FragmentTransaction createdFragment = null;
         if (itemId == R.id.menu_library) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new LibraryFragment(player, "","")).commit();
+            createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    new LibraryFragment(player, "", ""));
         } else if (itemId == R.id.menu_favorites) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new FavoritesFragment(player,"", this)).commit();
+            createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    new FavoritesFragment(player,"", this));
         } else if (itemId == R.id.menu_settings) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new SettingsFragment()).commit();
+            createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    new SettingsFragment(this));
         } else if (itemId == R.id.menu_playlists) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new PlaylistsFragment(player, this)).commit();
+            createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    new PlaylistsFragment(player, this));
         }
+        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+            assert createdFragment != null;
+            createdFragment.addToBackStack(null);
+        }
+        assert createdFragment != null;
+        createdFragment.commit();
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -267,9 +268,7 @@ public class MainActivity extends AppCompatActivity
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             assert newFragment != null;
             transaction.replace(R.id.fragment_container, newFragment);
-            //TODO Fix BackStack to be consistent
             transaction.addToBackStack(null);
-
             transaction.commit();
             return true;
         });
@@ -279,8 +278,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.options_menu, menu);
-        menu.getItem(0).setVisible(!(currentFragment.getClass().equals(Detailed_song.class) || currentFragment.getClass().equals(PlaylistsFragment.class)));
-        menu.getItem(1).setVisible(!(currentFragment.getClass().equals(Detailed_song.class) || currentFragment.getClass().equals(PlaylistsFragment.class)));
+        menu.getItem(0).setVisible(!(currentFragment.getClass().equals(Detailed_song.class) ||
+                            currentFragment.getClass().equals(PlaylistsFragment.class) ||
+                            currentFragment.getClass().equals(SettingsFragment.class)
+                ));
+        menu.getItem(1).setVisible(!(currentFragment.getClass().equals(Detailed_song.class) ||
+                            currentFragment.getClass().equals(PlaylistsFragment.class) ||
+                            currentFragment.getClass().equals(SettingsFragment.class)
+                    ));
         final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override

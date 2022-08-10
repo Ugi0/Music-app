@@ -49,8 +49,10 @@ public class PlaylistsFragment extends Fragment {
         inflater.inflate(R.menu.popup_menu, menu);
     }
 
-    public void changeFragments(Fragment newFragment) {
+    public void changeFragments(Fragment newFragment, boolean addToStack) {
         FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, newFragment).commit();
+        transaction.replace(R.id.fragment_container, newFragment);
+        if (addToStack) transaction.addToBackStack(null);
+        transaction.commit();
     }
 }

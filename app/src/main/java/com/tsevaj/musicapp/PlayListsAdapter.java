@@ -4,10 +4,13 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
@@ -16,12 +19,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+
 public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.ViewHolder> {
 
     private ArrayList<MyList> list;
     private final Context context;
     private final MusicPlayer player;
     private final PlaylistsFragment parent;
+    private View listView;
 
     public PlayListsAdapter(ArrayList<MyList> list, Context mCtx, MusicPlayer player, PlaylistsFragment playlistsFragment) {
         this.list = list;
@@ -34,6 +40,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
     public PlayListsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.playlists_item, parent, false);
+        listView = v;
         return new ViewHolder(v);
     }
 
@@ -41,6 +48,27 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
     @Override
     public void onBindViewHolder(ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         holder.textViewHead.setText(list.get(position).getHead());
+        if (list.get(position).getHead().equals("Create a new playlist")) holder.buttonViewOption.setVisibility(View.GONE);
+        listView.findViewById(R.id.textViewOptions).setOnClickListener(view -> {
+            PopupMenu popupMenu = new PopupMenu(context, listView);
+            popupMenu.inflate(R.menu.playlists_menu);
+            popupMenu.setOnMenuItemClickListener(menuItem -> {
+                if (menuItem.getItemId() == R.id.song_delete) {
+                    SharedPreferences settings = context.getSharedPreferences("SAVEDATA", 0);
+                    SharedPreferences.Editor editor = settings.edit();
+                    String playlists = settings.getString("PLAYLISTS", "");
+                    editor.remove("PLAYLIST_"+list.get(position).getHead());
+                    ArrayList<String> li = new ArrayList<String>(Arrays.asList(playlists.split("\n")));
+                    li.remove(list.get(position).getHead());
+                    editor.putString("PLAYLISTS",String.join("\n",li));
+                    editor.apply();
+                    list.remove(position);
+                    parent.changeFragments(new PlaylistsFragment(player, player.main), false);
+                }
+                return false;
+            });
+            popupMenu.show();
+        });
         holder.itemView.setOnClickListener(view -> {
             if (list.get(position).getHead().equals("Create a new playlist")) {
                 TextInputLayout textInputLayout = new TextInputLayout(context);
@@ -68,7 +96,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                                 list = new ArrayList<>();
                                 list.add(new MyList("Create a new playlist","","",0, "", 0, "", 0));
                                 dialog.cancel();
-                                notifyDataSetChanged();
+                                parent.changeFragments(new PlaylistsFragment(player, player.main), false);
                             }
                             else if (!input.getText().toString().isEmpty()) {
                                 SharedPreferences settings = context.getSharedPreferences("SAVEDATA", 0);
@@ -80,7 +108,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                                 editor.apply();
                                 list.add(0, new MyList(input.getText().toString(),"","",0, "", 0, "", 0));
                                 dialog.cancel();
-                                notifyDataSetChanged();
+                                parent.changeFragments(new PlaylistsFragment(player, player.main), false);
                             }
                         })
                         .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.cancel())
@@ -89,8 +117,8 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
             else {
                 SharedPreferences settings = context.getSharedPreferences("SAVEDATA", 0);
                 String[] playlists = settings.getString("PLAYLISTS", "").split("\n");
-                String clickedPlaylist = playlists[playlists.length-position-1];
-                parent.changeFragments(new LibraryFragment(player,"PLAYLIST_"+clickedPlaylist,""));
+                String clickedPlaylist = playlists[playlists.length- position -1];
+                parent.changeFragments(new LibraryFragment(player,"PLAYLIST_"+clickedPlaylist,""), true);
             }
         });
     }

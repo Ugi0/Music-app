@@ -57,15 +57,25 @@
         app:end_angle="60"
         app:start_angle="120" />
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/progress_bar"
-        android:paddingTop="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/favorites_border"
         android:gravity="center">
         <ImageButton
             android:id="@+id/detailed_add_to_favorites"
             android:src="@drawable/favorites_selector"
-            android:background="@drawable/favorites_border"
+            android:background="@android:color/transparent"
+            android:layout_marginEnd="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <ImageButton
+            android:id="@+id/detailed_menu_button"
+            android:src="@drawable/ic_baseline_menu_24"
+            android:background="@android:color/transparent"
+            android:layout_marginStart="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>

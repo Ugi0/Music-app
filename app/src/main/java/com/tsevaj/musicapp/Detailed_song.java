@@ -1,40 +1,28 @@
 package com.tsevaj.musicapp;
 
 import android.annotation.SuppressLint;
-import android.app.SearchManager;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.SearchView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class Detailed_song extends Fragment {
@@ -43,7 +31,7 @@ public class Detailed_song extends Fragment {
     private final MainActivity main;
     private View currentView;
 
-    public Detailed_song(Context c, MusicPlayer player, MainActivity main) {
+    public Detailed_song(MusicPlayer player, MainActivity main) {
         this.player = player;
         this.main = main;
     }
@@ -54,6 +42,7 @@ public class Detailed_song extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ll = inflater.inflate(R.layout.song_detailed_view, container, false);
+
         MainActivity.setBackground(ll, getResources());
         MainActivity.currentFragment = this;
 
@@ -75,7 +64,7 @@ public class Detailed_song extends Fragment {
         }
     }
 
-    @SuppressLint({"UseCompatTextViewDrawableApis", "NewApi"})
+    @SuppressLint({"UseCompatTextViewDrawableApis", "NewApi", "NonConstantResourceId"})
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void initWindowElements(View parentView) {
         int textColor = Color.parseColor(main.getBaseContext().getSharedPreferences("SAVEDATA", 0).getString("THEME_COLOR", "#FFFFFF"));
@@ -95,6 +84,7 @@ public class Detailed_song extends Fragment {
         ImageButton shuffle = parentView.findViewById(R.id.detailed_shuffle);
         ImageButton replay = parentView.findViewById(R.id.detailed_replay);
         ImageButton favoriteButton = parentView.findViewById(R.id.detailed_add_to_favorites);
+        ImageButton menuButton = parentView.findViewById(R.id.detailed_menu_button);
 
         songNameView.setTextColor(textColor);
         songDescView.setTextColor(textColor);
@@ -107,7 +97,7 @@ public class Detailed_song extends Fragment {
         songNameView.setText(player.currentPlayingSong.getHead());
         songDescView.setText(player.currentPlayingSong.getDesc());
         songLocView.setText(player.currentPlayingSong.getLocation().split("/")[player.currentPlayingSong.getLocation().split("/").length-2]);
-        if (!player.playing) {
+        if (!MusicPlayer.playing) {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
         }
         else {
@@ -157,6 +147,45 @@ public class Detailed_song extends Fragment {
                 main.PrevAndNextSongs.reRoll();
             }
         });
+        menuButton.setOnClickListener(view -> {
+            PopupMenu popup = new PopupMenu(requireContext(), view);
+            popup.inflate(R.menu.detailed_menu);
+            popup.setOnMenuItemClickListener(item -> {
+                int itemId = item.getItemId();
+                switch (itemId) {
+                    case R.id.addtoplaylist: {
+                        PopupMenu menu = new PopupMenu(requireContext(), view);
+                        for (String menuItem : requireContext().getSharedPreferences("SAVEDATA", 0).getString("PLAYLISTS", "").split("\n")) {
+                            menu.getMenu().add(menuItem);
+                        }
+                        menu.setOnMenuItemClickListener(item1 -> {
+                            SharedPreferences.Editor editor2 = requireContext().getSharedPreferences("SAVEDATA", 0).edit();
+                            String currentPlaylist = requireContext().getSharedPreferences("SAVEDATA", 0).getString("PLAYLIST_" + item1.getTitle(), "");
+                            if (currentPlaylist.isEmpty())
+                                editor2.putString("PLAYLIST_" + item1.getTitle(), player.currentPlayingSong.getHead());
+                            else {
+                                editor2.putString("PLAYLIST_" + item1.getTitle(), currentPlaylist + "\n" + player.currentPlayingSong.getHead());
+                            }
+                            editor2.apply();
+                            return true;
+                        });
+                        menu.show();
+                        break;
+                    }
+                    case R.id.song_delete: {
+                        try {
+                            Files.delete(Paths.get(player.currentPlayingSong.getLocation()));
+                            player.playNext(true);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    }
+                }
+                return true;
+            });
+            popup.show();
+        });
         favoriteButton.setOnClickListener(view -> {
             if (favoriteButton.isActivated()) {
                 main.removeFromFavorites(player.currentPlayingSong.getHead());
@@ -170,14 +199,14 @@ public class Detailed_song extends Fragment {
         BtnNext.setOnClickListener(view -> detailed_next());
         BtnPrev.setOnClickListener(view -> detailed_prev());
         BtnPause.setOnClickListener(view -> {
-            if (player.playing) {
+            if (MusicPlayer.playing) {
                 player.pause();
-                player.playing = false;
+                MusicPlayer.playing = false;
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
             }
             else {
                 player.resume();
-                player.playing = true;
+                MusicPlayer.playing = true;
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
             }
         });
@@ -208,8 +237,8 @@ public class Detailed_song extends Fragment {
             if (fromUser) {
                 player.seekTo((int) (player.currentPlayingSong.getDuration()*(1.0*progress/10000)));
                 progressBar.setProgress(progress);
-                if (!player.playing) {
-                    player.playing = true;
+                if (!MusicPlayer.playing) {
+                    MusicPlayer.playing = true;
                     BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
                 }
             }
@@ -221,6 +250,7 @@ public class Detailed_song extends Fragment {
             main.t.stopThread();
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.O)
         @Override
         public void onStopTrackingTouch(CircularSeekBar seekBar) {
             player.resume();
