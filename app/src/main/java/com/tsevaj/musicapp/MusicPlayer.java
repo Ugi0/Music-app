@@ -350,8 +350,4 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             }
         }
     }
-    @SuppressLint("NotifyDataSetChanged")
-    public void updateList() {
-        adapter.notifyDataSetChanged();
-    }
 }
