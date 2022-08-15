@@ -11,6 +11,7 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
@@ -37,6 +38,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     public boolean songDone = true;
     public static boolean playing = false;
     public static String songName;
+    public static String songArtist;
     public FragmentManager manager;
     public MainActivity main;
     public BigDecimal currentDuration;
@@ -76,6 +78,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         playing = true;
         currentSong = song;
         songName = mylist.getHead();
+        songArtist = mylist.getArtist();
         if (!serviceStarted) {
             Intent intent = new Intent(c, NotificationService.class);
             c.bindService(intent, this, 0);
@@ -323,7 +326,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
 
         private OnFocusChangeListener instance;
 
-        protected OnFocusChangeListener getInstance() {
+        private OnFocusChangeListener getInstance() {
             if (instance == null) {
                 instance = new OnFocusChangeListener();
             }
@@ -346,5 +349,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
                     break;
             }
         }
+    }
+    @SuppressLint("NotifyDataSetChanged")
+    public void updateList() {
+        adapter.notifyDataSetChanged();
     }
 }

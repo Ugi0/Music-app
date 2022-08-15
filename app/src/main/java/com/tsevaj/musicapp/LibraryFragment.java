@@ -3,6 +3,7 @@ package com.tsevaj.musicapp;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -16,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class LibraryFragment extends Fragment {
     private RecyclerView recyclerView;
@@ -24,7 +26,8 @@ public class LibraryFragment extends Fragment {
     private final String nameFilter;
 
     public LibraryFragment(MusicPlayer player, String filter, String nameFilter) {
-        this.player = player; if (!filter.isEmpty()) this.filter = filter;
+        this.player = player;
+        if (!filter.isEmpty()) this.filter = filter;
         this.nameFilter = nameFilter;
     }
 
@@ -39,6 +42,13 @@ public class LibraryFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         MainActivity.setBackground(ll, getResources());
         player.main.setDrawer();
+
+        SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            MainActivity.savedList = null;
+            FunctionClass.getMusic(recyclerView, requireActivity(), player, requireActivity(), filter, nameFilter);
+            swipeRefreshLayout.setRefreshing(false);
+        });
 
         FunctionClass.getMusic(recyclerView, requireActivity(), player, requireActivity(), this.filter, nameFilter);
         MainActivity.currentFragment = this;

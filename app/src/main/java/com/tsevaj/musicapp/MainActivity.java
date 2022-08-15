@@ -6,6 +6,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
@@ -33,6 +34,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.navigation.NavigationView;
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity
     ProgressBarThread t;
     ActionBarDrawerToggle toggle;
     BroadcastReceiver receiver;
+    public static ArrayList<MyList> savedList = null;
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
@@ -74,7 +77,7 @@ public class MainActivity extends AppCompatActivity
         this.player.c = this;
         this.player.main = this;
         this.player.manager = getSupportFragmentManager();
-        registerReceiver(new MyController(player, getApplicationContext()), new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
+        registerReceiver(new MyController(player, this), new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
 
         utils = new NotificationUtils(player);
 
@@ -94,7 +97,7 @@ public class MainActivity extends AppCompatActivity
     @SuppressLint("UseCompatLoadingForDrawables")
     public static void setBackground(View view, Resources resources) {
         if (new File(SettingsFragment.destination).exists()) {
-            view.setBackgroundDrawable(new BitmapDrawable(resources, BitmapFactory.decodeFile(SettingsFragment.destination)));
+            view.setBackground(new BitmapDrawable(resources, BitmapFactory.decodeFile(SettingsFragment.destination)));
         }
         else {
             view.setBackground(resources.getDrawable(R.drawable.background));
@@ -293,20 +296,14 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
 
+            @SuppressLint("NewApi")
             @Override
             public boolean onQueryTextChange(String s) {
-                Fragment newFragment = null;
                 if (currentFragment.getClass().equals(LibraryFragment.class)) {
-                    newFragment = new LibraryFragment(player, "", s);
+                    FunctionClass.getMusic(player.recyclerview, player.main, player, player.main, "", s);
                 } else if (currentFragment.getClass().equals(FavoritesFragment.class)) {
-                    newFragment = new FavoritesFragment(player,s, player.main);
+                    FunctionClass.getMusic(player.recyclerview, player.main, player, player.main, "FAVORITES", s);
                 }
-                if (newFragment == null) return false;
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.fragment_container, newFragment);
-                transaction.addToBackStack(null);
-
-                transaction.commit();
                 return false;
             }});
         SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);

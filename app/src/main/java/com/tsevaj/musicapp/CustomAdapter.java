@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,19 +35,22 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
     FragmentActivity c;
     private CustomAdapter.ViewHolder lastClicked = null;
     private final int defaultColor;
+    private final String playlist;
     //Color.parseColor("#FFFFFF");
     //Color.BLACK;
 
     @SuppressLint("ResourceType")
-    public CustomAdapter(ArrayList<MyList> list, Context mCtx, FragmentActivity c, MusicPlayer player) {
+    public CustomAdapter(ArrayList<MyList> list, Context mCtx, FragmentActivity c, MusicPlayer player, String playlist) {
         this.list = list;
         this.backupList = new ArrayList<>(list);
         this.mCtx = mCtx;
         this.c = c;
         this.player = player;
+        this.playlist = playlist;
         this.defaultColor = Color.parseColor(mCtx.getSharedPreferences("SAVEDATA", 0).getString("THEME_COLOR", "#FFFFFF"));
     }
 
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
@@ -55,9 +59,9 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    @SuppressLint("ResourceType")
+    @SuppressLint({"ResourceType", "NotifyDataSetChanged"})
     @Override
-    public void onBindViewHolder(CustomAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
+    public void onBindViewHolder(ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         MyList myList = list.get(position);
         holder.textViewHead.setText(myList.getHead());
         holder.textViewDesc.setText(myList.getDesc());
@@ -85,6 +89,8 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
         holder.buttonViewOption.setOnClickListener(view -> {
             PopupMenu popup = new PopupMenu(mCtx, holder.buttonViewOption);
             popup.inflate(R.menu.popup_menu);
+            if (playlist.contains("PLAYLIST")) popup.getMenu().getItem(2).setTitle("Remove from playlist");
+            if (player.main.getFavorites().contains(myList.getHead())) popup.getMenu().getItem(0).setTitle("Remove from favorites");
             popup.setOnMenuItemClickListener(item -> {
                 int itemId = item.getItemId();
                 if (itemId == R.id.addtofavorites) {
@@ -108,20 +114,53 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                         notifyItemRemoved(ind);
                         return false;
                     }
-                    editor.putString("FAVORITES", favorites + "\n" + myList.getHead());
-                    editor.apply();
+                    else if (player.main.getFavorites().contains(myList.getHead())) {
+                        ArrayList<String> li = new ArrayList<>(Arrays.asList(favorites.split("\n")));
+                        li.remove(myList.getHead());
+                        int ind = 0;
+                        editor.putString("FAVORITES", String.join("\n", li));
+                        editor.apply();
+                        for (int i = 0; i < getList().size(); i++) {
+                            MyList listItem = getList().get(i);
+                            if (listItem.getHead().equals(myList.getHead())) {
+                                ind = i;
+                                break;
+                            }
+                        }
+                        removeFromList(ind);
+                        return false;
+                    }
+                    else {
+                        editor.putString("FAVORITES", favorites + "\n" + myList.getHead());
+                        editor.apply();
+                    }
                 } else if (itemId == R.id.addtoqueue) {
                     player.setNext(myList);
                 } else if (itemId == R.id.addtoplaylist) {
-                    SharedPreferences settings;
+                    SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
+                    if (playlist.contains("PLAYLIST")) {
+                        String playlistItems = settings.getString(playlist,"");
+                        ArrayList<String> li = new ArrayList<>();
+                        for (String item2: playlistItems.split("\n")) {
+                            if (!item2.equals(myList.getHead())) {
+                                li.add(item2);
+                            }
+                        }
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString(playlist, String.join("\n",li));
+                        editor.apply();
+                        list.remove(position);
+                        notifyDataSetChanged();
+                        return true;
+                    }
                     PopupMenu menu = new PopupMenu(c, view);
-                    settings = c.getSharedPreferences("SAVEDATA", 0);
                     for (String menuItem : settings.getString("PLAYLISTS", "").split("\n")) {
                         menu.getMenu().add(menuItem);
                     }
                     menu.setOnMenuItemClickListener(item1 -> {
                         SharedPreferences.Editor editor2 = settings.edit();
                         String currentPlaylist = settings.getString("PLAYLIST_" + item1.getTitle(), "");
+                        if (Arrays.asList(currentPlaylist.split("\n")).contains(myList.getHead())) return true;
                         if (currentPlaylist.isEmpty())
                             editor2.putString("PLAYLIST_" + item1.getTitle(), myList.getHead());
                         else {
@@ -133,13 +172,15 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                     menu.show();
                 } else if (itemId == R.id.song_delete) {
                     try {
-                        Files.delete(Paths.get(myList.getLocation()));
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            Files.delete(Paths.get(myList.getLocation()));
+                        }
                         list.remove(position);
                         notifyItemRemoved(position);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                } else if (itemId == R.id.song_properties) {//handle menu4 click
+                } else if (itemId == R.id.song_properties) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(c);
                     builder.setTitle("Song properties")
                             .setMessage( "\n" +
@@ -151,11 +192,8 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                                     "File type: "+ myList.getType() + "\n" + "\n" +
                                     "Modified date: " + myList.getDateModified()
                             )
-                            .setNegativeButton("Back", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    //close dialog
-                                }
+                            .setNegativeButton("Back", (dialogInterface, i) -> {
+                                //close dialog
                             });
                     builder.create().show();
                 }

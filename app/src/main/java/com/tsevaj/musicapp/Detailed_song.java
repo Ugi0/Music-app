@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Detailed_song extends Fragment {
     View ll;
@@ -96,7 +98,7 @@ public class Detailed_song extends Fragment {
 
         songNameView.setText(player.currentPlayingSong.getHead());
         songDescView.setText(player.currentPlayingSong.getDesc());
-        songLocView.setText(player.currentPlayingSong.getLocation().split("/")[player.currentPlayingSong.getLocation().split("/").length-2]);
+        songLocView.setText(player.currentPlayingSong.getLocationFolder());
         if (!MusicPlayer.playing) {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
         }
@@ -161,6 +163,7 @@ public class Detailed_song extends Fragment {
                         menu.setOnMenuItemClickListener(item1 -> {
                             SharedPreferences.Editor editor2 = requireContext().getSharedPreferences("SAVEDATA", 0).edit();
                             String currentPlaylist = requireContext().getSharedPreferences("SAVEDATA", 0).getString("PLAYLIST_" + item1.getTitle(), "");
+                            if (Arrays.asList(currentPlaylist.split("\n")).contains(player.currentPlayingSong.getHead())) return true;
                             if (currentPlaylist.isEmpty())
                                 editor2.putString("PLAYLIST_" + item1.getTitle(), player.currentPlayingSong.getHead());
                             else {

@@ -36,8 +36,6 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import org.w3c.dom.Text;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

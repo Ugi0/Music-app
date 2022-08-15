@@ -40,8 +40,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/app_name"
-                android:paddingLeft="25dp"
-                android:textSize="20dp"
+                android:paddingStart="25dp"
+                android:textSize="20sp"
                 android:textColor="@color/white"/>
         </androidx.appcompat.widget.Toolbar>
     </LinearLayout>
@@ -73,7 +73,7 @@
             android:layout_height="wrap_content" />
         <ImageButton
             android:id="@+id/detailed_menu_button"
-            android:src="@drawable/ic_baseline_menu_24"
+            android:src="@drawable/menu_icon"
             android:background="@android:color/transparent"
             android:layout_marginStart="5dp"
             android:layout_width="wrap_content"

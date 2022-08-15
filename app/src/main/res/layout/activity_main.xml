@@ -20,7 +20,6 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             android:minHeight="?attr/actionBarSize"
-            android:theme="@style/Theme.MusicApp.ActionBar"
             android:elevation="4dp"
             app:itemIconTint="@color/white">
             <TextView

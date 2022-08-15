@@ -17,6 +17,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class FavoritesFragment extends Fragment {
     private final MusicPlayer player;
@@ -39,6 +40,13 @@ public class FavoritesFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         MainActivity.setBackground(ll, getResources());
         recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
+
+        SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            MainActivity.savedList = null;
+            FunctionClass.getMusic(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
+            swipeRefreshLayout.setRefreshing(false);
+        });
 
         FunctionClass.getMusic(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
         MainActivity.currentFragment = this;

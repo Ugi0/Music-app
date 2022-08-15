@@ -11,6 +11,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.os.Binder;
 import android.os.IBinder;
@@ -63,14 +64,14 @@ public class NotificationService extends Service {
 
     @Override
     public void onCreate() {
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         intent.setAction(OPEN_NOTIFICATION);
-        PendingIntent contentIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, 0);
-        Intent prevIntent = new Intent(getApplicationContext(), NotificationReceiver.class)
+        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent contentIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, 0);
+        Intent prevIntent = new Intent(this, NotificationReceiver.class)
                 .setAction("PREVIOUS");
-        Intent pauseIntent = new Intent(getApplicationContext(), NotificationReceiver.class)
+        Intent pauseIntent = new Intent(this, NotificationReceiver.class)
                 .setAction("PAUSE");
-        Intent nextIntent = new Intent(getApplicationContext(), NotificationReceiver.class)
+        Intent nextIntent = new Intent(this, NotificationReceiver.class)
                 .setAction("NEXT");
         int playPauseButton;
         if (MusicPlayer.playing) {
@@ -79,21 +80,22 @@ public class NotificationService extends Service {
         else {
             playPauseButton = R.drawable.ic_baseline_play_arrow_24;
         }
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(getApplicationContext(), NotificationClass.Channel)
+        @SuppressLint("UnspecifiedImmutableFlag") NotificationCompat.Builder notification = new NotificationCompat.Builder(this, NotificationClass.Channel)
                 .setSmallIcon(R.mipmap.app_icon)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.background))
                 .setColor(0xae27ff)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0, 1, 2))
-                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_previous_24, ACTION_PREV, PendingIntent.getBroadcast(getApplicationContext(), 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
-                .addAction(new NotificationCompat.Action(playPauseButton, ACTION_PAUSE, PendingIntent.getBroadcast(getApplicationContext(), 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
-                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_next_24, ACTION_NEXT, PendingIntent.getBroadcast(getApplicationContext(), 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
+                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_previous_24, ACTION_PREV, PendingIntent.getBroadcast(this, 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
+                .addAction(new NotificationCompat.Action(playPauseButton, ACTION_PAUSE, PendingIntent.getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
+                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_next_24, ACTION_NEXT, PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setProgress(100, 50, false)
                 .setChannelId("Control Notification")
                 .setContentIntent(contentIntent)
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(false);
         notification.setContentTitle(songName);
+        notification.setContentText(MusicPlayer.songArtist);
         startForeground(1, notification.build());
         super.onCreate();
     }

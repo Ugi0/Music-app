@@ -7,12 +7,16 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:layout_above="@id/music_bar"
-        android:scrollbars="vertical" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <RelativeLayout
         android:id="@+id/music_bar"
@@ -41,7 +45,8 @@
                     android:maxLines="1"
                     android:text="@string/song_name"
                     android:textAppearance="?android:textAppearanceLarge"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    tools:ignore="RtlSymmetry" />
 
                 <TextView
                     android:id="@+id/Song_desc"
@@ -51,7 +56,8 @@
                     android:paddingTop="5dp"
                     android:paddingStart="20dp"
                     android:text="@string/song_information"
-                    android:textAppearance="?android:textAppearanceSmall" />
+                    android:textAppearance="?android:textAppearanceSmall"
+                    tools:ignore="RtlSymmetry" />
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
