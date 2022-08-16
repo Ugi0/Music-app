@@ -8,6 +8,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        card_view:cardElevation="0dp"
         card_view:cardBackgroundColor="@android:color/transparent">
         <RelativeLayout
             android:layout_width="match_parent"
@@ -20,7 +21,7 @@
                 android:layout_centerInParent="true"
                 android:gravity="center"
                 android:minHeight="70dp"
-                android:text="Song name"
+                android:text="@string/name_of_the_song"
                 android:textAppearance="?android:textAppearanceLarge" />
 
             <TextView
@@ -32,7 +33,6 @@
                 android:paddingStart="40dp"
                 android:paddingTop="10dp"
                 android:paddingEnd="20dp"
-                android:paddingRight="15dp"
                 android:paddingBottom="10dp"
                 android:text="&#8942;"
                 android:textAppearance="?android:textAppearanceLarge" />

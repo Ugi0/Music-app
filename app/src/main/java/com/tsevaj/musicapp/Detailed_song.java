@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -74,7 +73,7 @@ public class Detailed_song extends Fragment {
         currentView = parentView;
         SharedPreferences settings = main.getBaseContext().getSharedPreferences("SAVEDATA", 0);
 
-        ArrayList<String> favo = main.getFavorites();
+        ArrayList<String> favorite = main.getFavorites();
 
         TextView songNameView = parentView.findViewById(R.id.song_information_name);
         TextView songDescView = parentView.findViewById(R.id.song_information_author);
@@ -94,7 +93,7 @@ public class Detailed_song extends Fragment {
         songDescView.setCompoundDrawableTintList(ColorStateList.valueOf(textColor));
         songLocView.setCompoundDrawableTintList(ColorStateList.valueOf(textColor));
 
-        favoriteButton.setActivated(favo.contains(player.currentPlayingSong.getHead()));
+        favoriteButton.setActivated(favorite.contains(player.currentPlayingSong.getHead()));
 
         songNameView.setText(player.currentPlayingSong.getHead());
         songDescView.setText(player.currentPlayingSong.getDesc());

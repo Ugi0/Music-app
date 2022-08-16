@@ -3,13 +3,10 @@ package com.tsevaj.musicapp;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
@@ -36,8 +33,6 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
     private CustomAdapter.ViewHolder lastClicked = null;
     private final int defaultColor;
     private final String playlist;
-    //Color.parseColor("#FFFFFF");
-    //Color.BLACK;
 
     @SuppressLint("ResourceType")
     public CustomAdapter(ArrayList<MyList> list, Context mCtx, FragmentActivity c, MusicPlayer player, String playlist) {
@@ -82,6 +77,9 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
             holder.textViewHead.setTextColor(Color.parseColor("#DC143C"));
             holder.textViewDesc.setTextColor(Color.parseColor("#DC143C"));
             player.visibleSongs = list;
+            if (!(MainActivity.currentFragment.equals(player.main.PrevAndNextSongs.createdFragment) && player.currentPlayingSong.getHead().equals(myList.getHead()))) {
+                player.recreateList(myList);
+            }
             player.play(myList);
             player.showBar();
             lastClicked = holder;

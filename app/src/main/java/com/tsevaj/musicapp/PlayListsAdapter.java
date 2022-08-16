@@ -4,16 +4,14 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
-import androidx.fragment.app.Fragment;
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.TextInputLayout;
@@ -36,6 +34,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
         this.parent = playlistsFragment;
     }
 
+    @NonNull
     @Override
     public PlayListsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
@@ -58,7 +57,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                     SharedPreferences.Editor editor = settings.edit();
                     String playlists = settings.getString("PLAYLISTS", "");
                     editor.remove("PLAYLIST_"+list.get(position).getHead());
-                    ArrayList<String> li = new ArrayList<String>(Arrays.asList(playlists.split("\n")));
+                    ArrayList<String> li = new ArrayList<>(Arrays.asList(playlists.split("\n")));
                     li.remove(list.get(position).getHead());
                     editor.putString("PLAYLISTS",String.join("\n",li));
                     editor.apply();

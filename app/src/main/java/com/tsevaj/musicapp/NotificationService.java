@@ -9,19 +9,16 @@ import static com.tsevaj.musicapp.NotificationUtils.OPEN_NOTIFICATION;
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
-import android.media.AudioManager;
 import android.os.Binder;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 public class NotificationService extends Service {
-    private IBinder mBinder = new myBinder();
+    private final IBinder mBinder = new myBinder();
     private NotificationController notificationController;
 
     @Nullable

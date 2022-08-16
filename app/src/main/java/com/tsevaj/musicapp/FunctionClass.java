@@ -4,17 +4,12 @@ import static org.jaudiotagger.audio.AudioFileIO.read;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.media.AudioFormat;
-import android.media.AudioMetadata;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
-import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
@@ -22,18 +17,9 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.jaudiotagger.audio.AudioFile;
-import org.jaudiotagger.audio.AudioFileIO;
-import org.jaudiotagger.audio.exceptions.CannotReadException;
-import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
-import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.tag.FieldKey;
-import org.jaudiotagger.tag.TagException;
-import org.jaudiotagger.tag.wav.WavTag;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,7 +43,7 @@ public class FunctionClass {
                 String wanted = settings.getString(filter, "");
                 if ((!Arrays.asList(wanted.split("\n")).contains(item.getHead()))) continue;
             }
-            if (!item.getHead().toLowerCase().contains(nameFilter.toLowerCase())) {
+            if (!(item.getHead().toLowerCase().contains(nameFilter.toLowerCase()) || item.getArtist().toLowerCase().contains(nameFilter.toLowerCase()))) {
                 continue;
             }
             int FILTER_LENGTH = FILTER_SECONDS * 1000;
@@ -122,10 +108,6 @@ public class FunctionClass {
         ArrayList<MyList> list = new ArrayList<>();
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor songCursor = main.getContentResolver().query(songUri, null, null, null, null);
-        int count = 0;
-        File cFile;
-        long GetTime = 0;
-        long startTime;
         if (songCursor != null && songCursor.moveToFirst()) {
             int songTitle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songLength = songCursor.getColumnIndex(MediaStore.Audio.Media.DURATION);

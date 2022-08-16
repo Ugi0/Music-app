@@ -1,6 +1,5 @@
 package com.tsevaj.musicapp;
 
-import android.util.Log;
 import android.widget.SeekBar;
 
 import java.math.BigDecimal;

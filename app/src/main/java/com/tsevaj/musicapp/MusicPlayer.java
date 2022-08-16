@@ -11,7 +11,6 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
@@ -99,12 +98,14 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
 
         player.setOnPreparedListener(mediaPlayer -> {
             player.setOnCompletionListener(mp -> donePlayNext());
-            if (!MainActivity.currentFragment.equals(main.PrevAndNextSongs.createdFragment)) {
-                main.PrevAndNextSongs = new PrevNextList(new ArrayList<>(visibleSongs), mylist, MainActivity.currentFragment, c);
-            }
             player.start();
             prepareButtons();
         });
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void recreateList(MyList mylist) {
+        main.PrevAndNextSongs = new PrevNextList(new ArrayList<>(visibleSongs), mylist, MainActivity.currentFragment, c);
     }
 
     @SuppressLint("NewApi")
@@ -180,8 +181,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
             } catch (Exception ignored) {
             }
-            if (MainActivity.currentFragment.getClass().equals(Detailed_song.class))
-                newFragment.initWindowElements();
         } else {
             main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
             resume();
@@ -189,9 +188,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
             } catch (Exception ignored) {
             }
-            if (MainActivity.currentFragment.getClass().equals(Detailed_song.class))
-                newFragment.initWindowElements();
         }
+        if (MainActivity.currentFragment.getClass().equals(Detailed_song.class))
+            newFragment.initWindowElements();
     }
 
     public void pause() {
@@ -214,7 +213,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     @SuppressLint("NewApi")
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void showBar() {
         try {
             this.relativeLayout.setVisibility(View.VISIBLE);

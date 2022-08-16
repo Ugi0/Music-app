@@ -5,10 +5,8 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.session.MediaSession;
 import android.os.Build;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.util.Log;
 import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
@@ -32,7 +30,7 @@ public class MyController extends BroadcastReceiver {
         this.player.sessionToken = ms.getSessionToken();
         Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         mediaButtonIntent.setClass(c, MediaButtonReceiver.class);
-        PendingIntent mbrIntent = PendingIntent.getBroadcast(c, 0, mediaButtonIntent, 0);
+        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent mbrIntent = PendingIntent.getBroadcast(c, 0, mediaButtonIntent, 0);
         ms.setMediaButtonReceiver(mbrIntent);
         ms.setCallback(new MediaSessionCompat.Callback() {
             @SuppressLint("NewApi")

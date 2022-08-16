@@ -4,17 +4,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class PrevNextList {
     private ArrayList<MyList> songList;
@@ -97,6 +92,7 @@ public class PrevNextList {
         current = next;
         return next;
     }
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public MyList Next(Boolean force) {
         settings = c.getSharedPreferences("SAVEDATA", 0);
         editor = settings.edit();
@@ -107,10 +103,6 @@ public class PrevNextList {
             int curInd = songList.indexOf(current);
             return Next(songList.get((curInd+1)%songList.size()));
         }
-
-     /*   Log.d("Next", "");
-        for (int i = 0; i < Next.size(); i ++) {
-            Log.d("", String.valueOf(Next.get(i).getHead())); } */
         if (Next.size() == 0) return current;
         MyList next = this.Next.get(0);
         Prev.add(0,current);
@@ -136,6 +128,7 @@ public class PrevNextList {
         return prev;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public MyList Prev(Boolean force) {
         settings = c.getSharedPreferences("SAVEDATA", 0);
         editor = settings.edit();
@@ -147,9 +140,6 @@ public class PrevNextList {
             return Prev(songList.get((curInd-1+songList.size())%songList.size()));
         }
 
-      /*  Log.d("Prev", "");
-        for (int i = 0; i < Prev.size(); i ++) {
-            Log.d("", String.valueOf(Prev.get(i).getHead()));} */
         if (Prev.size() == 0) return current;
         MyList prev = this.Prev.get(0);
         Next.add(0,current);

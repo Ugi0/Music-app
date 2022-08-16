@@ -4,12 +4,10 @@ import static com.tsevaj.musicapp.FunctionClass.milliSecondsToTime;
 
 import android.annotation.SuppressLint;
 import android.text.format.DateFormat;
-import android.util.Log;
 
 import java.sql.Date;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-import java.util.Arrays;
 
 public class MyList {
     private final String head;
