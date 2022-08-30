@@ -79,7 +79,7 @@ public class NotificationService extends Service {
         }
         @SuppressLint("UnspecifiedImmutableFlag") NotificationCompat.Builder notification = new NotificationCompat.Builder(this, NotificationClass.Channel)
                 .setSmallIcon(R.mipmap.app_icon)
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.background))
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.t_background2))
                 .setColor(0xae27ff)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0, 1, 2))

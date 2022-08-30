@@ -36,7 +36,7 @@ public class NotificationUtils {
 
         NotificationCompat.Builder notification = new NotificationCompat.Builder(main, NotificationClass.Channel)
                 .setSmallIcon(R.mipmap.app_icon)
-                .setLargeIcon(BitmapFactory.decodeResource(main.getResources(), R.drawable.background))
+                .setLargeIcon(BitmapFactory.decodeResource(main.getResources(), R.drawable.t_background2))
                 .setColor(0xae27ff)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0, 1, 2))

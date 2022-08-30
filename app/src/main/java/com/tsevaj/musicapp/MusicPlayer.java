@@ -47,6 +47,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     private static AudioManager audioManager;
     private static int changedFocus;
     private static boolean focusGranted;
+    private boolean pausedByAudioFocus;
 
     TextView songNameView;
     TextView songDescView;
@@ -62,6 +63,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         player = new MediaPlayer();
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         this.currentSong = null;
+        pausedByAudioFocus = false;
     }
 
     @SuppressLint("NewApi")
@@ -336,15 +338,25 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             changedFocus = focusChange;
             switch (focusChange) {
                 case AudioManager.AUDIOFOCUS_GAIN:
-                    player.start();
-                    break;
+                    if (pausedByAudioFocus && !playing) {
+                        player.start();
+                        playing = true;
+                        pausedByAudioFocus = false;
+                        break;
+                    }
 
                 case AudioManager.AUDIOFOCUS_LOSS:
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                    try {player.pause();}
-                    catch (Exception ignored) {}
-                    break;
+                    if (playing) {
+                        try {
+                            playing = false;
+                            main.player.pause();
+                            pausedByAudioFocus = true;
+                        } catch (Exception ignored) {
+                        }
+                        break;
+                    }
             }
         }
     }

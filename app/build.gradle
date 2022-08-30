@@ -16,6 +16,9 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.debug
+        aaptOptions {
+            additionalParameters "--no-version-vectors"
+        }
     }
 
     buildTypes {
@@ -38,7 +41,7 @@ dependencies {
     implementation 'com.github.duanhong169:colorpicker:1.1.6'
     implementation 'commons-io:commons-io:2.4'
     implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.appcompat:appcompat:1.5.0'
     //noinspection GradleCompatible
     implementation 'com.android.support:multidex:2.0.1'
     implementation 'com.github.Triggertrap:SeekArc:v1.1'

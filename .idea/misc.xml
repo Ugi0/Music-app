@@ -3,7 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/MusicApp/app/src/main/res/drawable-v24/ic_baseline_pause_24.xml" value="0.1965" />
+        <entry key="..\:/MusicApp/app/src/main/res/drawable-v24/ic_baseline_play_arrow_24.xml" value="0.1965" />
+        <entry key="..\:/MusicApp/app/src/main/res/drawable-v24/ic_baseline_skip_next_24.xml" value="0.1965" />
         <entry key="..\:/MusicApp/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.2095" />
+        <entry key="..\:/MusicApp/app/src/main/res/drawable-v24/pause_button.xml" value="0.1965" />
         <entry key="..\:/MusicApp/app/src/main/res/drawable/custom_playicon.xml" value="0.271" />
         <entry key="..\:/MusicApp/app/src/main/res/drawable/favorites_border.xml" value="0.1835" />
         <entry key="..\:/MusicApp/app/src/main/res/drawable/favorites_selector.xml" value="0.1835" />
@@ -57,7 +61,7 @@
         <entry key="..\:/MusicApp/app/src/main/res/layout/fragment_settings.xml" value="0.2554347826086957" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/music_playing_bar.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/nav_header.xml" value="0.28306159420289856" />
-        <entry key="..\:/MusicApp/app/src/main/res/layout/playlists_item.xml" value="0.36666666666666664" />
+        <entry key="..\:/MusicApp/app/src/main/res/layout/playlists_item.xml" value="0.1" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/playlists_prompt_new.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/seekcircle.xml" value="0.36666666666666664" />
         <entry key="..\:/MusicApp/app/src/main/res/layout/settings_fragment.xml" value="0.2463768115942029" />
