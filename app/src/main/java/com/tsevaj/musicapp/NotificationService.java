@@ -63,7 +63,7 @@ public class NotificationService extends Service {
     public void onCreate() {
         Intent intent = new Intent(this, MainActivity.class);
         intent.setAction(OPEN_NOTIFICATION);
-        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent contentIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, 0);
+        PendingIntent contentIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, PendingIntent.FLAG_MUTABLE);
         Intent prevIntent = new Intent(this, NotificationReceiver.class)
                 .setAction("PREVIOUS");
         Intent pauseIntent = new Intent(this, NotificationReceiver.class)
@@ -77,15 +77,16 @@ public class NotificationService extends Service {
         else {
             playPauseButton = R.drawable.ic_baseline_play_arrow_24;
         }
-        @SuppressLint("UnspecifiedImmutableFlag") NotificationCompat.Builder notification = new NotificationCompat.Builder(this, NotificationClass.Channel)
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, NotificationClass.Channel)
                 .setSmallIcon(R.mipmap.app_icon)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.t_background2))
                 .setColor(0xae27ff)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0, 1, 2))
-                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_previous_24, ACTION_PREV, PendingIntent.getBroadcast(this, 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
-                .addAction(new NotificationCompat.Action(playPauseButton, ACTION_PAUSE, PendingIntent.getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
-                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_next_24, ACTION_NEXT, PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
+                
+                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_previous_24, ACTION_PREV, PendingIntent.getBroadcast(this, 0, prevIntent, PendingIntent.FLAG_MUTABLE)))
+                .addAction(new NotificationCompat.Action(playPauseButton, ACTION_PAUSE, PendingIntent.getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_MUTABLE)))
+                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_next_24, ACTION_NEXT, PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_MUTABLE)))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setChannelId("Control Notification")
                 .setContentIntent(contentIntent)

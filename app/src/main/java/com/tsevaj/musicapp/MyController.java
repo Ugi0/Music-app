@@ -30,7 +30,7 @@ public class MyController extends BroadcastReceiver {
         this.player.sessionToken = ms.getSessionToken();
         Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         mediaButtonIntent.setClass(c, MediaButtonReceiver.class);
-        @SuppressLint("UnspecifiedImmutableFlag") PendingIntent mbrIntent = PendingIntent.getBroadcast(c, 0, mediaButtonIntent, 0);
+        @SuppressLint("InlinedApi") PendingIntent mbrIntent = PendingIntent.getBroadcast(c, 0, mediaButtonIntent, PendingIntent.FLAG_IMMUTABLE);
         ms.setMediaButtonReceiver(mbrIntent);
         ms.setCallback(new MediaSessionCompat.Callback() {
             @SuppressLint("NewApi")

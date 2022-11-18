@@ -19,13 +19,13 @@ public class NotificationUtils {
     public static final String ACTION_PAUSE  = "PAUSE";
     public final static String OPEN_NOTIFICATION = "notification_open";
 
-    @SuppressLint({"UnspecifiedImmutableFlag", "NewApi"})
+    @SuppressLint({"NewApi"})
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void displayNotification(MainActivity main, String songName, int playPauseButton) {
 
         Intent intent = new Intent(main, MainActivity.class);
         intent.setAction(OPEN_NOTIFICATION);
-        PendingIntent contentIntent = PendingIntent.getActivity(main.getBaseContext(), 0, intent, 0);
+        PendingIntent contentIntent = PendingIntent.getActivity(main.getBaseContext(), 0, intent, PendingIntent.FLAG_MUTABLE);
 
         Intent prevIntent = new Intent(main, NotificationReceiver.class)
                 .setAction("PREVIOUS");
@@ -40,9 +40,9 @@ public class NotificationUtils {
                 .setColor(0xae27ff)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0, 1, 2))
-                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_previous_24, ACTION_PREV, PendingIntent.getBroadcast(main, 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
-                .addAction(new NotificationCompat.Action(playPauseButton, ACTION_PAUSE, PendingIntent.getBroadcast(main, 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
-                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_next_24, ACTION_NEXT, PendingIntent.getBroadcast(main, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT)))
+                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_previous_24, ACTION_PREV, PendingIntent.getBroadcast(main, 0, prevIntent, PendingIntent.FLAG_MUTABLE))) //UPDATE_CURRENT
+                .addAction(new NotificationCompat.Action(playPauseButton, ACTION_PAUSE, PendingIntent.getBroadcast(main, 0, pauseIntent, PendingIntent.FLAG_MUTABLE)))
+                .addAction(new NotificationCompat.Action(R.drawable.ic_baseline_skip_next_24, ACTION_NEXT, PendingIntent.getBroadcast(main, 0, nextIntent, PendingIntent.FLAG_MUTABLE)))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setChannelId("Control Notification")
                 .setContentIntent(contentIntent)
