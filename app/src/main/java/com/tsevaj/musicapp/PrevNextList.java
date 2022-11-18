@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
@@ -23,7 +24,7 @@ public class PrevNextList {
     int LIST_SIZE;
     SharedPreferences settings;
     SharedPreferences.Editor editor;
-
+    private boolean initialized = true;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public PrevNextList(ArrayList<MyList> list, MyList current, Fragment currentFragment, Context c) {
@@ -33,13 +34,41 @@ public class PrevNextList {
         this.Next = new ArrayList<>();
         this.tempList = new ArrayList<>();
         this.createdFragment = currentFragment;
-        LIST_SIZE = ((Activity) c).getSharedPreferences("SAVEDATA", 0).getInt("LOOPING_SIZE",20);
+        LIST_SIZE = c.getSharedPreferences("SAVEDATA", 0).getInt("LOOPING_SIZE",20);
         this.c = c;
+        this.initializePrev();
         this.reRoll();
     }
 
     public PrevNextList(Context c) {
         this.c = c;
+    }
+
+    public void initializePrev() {
+        int chosen;
+        this.tempList = new ArrayList<>(songList);
+        int size = Math.min(LIST_SIZE, songList.size());
+        for (int i = 0; i < size; i++) {
+            chosen = rand.nextInt(this.tempList.size());
+            this.Prev.add(this.tempList.get(chosen));
+            i++;
+            tempList.remove(chosen);
+        }
+    }
+
+    public void removeFromTemp(ArrayList<MyList> li) {
+        for (MyList t: li) {
+            this.tempList.remove(t);
+        }
+    }
+
+    public void addToPrev(MyList item) {
+        this.Prev.remove(Prev.size()-1);
+        this.Prev.add(0,item);
+        for (MyList t: this.Prev) {
+            Log.d("test", t.getHead());
+        }
+        Log.d("test", "-------");
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -48,8 +77,8 @@ public class PrevNextList {
         editor = settings.edit();
 
         Next = new ArrayList<>();
-        Prev = new ArrayList<>();
         this.tempList = new ArrayList<>(songList);
+        removeFromTemp(this.Prev);
         int chosen;
         this.tempList.remove(current);
 
@@ -57,25 +86,15 @@ public class PrevNextList {
             int i = 0;
             while (tempList.size() != 0) {
                 chosen = rand.nextInt(this.tempList.size());
-                if (i % 2 == 0) {
-                    this.Next.add(this.tempList.get(chosen));
-                }
-                else {
-                    this.Prev.add(tempList.get(chosen));
-                }
+                this.Next.add(this.tempList.get(chosen));
                 i++;
                 tempList.remove(chosen);
             }
             return;
         }
-        for (int i = 0; i < 2* LIST_SIZE && !this.tempList.isEmpty() ; i ++) {
+        for (int i = 0; i < LIST_SIZE && !this.tempList.isEmpty() ; i ++) {
             chosen = rand.nextInt(this.tempList.size());
-            if (i % 2 == 0) {
-                this.Next.add(this.tempList.get(chosen));
-            }
-            else {
-                this.Prev.add(tempList.get(chosen));
-            }
+            this.Next.add(this.tempList.get(chosen));
             tempList.remove(chosen);
         }
     }

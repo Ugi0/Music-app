@@ -77,8 +77,9 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
             holder.textViewHead.setTextColor(Color.parseColor("#DC143C"));
             holder.textViewDesc.setTextColor(Color.parseColor("#DC143C"));
             player.visibleSongs = list;
-            if (!(MainActivity.currentFragment.equals(player.main.PrevAndNextSongs.createdFragment) && player.currentPlayingSong.getHead().equals(myList.getHead()))) {
-                player.recreateList(myList);
+            if (!MainActivity.currentFragment.equals(player.main.PrevAndNextSongs.createdFragment)) player.recreateList(myList);
+            if (player.currentPlayingSong != null) {
+                player.main.PrevAndNextSongs.addToPrev(player.currentPlayingSong);
             }
             player.play(myList);
             player.showBar();
