@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.utils;
 
 import static org.jaudiotagger.audio.AudioFileIO.read;
 
@@ -10,12 +10,18 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.tsevaj.musicapp.adapters.CustomAdapter;
+import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.adapters.PlayListsAdapter;
+import com.tsevaj.musicapp.fragments.PlaylistsFragment;
 
 import org.jaudiotagger.tag.FieldKey;
 
@@ -24,20 +30,36 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class FunctionClass {
+    @SuppressLint("NotifyDataSetChanged")
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public static void getMusic(RecyclerView recyclerView, Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
+    public static void getMusicAndSet(RecyclerView recyclerView, Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
+        ArrayList<MyList> li = getMusic(activity, player, c, filter, nameFilter);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
+        CustomAdapter adapter = new CustomAdapter(li, activity, c, player, filter) {};
+        recyclerView.setAdapter(adapter);
+        if (recyclerView.getItemDecorationCount() == 0) recyclerView.addItemDecoration(new DividerItemDecoration(activity, layoutManager.getOrientation()));
+        player.main.changePlayingList(li);
+        player.recyclerview = recyclerView;
+        player.adapter = adapter;
+        adapter.reset();
+        adapter.notifyDataSetChanged();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static ArrayList<MyList> getMusic(Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
         final int FILTER_SECONDS = activity.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",120);
         boolean REVERSE_ORDER = c.getSharedPreferences("SAVEDATA", 0).getBoolean("ASCENDING", true);
         final String musicFolder = activity.getSharedPreferences("SAVEDATA", 0).getString("SONG_FOLDER","");
         ArrayList<MyList> li = new ArrayList<>();
-        LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
 
-        if (MainActivity.savedList == null) loadList(player.main, (Activity) activity);
+        if (MainActivity.wholeSongList == null) loadList(player.main, (Activity) activity);
 
         SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
-        for (MyList item: MainActivity.savedList) {
+        for (MyList item: MainActivity.wholeSongList) {
             // filtering for favorites etc..
             if (!filter.equals("")) {
                 String wanted = settings.getString(filter, "");
@@ -56,28 +78,32 @@ public class FunctionClass {
             }
         }
         String favorites = settings.getString("REPLAY", "");
+        ArrayList<MyList> li2 = new ArrayList<>(MainActivity.wholeSongList);
         if (REVERSE_ORDER) {
             if (favorites.equals("LENGTH")) {
                 Collections.sort(li, Comparator.comparingInt(MyList::getDuration));
+                Collections.sort(li2, Comparator.comparingInt(MyList::getDuration));
             } else if (favorites.equals("TITLE")) {
                 Collections.sort(li, (o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
+                Collections.sort(li2, (o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
             } else {
                 Collections.reverse(li);
+                Collections.reverse(li2);
             }
         } else {
             if (favorites.equals("LENGTH")) {
                 Collections.sort(li, (o1, o2) -> Integer.compare(o2.getDuration(), o1.getDuration()));
+                Collections.sort(li2, (o1, o2) -> Integer.compare(o2.getDuration(), o1.getDuration()));
             } else if (favorites.equals("TITLE")) {
                 Collections.sort(li, (o1, o2) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
+                Collections.sort(li2, (o1, o2) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
             } else {
                 Collections.reverse(li);
+                Collections.reverse(li2);
             }
         }
-        CustomAdapter adapter = new CustomAdapter(li, activity, c, player, filter) {};
-        recyclerView.setAdapter(adapter);
-        if (recyclerView.getItemDecorationCount() == 0) recyclerView.addItemDecoration(new DividerItemDecoration(activity, layoutManager.getOrientation()));
-        player.recyclerview = recyclerView;
-        player.adapter = adapter;
+        MainActivity.changeSongListWholeList(li2);
+        return li;
     }
     @SuppressLint("DefaultLocale")
     public static String milliSecondsToTime(int time) {
@@ -104,7 +130,10 @@ public class FunctionClass {
         recyclerView.setAdapter(adapter);
         recyclerView.addItemDecoration(new DividerItemDecoration(activity, layoutManager.getOrientation()));
     }
+    @SuppressLint("NewApi")
     public static void loadList(MainActivity main, Activity activity) {
+        final int FILTER_SECONDS = activity.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",120);
+        int FILTER_LENGTH = FILTER_SECONDS * 1000;
         ArrayList<MyList> list = new ArrayList<>();
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor songCursor = main.getContentResolver().query(songUri, null, null, null, null);
@@ -136,17 +165,16 @@ public class FunctionClass {
         }
         assert songCursor != null;
         songCursor.close();
-        MainActivity.savedList = list;
-        getRest(main.player, activity);
+        list.removeIf(n -> (n.getDuration() < FILTER_LENGTH));
+        MainActivity.wholeSongList = list;
+        getAuthors(main.player, activity);
     }
-    public static void getRest(MusicPlayer player, Activity activity) {
+    public static void getAuthors(MusicPlayer player, Activity activity) {
         @SuppressLint("NotifyDataSetChanged") Thread t = new Thread(() -> {
-            int count2 = 0;
-            for (MyList item: MainActivity.savedList) {
+            for (MyList item: MainActivity.wholeSongList) {
                 try {
                     String Artist = read(new File(item.getLocation())).getTag().getFirst(FieldKey.ARTIST);
-                    MainActivity.savedList.get(count2).setArtist(Artist);
-                    count2 += 1;
+                    item.setArtist(Artist);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

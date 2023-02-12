@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -16,37 +17,7 @@
         android:textSize="25sp"
         android:textStyle="bold" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:visibility="gone"
-        android:layout_height="match_parent">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/detailed_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:minHeight="?attr/actionBarSize"
-            android:theme="@style/Theme.MusicApp.ActionBar">
-
-            <ImageButton
-                android:minHeight="30dp"
-                android:minWidth="30dp"
-                android:background="@drawable/ic_baseline_arrow_left"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_name"
-                android:paddingStart="25dp"
-                android:textSize="20sp"
-                android:textColor="@color/white"/>
-        </androidx.appcompat.widget.Toolbar>
-    </LinearLayout>
-
-    <com.tsevaj.musicapp.CircularSeekBar
+    <com.tsevaj.musicapp.utils.CircularSeekBar
         android:id="@+id/progress_bar"
         android:layout_width="300dp"
         android:layout_height="300dp"
@@ -60,6 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/progress_bar"
+        android:contentDescription="@string/a_bar_to_show_music_progress"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:background="@drawable/favorites_border"
@@ -70,14 +42,16 @@
             android:background="@android:color/transparent"
             android:layout_marginEnd="5dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/make_the_song_a_favourite" />
         <ImageButton
             android:id="@+id/detailed_menu_button"
             android:src="@drawable/menu_icon"
             android:background="@android:color/transparent"
             android:layout_marginStart="5dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/show_additional_options" />
     </LinearLayout>
 
     <LinearLayout
@@ -122,35 +96,41 @@
             android:layout_height="wrap_content"
             android:paddingTop="5dp"
             android:gravity="center"
-            android:layout_gravity="center">
+            android:layout_gravity="center"
+            tools:ignore="UselessParent">
             <ImageButton
                 android:id="@+id/detailed_shuffle"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_marginEnd="45dp"
-                android:background="@drawable/shuffle_selector" />
+                android:background="@drawable/shuffle_selector"
+                android:contentDescription="@string/play_songs_in_a_random_order" />
             <ImageButton
                 android:id="@+id/BtnPrev"
                 android:background="@drawable/ic_baseline_skip_previous_24"
                 android:layout_width="50dp"
-                android:layout_height="50dp"/>
+                android:layout_height="50dp"
+                android:contentDescription="@string/skip_to_previous_song" />
             <ImageButton
                 android:id="@+id/BtnPause"
                 android:background="@drawable/custom_playicon"
                 android:scaleType="fitCenter"
                 android:layout_width="60dp"
-                android:layout_height="60dp"/>
+                android:layout_height="60dp"
+                android:contentDescription="@string/pause" />
             <ImageButton
                 android:id="@+id/BtnNext"
                 android:background="@drawable/ic_baseline_skip_next_24"
                 android:layout_width="50dp"
-                android:layout_height="50dp"/>
+                android:layout_height="50dp"
+                android:contentDescription="@string/skip_to_next_song" />
             <ImageButton
                 android:id="@+id/detailed_replay"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:layout_marginLeft="45dp"
-                android:background="@drawable/replay_selector"/>
+                android:layout_marginStart="45dp"
+                android:background="@drawable/replay_selector"
+                android:contentDescription="@string/play_same_or_different_songs" />
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -25,6 +26,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -36,6 +38,19 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.navigation.NavigationView;
+import com.tsevaj.musicapp.fragments.DetailedsongFragment;
+import com.tsevaj.musicapp.fragments.FavoritesFragment;
+import com.tsevaj.musicapp.fragments.LibraryFragment;
+import com.tsevaj.musicapp.fragments.PlaylistsFragment;
+import com.tsevaj.musicapp.fragments.SettingsFragment;
+import com.tsevaj.musicapp.services.MyController;
+import com.tsevaj.musicapp.services.NotificationService;
+import com.tsevaj.musicapp.services.NotificationUtils;
+import com.tsevaj.musicapp.utils.FunctionClass;
+import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.utils.MyList;
+import com.tsevaj.musicapp.utils.PrevNextList;
+import com.tsevaj.musicapp.utils.ProgressBarThread;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,10 +65,11 @@ public class MainActivity extends AppCompatActivity
     public ArrayList<MyList> songList = new ArrayList<>();
     public PrevNextList PrevAndNextSongs = new PrevNextList(getBaseContext());
     public NotificationUtils utils;
-    ProgressBarThread t;
+    public ProgressBarThread t;
     ActionBarDrawerToggle toggle;
     BroadcastReceiver receiver;
-    public static ArrayList<MyList> savedList = null;
+    public ArrayList<MyList> songQueue = new ArrayList<>();
+    public static ArrayList<MyList> wholeSongList = null;
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
@@ -69,8 +85,6 @@ public class MainActivity extends AppCompatActivity
 
         setDrawer();
 
-        PrevAndNextSongs.c = getBaseContext();
-
         this.player = new MusicPlayer(getBaseContext());
         this.player.c = this;
         this.player.main = this;
@@ -85,6 +99,13 @@ public class MainActivity extends AppCompatActivity
             navigationView.setCheckedItem(R.id.menu_library);
         }
 
+    }
+    public void changePlayingList(ArrayList<MyList> li) {
+        PrevAndNextSongs.setList(li);
+    }
+
+    public static void changeSongListWholeList(ArrayList<MyList> li) {
+        PrevNextList.allSongs = new ArrayList<>(li);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -145,6 +166,25 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
             case (R.id.action_search): {
+                InputMethodManager imm = (InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                item.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+                    @Override
+                    public boolean onMenuItemActionExpand(MenuItem menuItem) {
+                        SearchView searchView = (SearchView) item.getActionView();
+                        searchView.setIconified(false);
+                        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onMenuItemActionCollapse(MenuItem menuItem) {
+                        SearchView searchView = (SearchView) item.getActionView();
+                        searchView.setQuery("",false);
+                        menuItem.getActionView().clearFocus();
+                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                        return true;
+                    }
+                });
                 break;
             }
             case (R.id.action_sort): {
@@ -157,7 +197,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if (currentFragment.getClass().equals(Detailed_song.class)) {
+        if (currentFragment.getClass().equals(DetailedsongFragment.class)) {
             onBackPressed();
             currentFragment = new LibraryFragment(player, "","");
             setDrawer();
@@ -190,7 +230,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        if (currentFragment.getClass().equals(Detailed_song.class)) {
+        if (currentFragment.getClass().equals(DetailedsongFragment.class)) {
             currentFragment = new LibraryFragment(player, "","");
             setDrawer();
         }
@@ -218,6 +258,7 @@ public class MainActivity extends AppCompatActivity
             unregisterReceiver(receiver);
             receiver = null;
         }
+        //TODO save state here
         super.onDestroy();
     }
 
@@ -277,13 +318,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         getMenuInflater().inflate(R.menu.options_menu, menu);
-        menu.getItem(0).setVisible(!(currentFragment.getClass().equals(Detailed_song.class) ||
+        menu.getItem(0).setVisible(!(currentFragment.getClass().equals(DetailedsongFragment.class) ||
                             currentFragment.getClass().equals(PlaylistsFragment.class) ||
                             currentFragment.getClass().equals(SettingsFragment.class)
                 ));
-        menu.getItem(1).setVisible(!(currentFragment.getClass().equals(Detailed_song.class) ||
+        menu.getItem(1).setVisible(!(currentFragment.getClass().equals(DetailedsongFragment.class) ||
                             currentFragment.getClass().equals(PlaylistsFragment.class) ||
                             currentFragment.getClass().equals(SettingsFragment.class)
                     ));
@@ -298,9 +339,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onQueryTextChange(String s) {
                 if (currentFragment.getClass().equals(LibraryFragment.class)) {
-                    FunctionClass.getMusic(player.recyclerview, player.main, player, player.main, "", s);
+                    FunctionClass.getMusicAndSet(player.recyclerview, player.main, player, player.main, "", s);
                 } else if (currentFragment.getClass().equals(FavoritesFragment.class)) {
-                    FunctionClass.getMusic(player.recyclerview, player.main, player, player.main, "FAVORITES", s);
+                    FunctionClass.getMusicAndSet(player.recyclerview, player.main, player, player.main, "FAVORITES", s);
                 }
                 return false;
             }});

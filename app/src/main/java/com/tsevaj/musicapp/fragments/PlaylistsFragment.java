@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.fragments;
 
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -14,6 +14,11 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.tsevaj.musicapp.utils.FunctionClass;
+import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.R;
 
 public class PlaylistsFragment extends Fragment {
     private final MusicPlayer player;

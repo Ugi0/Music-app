@@ -1,8 +1,9 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.fragments;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -17,6 +18,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.tsevaj.musicapp.utils.FunctionClass;
+import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.R;
 
 public class LibraryFragment extends Fragment {
     private RecyclerView recyclerView;
@@ -44,12 +50,12 @@ public class LibraryFragment extends Fragment {
 
         SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            MainActivity.savedList = null;
-            FunctionClass.getMusic(recyclerView, requireActivity(), player, requireActivity(), filter, nameFilter);
+            MainActivity.wholeSongList = null;
+            FunctionClass.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), filter, nameFilter);
             swipeRefreshLayout.setRefreshing(false);
         });
 
-        FunctionClass.getMusic(recyclerView, requireActivity(), player, requireActivity(), this.filter, nameFilter);
+        FunctionClass.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), this.filter, nameFilter);
         MainActivity.currentFragment = this;
 
         if (!player.songDone) {

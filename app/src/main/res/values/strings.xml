@@ -29,10 +29,18 @@
     <string name="looping_size">Looping size</string>
     <string name="dark_theme">Dark theme</string>
     <string name="set_background">Set background</string>
-    <string name="songs_folder">Songs folder</string>
+    <string name="songs_folder">Song folder</string>
     <string name="name_of_the_folder">Name of the folder</string>
     <string name="song_minimum_length">Song minimum length</string>
     <string name="color_rbg">#FFFFFF</string>
     <string name="text_color">Text color</string>
     <string name="_8942">⋮</string>
+    <string name="a_bar_to_show_music_progress">A bar to show music progress</string>
+    <string name="make_the_song_a_favourite">Make the song a favourite</string>
+    <string name="show_additional_options">Show additional options</string>
+    <string name="pause">Pause</string>
+    <string name="play_songs_in_a_random_order">Play songs in a random order</string>
+    <string name="skip_to_previous_song">Skip to previous song</string>
+    <string name="skip_to_next_song">Skip to next song</string>
+    <string name="play_same_or_different_songs">Play same or different songs</string>
 </resources>

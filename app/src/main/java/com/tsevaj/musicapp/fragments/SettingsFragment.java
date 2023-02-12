@@ -1,5 +1,6 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,12 +19,19 @@ import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.R;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -37,13 +46,11 @@ public class SettingsFragment extends Fragment {
 
     ColorWheelView colorWheel;
     EditText colorWheelText;
-    NumberPicker numberPicker;
     CardView backgroundSetter;
     EditText songsFolder;
     NumberPicker songLengthMin;
     NumberPicker songLengthSec;
     TextView themeText;
-    TextView loopingText;
     TextView lengthText;
     TextView folderText;
     TextView backgroundText;
@@ -66,14 +73,12 @@ public class SettingsFragment extends Fragment {
 
         colorWheel = ll.findViewById(R.id.color_wheel);
         colorWheelText = ll.findViewById(R.id.settings_color_text);
-        numberPicker = ll.findViewById(R.id.settings_looping_size_number);
         backgroundSetter = ll.findViewById(R.id.settings_background);
         songsFolder = ll.findViewById(R.id.settings_songs_folder_text);
         songLengthMin = ll.findViewById(R.id.numpicker_minutes);
         songLengthSec = ll.findViewById(R.id.numpicker_seconds);
 
         themeText = ll.findViewById(R.id.Theme_text);
-        loopingText = ll.findViewById(R.id.looping_text);
         lengthText = ll.findViewById(R.id.min_length_text);
         folderText = ll.findViewById(R.id.folder_text);
         backgroundText = ll.findViewById(R.id.background_text);
@@ -81,16 +86,12 @@ public class SettingsFragment extends Fragment {
         setTextColors(requireContext().getSharedPreferences("SAVEDATA", 0).getString("THEME_COLOR", "#FFFFFF"));
         main.setClickable();
 
-        numberPicker.setMaxValue(100);
-        numberPicker.setMinValue(1);
-        numberPicker.setValue(settings.getInt("LOOPING_SIZE", 20));
-
         songLengthMin.setMinValue(0);
         songLengthMin.setMaxValue(60);
         songLengthSec.setMinValue(0);
         songLengthSec.setMaxValue(60);
         songLengthSec.setValue(settings.getInt("MIN_SIZE",0) % 60);
-        songLengthMin.setValue(settings.getInt("MIN_SIZE",120) / 60);
+        songLengthMin.setValue(settings.getInt("MIN_SIZE",60) / 60);
 
         colorWheel.setColor(Color.parseColor(settings.getString("THEME_COLOR","#FFFFFF")), false);
         colorWheelText.setText(settings.getString("THEME_COLOR","#FFFFFF"));
@@ -141,12 +142,6 @@ public class SettingsFragment extends Fragment {
             editor.apply();
         });
 
-        numberPicker.setOnValueChangedListener((numberPicker13, i, i1) -> {
-            SharedPreferences.Editor editor = settings.edit();
-            editor.putInt("LOOPING_SIZE", i1);
-            editor.apply();
-        });
-
         backgroundSetter.setOnClickListener(view -> showFileChooser());
 
         songsFolder.setText(settings.getString("SONG_FOLDER",""));
@@ -177,7 +172,6 @@ public class SettingsFragment extends Fragment {
     public void setTextColors(String color) {
         int textColor = Color.parseColor(color);
         themeText.setTextColor(textColor);
-        loopingText.setTextColor(textColor);
         lengthText.setTextColor(textColor);
         folderText.setTextColor(textColor);
         backgroundText.setTextColor(textColor);
@@ -187,7 +181,6 @@ public class SettingsFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             songLengthSec.setTextColor(textColor);
             songLengthMin.setTextColor(textColor);
-            numberPicker.setTextColor(textColor);
         }
     }
 
@@ -196,45 +189,35 @@ public class SettingsFragment extends Fragment {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-
+        Log.d("test","Show file chooser");
         try {
-            startActivityForResult(
-                    Intent.createChooser(intent, "Select a File to Upload"),
-                    FILE_SELECT_CODE);
+            fileUploadResultLauncher.launch(Intent.createChooser(intent, "Select a File to Upload"));
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(getContext(), "Please install a File Manager.",
                     Toast.LENGTH_SHORT).show();
         }
     }
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == FILE_SELECT_CODE) {
-            if (resultCode == -1) {
-                Uri uri = data.getData();
-                try {
-                    copy(Environment.getExternalStorageDirectory() + "/" + uri.getPath().split(":")[1]);
-                } catch (IOException e) {
-                    e.printStackTrace();
+    ActivityResultLauncher<Intent> fileUploadResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    // There are no request codes
+                    Intent data = result.getData();
+                    assert data != null;
+                    Uri uri = data.getData();
+                    try {
+                        copy(Environment.getExternalStorageDirectory() + "/" + uri.getPath().split(":")[1]);
+                    } catch (IOException e) {
+                        Log.d("test",e.getLocalizedMessage());
+                        e.printStackTrace();
+                    }
                 }
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data);
-    }
+            });
 
     public void copy(String source) throws IOException {
-        FileChannel src = null;
-        FileChannel dst = null;
-        try {
-            src = new FileInputStream(source).getChannel();
-            dst = new FileOutputStream(destination).getChannel();
+        Log.d("test","Copying");
+        try (FileChannel src = new FileInputStream(source).getChannel(); FileChannel dst = new FileOutputStream(destination).getChannel()) {
             dst.transferFrom(src, 0, src.size());
-        } finally {
-            if (src != null) {
-                src.close();
-            }
-            if (dst != null) {
-                dst.close();
-            }
         }
         SettingsFragment newFragment = new SettingsFragment(main);
         FragmentTransaction transaction =  getParentFragmentManager().beginTransaction();

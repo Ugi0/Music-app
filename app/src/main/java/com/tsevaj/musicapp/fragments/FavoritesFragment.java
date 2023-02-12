@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.fragments;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +15,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.tsevaj.musicapp.utils.FunctionClass;
+import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.R;
 
 public class FavoritesFragment extends Fragment {
     private final MusicPlayer player;
@@ -40,12 +45,12 @@ public class FavoritesFragment extends Fragment {
 
         SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            MainActivity.savedList = null;
-            FunctionClass.getMusic(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
+            MainActivity.wholeSongList = null;
+            FunctionClass.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
             swipeRefreshLayout.setRefreshing(false);
         });
 
-        FunctionClass.getMusic(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
+        FunctionClass.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
         MainActivity.currentFragment = this;
         main.setDrawer();
 

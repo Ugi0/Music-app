@@ -25,8 +25,9 @@
  * reference material, and as a result, were extremely helpful.
  */
 
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.BlurMaskFilter;
@@ -41,6 +42,8 @@ import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.tsevaj.musicapp.R;
 
 public class CircularSeekBar extends View {
 
@@ -533,20 +536,6 @@ public class CircularSeekBar extends View {
 		}
 	}
 
-	/**
-	 * Get the progress of the CircularSeekBar.
-	 * @return The progress of the CircularSeekBar.
-	 */
-	public int getProgress() {
-		int progress = Math.round((float)mMax * mProgressDegrees / mTotalCircleDegrees);
-		return progress;
-	}
-
-	/**
-	 * Set the progress of the CircularSeekBar.
-	 * If the progress is the same, then any listener will not receive a onProgressChanged event.
-	 * @param progress The progress to set the CircularSeekBar to.
-	 */
 	public void setProgress(int progress) {
 		if (mProgress != progress) {
 			mProgress = progress;
@@ -613,18 +602,7 @@ public class CircularSeekBar extends View {
 		recalculateAll();
 	}
 
-	/**
-	 * Get whether the pointer locks at zero and max.
-	 * @return Boolean value of true if the pointer locks at zero and max, false if it does not.
-	 */
-	public boolean isLockEnabled() {
-		return lockEnabled;
-	}
-
-	public void setLockEnabled(boolean lockEnabled) {
-		this.lockEnabled = lockEnabled;
-	}
-
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		if(!isTouchEnabled){
@@ -654,12 +632,6 @@ public class CircularSeekBar extends View {
 		float outerRadius = Math.max(mCircleHeight, mCircleWidth) + additionalRadius; // Max outer radius of the circle, including the minimumTouchTarget or wheel width
 		float innerRadius = Math.min(mCircleHeight, mCircleWidth) - additionalRadius; // Min inner radius of the circle, including the minimumTouchTarget or wheel width
 
-		if (mPointerRadius < (minimumTouchTarget / 2)) { // If the pointer radius is less than the minimumTouchTarget, use the minimumTouchTarget
-			additionalRadius = minimumTouchTarget / 2;
-		}
-		else {
-			additionalRadius = mPointerRadius; // Otherwise use the radius
-		}
 
 		float touchAngle;
 		touchAngle = (float) ((java.lang.Math.atan2(y, x) / Math.PI * 180) % 360); // Verified
@@ -742,10 +714,10 @@ public class CircularSeekBar extends View {
 				if (lockAtEnd && !mIsMovingCW) {
 					lockAtEnd = false;
 				}
-				if (lockAtStart && !mIsMovingCW && (ccwDistanceFromStart > 90)) {
+				if (lockAtStart && ccwDistanceFromStart > 90) {
 					lockAtStart = false;
 				}
-				if (lockAtEnd && mIsMovingCW && (cwDistanceFromEnd > 90)) {
+				if (lockAtEnd && cwDistanceFromEnd > 90) {
 					lockAtEnd = false;
 				}
 				// Fix for passing the end of a semi-circle quickly
@@ -893,11 +865,11 @@ public class CircularSeekBar extends View {
 	*/
 	public interface OnCircularSeekBarChangeListener {
 
-		public abstract void onProgressChanged(CircularSeekBar circularSeekBar, int progress, boolean fromUser);
+		void onProgressChanged(CircularSeekBar circularSeekBar, int progress, boolean fromUser);
 
-		public abstract void onStopTrackingTouch(CircularSeekBar seekBar);
+		void onStopTrackingTouch(CircularSeekBar seekBar);
 
-		public abstract void onStartTrackingTouch(CircularSeekBar seekBar);
+		void onStartTrackingTouch(CircularSeekBar seekBar);
 	}
 
 	/**

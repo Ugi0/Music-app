@@ -47,45 +47,15 @@
                 android:paddingEnd="20dp"
                 android:text="@string/color_rbg"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textStyle="bold" />
-
-        </RelativeLayout>
-    </androidx.cardview.widget.CardView>
-    <androidx.cardview.widget.CardView
-        android:id="@+id/settings_looping_size"
-        android:layout_below="@id/settings_dark_theme"
-        android:layout_width="match_parent"
-        android:backgroundTint="@android:color/transparent"
-        android:layout_height="wrap_content"
-        app:cardElevation="0dp"
-        tools:ignore="MissingConstraints">
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="50dp">
-
-            <TextView
-                android:id="@+id/looping_text"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:paddingStart="20dp"
-                android:paddingTop="10dp"
-                android:text="@string/looping_size"
-                android:textAppearance="?android:textAppearanceLarge"
-                android:textStyle="bold" />
-
-            <NumberPicker
-                android:id="@+id/settings_looping_size_number"
-                android:layout_width="85dp"
-                android:layout_height="match_parent"
-                android:layout_alignParentEnd="true" />
+                android:textStyle="bold"
+                android:autofillHints="Color of the text"
+                tools:ignore="LabelFor,RtlSymmetry" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
     <androidx.cardview.widget.CardView
         android:id="@+id/settings_min_length"
-        android:layout_below="@id/settings_looping_size"
+        android:layout_below="@id/settings_dark_theme"
         android:layout_width="match_parent"
         android:backgroundTint="@android:color/transparent"
         android:layout_height="wrap_content"
@@ -104,7 +74,8 @@
                 android:paddingStart="20dp"
                 android:text="@string/song_minimum_length"
                 android:textAppearance="?android:textAppearanceLarge"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:ignore="RtlSymmetry" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -114,12 +85,12 @@
                 <NumberPicker
                     android:id="@+id/numpicker_minutes"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"></NumberPicker>
+                    android:layout_height="wrap_content" />
 
                 <NumberPicker
                     android:id="@+id/numpicker_seconds"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"></NumberPicker>
+                    android:layout_height="wrap_content" />
 
             </LinearLayout>
 
@@ -148,7 +119,8 @@
                 android:paddingTop="10dp"
                 android:text="@string/songs_folder"
                 android:textAppearance="?android:textAppearanceLarge"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:ignore="RtlSymmetry" />
             <EditText
                 android:id="@+id/settings_songs_folder_text"
                 android:layout_width="wrap_content"
@@ -156,7 +128,10 @@
                 android:layout_alignParentEnd="true"
                 android:text="@string/name_of_the_folder"
                 android:layout_marginEnd="20dp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:autofillHints="Look for songs only in this folder"
+                android:inputType="text"
+                tools:ignore="LabelFor,RelativeOverlap" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
@@ -182,7 +157,8 @@
                 android:paddingTop="10dp"
                 android:text="@string/set_background"
                 android:textAppearance="?android:textAppearanceLarge"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:ignore="RtlSymmetry" />
 
         </RelativeLayout>
     </androidx.cardview.widget.CardView>

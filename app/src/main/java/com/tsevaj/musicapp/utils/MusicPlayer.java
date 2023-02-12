@@ -1,4 +1,9 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.utils;
+
+import static android.media.AudioManager.AUDIOFOCUS_GAIN;
+import static android.media.AudioManager.AUDIOFOCUS_LOSS;
+import static android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT;
+import static android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -6,6 +11,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -21,6 +28,13 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.tsevaj.musicapp.adapters.CustomAdapter;
+import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.fragments.DetailedsongFragment;
+import com.tsevaj.musicapp.services.NotificationController;
+import com.tsevaj.musicapp.services.NotificationService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -46,7 +60,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     public Context c;
     private boolean serviceStarted = false;
     private static AudioManager audioManager;
-    private static int changedFocus;
     private static boolean focusGranted;
     private boolean pausedByAudioFocus;
 
@@ -56,13 +69,12 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     ImageButton BtnNext;
     ImageButton BtnPause;
 
-    Detailed_song newFragment;
+    DetailedsongFragment newFragment;
 
     @SuppressLint("NewApi")
     public MusicPlayer(Context c) {
         this.c = c;
         player = new MediaPlayer();
-        player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         this.currentSong = null;
         pausedByAudioFocus = false;
     }
@@ -72,8 +84,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         String song = mylist.getLocation();
         if (currentSong != null) if (currentSong.equals(song) && this.player.isPlaying()) return;
         relativeLayout = ((Activity) c).findViewById(R.id.music_bar);
-        player.stop();
-        player.reset();
         player.setOnErrorListener((mediaPlayer, i, i1) -> true);
         if (songDone) main.showNotification(R.drawable.ic_baseline_pause_24, mylist.getHead());
         this.songDone = false;
@@ -93,28 +103,40 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         currentPlayingSong = mylist;
         main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
         try {
+            player.reset();
             player.setDataSource(song);
-            player.prepare();
+            player.setAudioAttributes(
+                    new AudioAttributes
+                            .Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build());
+            player.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        player.setOnPreparedListener(mediaPlayer -> {
-            player.setOnCompletionListener(mp -> donePlayNext());
+        player.setOnPreparedListener(mp -> {
             player.start();
             prepareButtons();
         });
+        player.setOnCompletionListener(mediaPlayer -> donePlayNext());
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void recreateList(MyList mylist) {
-        main.PrevAndNextSongs = new PrevNextList(new ArrayList<>(visibleSongs), mylist, MainActivity.currentFragment, c);
+        if (main.PrevAndNextSongs.createdFragment == null) {
+            main.PrevAndNextSongs = new PrevNextList(new ArrayList<>(visibleSongs), mylist, MainActivity.currentFragment, c);
+        }
+        if (main.PrevAndNextSongs.wholeList) {
+            main.PrevAndNextSongs.setList(MainActivity.wholeSongList);
+        } else {
+            main.PrevAndNextSongs.setList(visibleSongs);
+        }
     }
 
     @SuppressLint("NewApi")
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void prepareButtons() {
-        if (!MainActivity.currentFragment.getClass().equals(Detailed_song.class)) {
+        if (!MainActivity.currentFragment.getClass().equals(DetailedsongFragment.class)) {
             BtnNext.setOnClickListener(view -> {
                 playNext(true);
                 showBar();
@@ -128,7 +150,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     public void setNext(MyList mylist) {
-        main.songList.add(mylist);
+        main.songQueue.add(mylist);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -143,15 +165,11 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         } catch (Exception ignored) {
         }
-        if (main.songList.isEmpty()) {
-            play(main.PrevAndNextSongs.Next(force));
-        } else {
-            play(main.songList.get(0));
-            main.songList.remove(0);
-        }
+        play(main.PrevAndNextSongs.Next(force));
+
         adapter.reset();
         adapter.notifyDataSetChanged();
-        if (MainActivity.currentFragment.getClass().equals(Detailed_song.class))
+        if (MainActivity.currentFragment.getClass().equals(DetailedsongFragment.class))
             newFragment.initWindowElements();
         else {
             showBar();
@@ -165,10 +183,10 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         } catch (Exception ignored) {
         }
-        play(main.PrevAndNextSongs.Prev(force));
+        play(main.PrevAndNextSongs.Prev());
         adapter.reset();
         adapter.notifyDataSetChanged();
-        if (MainActivity.currentFragment.getClass().equals(Detailed_song.class))
+        if (MainActivity.currentFragment.getClass().equals(DetailedsongFragment.class))
             newFragment.initWindowElements();
         else {
             showBar();
@@ -192,7 +210,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             } catch (Exception ignored) {
             }
         }
-        if (MainActivity.currentFragment.getClass().equals(Detailed_song.class))
+        if (MainActivity.currentFragment.getClass().equals(DetailedsongFragment.class))
             newFragment.initWindowElements();
     }
 
@@ -209,7 +227,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         } catch (Exception ignored) {
         }
-        if (MainActivity.currentFragment.getClass().equals(Detailed_song.class))
+        if (MainActivity.currentFragment.getClass().equals(DetailedsongFragment.class))
             newFragment.initWindowElements();
         player.start();
         main.t.resumeThread();
@@ -262,7 +280,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         });
         main.t = new ProgressBarThread(progressBar, main);
         this.relativeLayout.setOnClickListener(view -> {
-            newFragment = new Detailed_song(main.player, main);
+            newFragment = new DetailedsongFragment(main.player, main);
             MainActivity.currentFragment = newFragment;
             FragmentTransaction transaction = manager.beginTransaction();
             transaction.replace(R.id.fragment_container, newFragment);
@@ -311,15 +329,47 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         }
 
-        switch (audioManager.requestAudioFocus((new OnFocusChangeListener()).getInstance(),
-                AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)) {
-            case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
-                focusGranted = true;
-                break;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioManager.requestAudioFocus(new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setAudioAttributes(
+                            new AudioAttributes.Builder()
+                                    .setUsage(AudioAttributes.USAGE_GAME)
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                                    .build()
+                    )
+                    .setAcceptsDelayedFocusGain(true)
+                    .setOnAudioFocusChangeListener(new AudioManager.OnAudioFocusChangeListener() {
 
-            case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
-                focusGranted = false;
-                break;
+                        @Override
+                        public void onAudioFocusChange(int focusChange) {
+                            switch (audioManager.requestAudioFocus((new OnFocusChangeListener()).getInstance(),
+                                    AudioManager.STREAM_MUSIC, AUDIOFOCUS_GAIN)) {
+                                case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
+                                    focusGranted = true;
+                                    break;
+
+                                case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
+                                    focusGranted = false;
+                                    break;
+                            }
+                        }
+                    }).build()
+            );
+        } else {
+            audioManager.requestAudioFocus(focusChange -> {
+                        switch (audioManager.requestAudioFocus((new OnFocusChangeListener()).getInstance(),
+                                AudioManager.STREAM_MUSIC, AUDIOFOCUS_GAIN)) {
+                            case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
+                                focusGranted = true;
+                                break;
+
+                            case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
+                                focusGranted = false;
+                                break;
+                        }
+                    },
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN);
         }
     }
 
@@ -336,9 +386,8 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
 
         @Override
         public void onAudioFocusChange(final int focusChange) {
-            changedFocus = focusChange;
             switch (focusChange) {
-                case AudioManager.AUDIOFOCUS_GAIN:
+                case AUDIOFOCUS_GAIN:
                     if (pausedByAudioFocus && !playing) {
                         player.start();
                         playing = true;
@@ -346,9 +395,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
                         break;
                     }
 
-                case AudioManager.AUDIOFOCUS_LOSS:
-                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                case AUDIOFOCUS_LOSS:
+                case AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                case AUDIOFOCUS_LOSS_TRANSIENT:
                     if (playing) {
                         try {
                             playing = false;

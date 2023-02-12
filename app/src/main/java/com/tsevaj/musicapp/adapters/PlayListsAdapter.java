@@ -1,12 +1,17 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.adapters;
+
+import static androidx.core.content.ContextCompat.getSystemService;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -15,6 +20,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.TextInputLayout;
+import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.fragments.LibraryFragment;
+import com.tsevaj.musicapp.fragments.PlaylistsFragment;
+import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.utils.MyList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,7 +87,13 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                         10,
                         0
                 );
+                textInputLayout.setBoxStrokeWidth(0);
+                textInputLayout.setBoxStrokeWidthFocused(0);
                 EditText input = new EditText(context);
+                input.setInputType(InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+                input.requestFocus();
+                InputMethodManager imm = (InputMethodManager)   context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
                 textInputLayout.addView(input);
                 new AlertDialog.Builder(context)
                         .setTitle("Create playlist")
@@ -106,11 +122,15 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                                 editor.putString("PLAYLIST_"+ input.getText().toString(),"");
                                 editor.apply();
                                 list.add(0, new MyList(input.getText().toString(),"","",0, "", 0, "", 0));
+                                imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                                 dialog.cancel();
                                 parent.changeFragments(new PlaylistsFragment(player, player.main), false);
                             }
                         })
-                        .setNegativeButton("Cancel", (dialog, whichButton) -> dialog.cancel())
+                        .setNegativeButton("Cancel", (dialog, whichButton) -> {
+                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                            dialog.cancel();
+                        })
                         .show();
             }
             else {

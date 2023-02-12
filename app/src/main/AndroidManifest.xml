@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.tsevaj.musicapp">
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.READ_LOGS"
+        tools:ignore="ProtectedPermissions" />
     <permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28"
+        android:maxSdkVersion="33"
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.STORAGE" />
     <application
@@ -18,7 +19,7 @@
         android:icon="@mipmap/app_icon"
         android:requestLegacyExternalStorage="true"
         android:label="@string/app_name"
-        android:name=".NotificationClass"
+        android:name=".services.NotificationClass"
         tools:replace="android:icon"
         android:roundIcon="@mipmap/app_icon_round"
         android:supportsRtl="true"
@@ -34,8 +35,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".NotificationService" />
-        <receiver android:name=".NotificationReceiver"
+        <service android:name=".services.NotificationService" />
+        <receiver android:name=".services.NotificationReceiver"
             android:exported="false"
             android:enabled="true">
             <intent-filter>

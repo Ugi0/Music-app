@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.services;
 
 import android.annotation.SuppressLint;
 import android.app.NotificationManager;
@@ -10,6 +10,10 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+
+import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.R;
 
 public class NotificationUtils {
     public static final int NOTIFICATION_ID = 1;
@@ -36,7 +40,7 @@ public class NotificationUtils {
 
         NotificationCompat.Builder notification = new NotificationCompat.Builder(main, NotificationClass.Channel)
                 .setSmallIcon(R.mipmap.app_icon)
-                .setLargeIcon(BitmapFactory.decodeResource(main.getResources(), R.drawable.t_background2))
+                .setLargeIcon(BitmapFactory.decodeResource(main.getResources(), R.drawable.background))
                 .setColor(0xae27ff)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0, 1, 2))

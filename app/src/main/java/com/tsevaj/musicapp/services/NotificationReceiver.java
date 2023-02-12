@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.services;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

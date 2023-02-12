@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.adapters;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.fragments.FavoritesFragment;
+import com.tsevaj.musicapp.utils.FunctionClass;
+import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.utils.MyList;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,10 +41,11 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
     private CustomAdapter.ViewHolder lastClicked = null;
     private final int defaultColor;
     private final String playlist;
+    private String chosenColor;
 
     @SuppressLint("ResourceType")
     public CustomAdapter(ArrayList<MyList> list, Context mCtx, FragmentActivity c, MusicPlayer player, String playlist) {
-        this.list = list;
+        this.list = new ArrayList<>(list);
         this.backupList = new ArrayList<>(list);
         this.mCtx = mCtx;
         this.c = c;
@@ -56,13 +65,17 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
     @RequiresApi(api = Build.VERSION_CODES.N)
     @SuppressLint({"ResourceType", "NotifyDataSetChanged"})
     @Override
-    public void onBindViewHolder(ViewHolder holder, @SuppressLint("RecyclerView") int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         MyList myList = list.get(position);
+        if (player.main.PrevAndNextSongs.wholeList) {
+            chosenColor = "#2A0B35";
+        } else {
+            chosenColor = "#DC143C"; }
         holder.textViewHead.setText(myList.getHead());
         holder.textViewDesc.setText(myList.getDesc());
         if (myList.getHead().equals(player.currentPlayingSong.getHead())) {
-            holder.textViewHead.setTextColor(Color.parseColor("#DC143C"));
-            holder.textViewDesc.setTextColor(Color.parseColor("#DC143C"));
+            holder.textViewHead.setTextColor(Color.parseColor(chosenColor));
+            holder.textViewDesc.setTextColor(Color.parseColor(chosenColor));
             lastClicked = holder;
         }
         else {
@@ -70,17 +83,28 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
             holder.textViewDesc.setTextColor(defaultColor);
         }
         holder.itemView.setOnClickListener(view -> {
+            player.visibleSongs = list;
+            if (!player.currentPlayingSong.getHead().equals("") && (player.currentPlayingSong.getHash() == myList.getHash())) {
+                player.main.PrevAndNextSongs.wholeList ^= true; //XOR Magic
+            }
+            // Decide what list the player will use in future songs
+            if (!MainActivity.currentFragment.equals(player.main.PrevAndNextSongs.createdFragment)) player.recreateList(myList);
+            //
+            if (player.main.PrevAndNextSongs.wholeList) {
+                chosenColor = "#2A0B35";
+                player.main.PrevAndNextSongs.setList(MainActivity.wholeSongList);
+            }
+            else {
+                chosenColor = "#DC143C";
+                player.main.PrevAndNextSongs.setList(player.visibleSongs);
+            }
             if (lastClicked != null) {
                 lastClicked.textViewHead.setTextColor(defaultColor);
                 lastClicked.textViewDesc.setTextColor(defaultColor);
             }
-            holder.textViewHead.setTextColor(Color.parseColor("#DC143C"));
-            holder.textViewDesc.setTextColor(Color.parseColor("#DC143C"));
-            player.visibleSongs = list;
-            if (!MainActivity.currentFragment.equals(player.main.PrevAndNextSongs.createdFragment)) player.recreateList(myList);
-            if (player.currentPlayingSong != null) {
-                player.main.PrevAndNextSongs.addToPrev(player.currentPlayingSong);
-            }
+            holder.textViewHead.setTextColor(Color.parseColor(chosenColor));
+            holder.textViewDesc.setTextColor(Color.parseColor(chosenColor));
+            player.main.PrevAndNextSongs.setCurrent(myList);
             player.play(myList);
             player.showBar();
             lastClicked = holder;

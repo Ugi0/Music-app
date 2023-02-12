@@ -1,10 +1,10 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.services;
 
-import static com.tsevaj.musicapp.MusicPlayer.songName;
-import static com.tsevaj.musicapp.NotificationClass.ACTION_NEXT;
-import static com.tsevaj.musicapp.NotificationClass.ACTION_PAUSE;
-import static com.tsevaj.musicapp.NotificationClass.ACTION_PREV;
-import static com.tsevaj.musicapp.NotificationUtils.OPEN_NOTIFICATION;
+import static com.tsevaj.musicapp.utils.MusicPlayer.songName;
+import static com.tsevaj.musicapp.services.NotificationClass.ACTION_NEXT;
+import static com.tsevaj.musicapp.services.NotificationClass.ACTION_PAUSE;
+import static com.tsevaj.musicapp.services.NotificationClass.ACTION_PREV;
+import static com.tsevaj.musicapp.services.NotificationUtils.OPEN_NOTIFICATION;
 
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
@@ -12,10 +12,16 @@ import android.app.Service;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+
+import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.R;
 
 public class NotificationService extends Service {
     private final IBinder mBinder = new myBinder();
@@ -28,7 +34,7 @@ public class NotificationService extends Service {
     }
 
     public class myBinder extends Binder {
-        NotificationService getService() { return NotificationService.this; }
+        public NotificationService getService() { return NotificationService.this; }
     }
 
     @SuppressLint("NewApi")
@@ -59,6 +65,7 @@ public class NotificationService extends Service {
         return START_STICKY;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.S)
     @Override
     public void onCreate() {
         Intent intent = new Intent(this, MainActivity.class);
@@ -77,9 +84,9 @@ public class NotificationService extends Service {
         else {
             playPauseButton = R.drawable.ic_baseline_play_arrow_24;
         }
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, NotificationClass.Channel)
+        @SuppressLint("InlinedApi") NotificationCompat.Builder notification = new NotificationCompat.Builder(this, NotificationClass.Channel)
                 .setSmallIcon(R.mipmap.app_icon)
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.t_background2))
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.background))
                 .setColor(0xae27ff)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0, 1, 2))

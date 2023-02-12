@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.fragments;
 
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
@@ -6,6 +6,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -20,19 +21,25 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
+import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.utils.ProgressBarThread;
+import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.utils.CircularSeekBar;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Detailed_song extends Fragment {
+public class DetailedsongFragment extends Fragment {
     View ll;
     private final MusicPlayer player;
     private final MainActivity main;
     private View currentView;
 
-    public Detailed_song(MusicPlayer player, MainActivity main) {
+    public DetailedsongFragment(MusicPlayer player, MainActivity main) {
         this.player = player;
         this.main = main;
     }
@@ -119,12 +126,12 @@ public class Detailed_song extends Fragment {
         }
         if (settings.getBoolean("SHUFFLE",false)) shuffle.setActivated(true);
         shuffle.setOnClickListener(view -> {
-                    shuffle.setActivated(!shuffle.isActivated());
-                    editor.putBoolean("SHUFFLE",shuffle.isActivated());
-                    editor.apply();
-                    main.PrevAndNextSongs.reRoll();
-                    player.prepareButtons();
-                });
+            shuffle.setActivated(!shuffle.isActivated());
+            editor.putBoolean("SHUFFLE",shuffle.isActivated());
+            editor.apply();
+            main.PrevAndNextSongs.reRoll();
+            player.prepareButtons();
+        });
         replay.setOnClickListener(view -> {
             if (replay.isActivated()) {
                 //Play just one song
@@ -132,13 +139,6 @@ public class Detailed_song extends Fragment {
                 replay.setSelected(true);
                 editor.putInt("REPLAY_MODE",1);
                 editor.apply();
-            }
-            else if (replay.isSelected()) {
-                //Default, no replay
-                replay.setSelected(false);
-                editor.putInt("REPLAY_MODE",0);
-                editor.apply();
-                main.PrevAndNextSongs.reduceInSize();
             }
             else {
                 //Keep playing songs again

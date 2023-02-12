@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp;
+package com.tsevaj.musicapp.services;
 
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
@@ -12,6 +12,8 @@ import android.view.KeyEvent;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.media.session.MediaButtonReceiver;
+
+import com.tsevaj.musicapp.utils.MusicPlayer;
 
 public class MyController extends BroadcastReceiver {
     MusicPlayer player;
@@ -38,7 +40,7 @@ public class MyController extends BroadcastReceiver {
             @Override
             public boolean onMediaButtonEvent(@NonNull Intent mediaButtonIntent) {
                 if (player.songDone) return true;
-                if (System.currentTimeMillis() - lastButtonPressTime < 300) return true;
+                if (System.currentTimeMillis() - lastButtonPressTime < 500) return true;
                 lastButtonPressTime = System.currentTimeMillis();
                 KeyEvent event = mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
                 Intent intent1 = new Intent(c, NotificationService.class);
