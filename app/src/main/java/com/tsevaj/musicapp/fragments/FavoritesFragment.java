@@ -40,7 +40,7 @@ public class FavoritesFragment extends Fragment {
         View ll = inflater.inflate(R.layout.songlist_recyclerview, container, false);
         RecyclerView recyclerView = ll.findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
-        MainActivity.setBackground(ll, getResources());
+        main.setBackground(ll, getResources());
         recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
 
         SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();

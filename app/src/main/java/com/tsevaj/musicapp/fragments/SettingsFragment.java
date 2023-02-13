@@ -1,13 +1,17 @@
 package com.tsevaj.musicapp.fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -32,17 +36,20 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.utils.FileUtils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.channels.FileChannel;
+import java.util.Objects;
 
 import top.defaults.colorpicker.ColorWheelView;
 
 public class SettingsFragment extends Fragment {
-    private static final int FILE_SELECT_CODE = 0;
-    public static final String destination = Environment.getExternalStorageDirectory()+"/"+"Android/data/com.tsevaj.musicapp/files/Pictures/background";
 
     ColorWheelView colorWheel;
     EditText colorWheelText;
@@ -67,7 +74,7 @@ public class SettingsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View ll = inflater.inflate(R.layout.settings_fragment, container, false);
 
-        MainActivity.setBackground(ll, getResources());
+        main.setBackground(ll, getResources());
 
         SharedPreferences settings = requireActivity().getSharedPreferences("SAVEDATA", 0);
 
@@ -189,7 +196,6 @@ public class SettingsFragment extends Fragment {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        Log.d("test","Show file chooser");
         try {
             fileUploadResultLauncher.launch(Intent.createChooser(intent, "Select a File to Upload"));
         } catch (android.content.ActivityNotFoundException ex) {
@@ -206,23 +212,30 @@ public class SettingsFragment extends Fragment {
                     assert data != null;
                     Uri uri = data.getData();
                     try {
-                        copy(Environment.getExternalStorageDirectory() + "/" + uri.getPath().split(":")[1]);
+                        String sourcePath = Objects.requireNonNull(FileUtils.getPath(requireContext(), uri));
+                        File source = new File(sourcePath);
+                        copy(source,new File(main.BackgroundDestinationPath.getPath()+"/background"));
                     } catch (IOException e) {
-                        Log.d("test",e.getLocalizedMessage());
                         e.printStackTrace();
                     }
                 }
+                SettingsFragment newFragment = new SettingsFragment(main);
+                FragmentTransaction transaction =  getParentFragmentManager().beginTransaction();
+                transaction.replace(R.id.fragment_container, newFragment);
+
+                transaction.commit();
             });
 
-    public void copy(String source) throws IOException {
-        Log.d("test","Copying");
-        try (FileChannel src = new FileInputStream(source).getChannel(); FileChannel dst = new FileOutputStream(destination).getChannel()) {
-            dst.transferFrom(src, 0, src.size());
+    public static void copy(File src, File dst) throws IOException {
+        try (InputStream in = new FileInputStream(src)) {
+            try (OutputStream out = new FileOutputStream(dst)) {
+                // Transfer bytes from in to out
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            }
         }
-        SettingsFragment newFragment = new SettingsFragment(main);
-        FragmentTransaction transaction =  getParentFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, newFragment);
-
-        transaction.commit();
     }
 }

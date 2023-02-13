@@ -71,6 +71,8 @@ public class MainActivity extends AppCompatActivity
     public ArrayList<MyList> songQueue = new ArrayList<>();
     public static ArrayList<MyList> wholeSongList = null;
 
+    public File BackgroundDestinationPath;
+
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +92,9 @@ public class MainActivity extends AppCompatActivity
         this.player.main = this;
         this.player.manager = getSupportFragmentManager();
         registerReceiver(new MyController(player, this), new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
+
+        BackgroundDestinationPath = getExternalFilesDir("");
+        BackgroundDestinationPath.getParentFile().mkdirs();
 
         utils = new NotificationUtils();
 
@@ -114,9 +119,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    public static void setBackground(View view, Resources resources) {
-        if (new File(SettingsFragment.destination).exists()) {
-            view.setBackground(new BitmapDrawable(resources, BitmapFactory.decodeFile(SettingsFragment.destination)));
+    public void setBackground(View view, Resources resources) {
+        if (new File(this.player.main.BackgroundDestinationPath+"/background").exists()) {
+            view.setBackground(new BitmapDrawable(resources, BitmapFactory.decodeFile(this.player.main.BackgroundDestinationPath+"/background")));
         }
         else {
             view.setBackground(resources.getDrawable(R.drawable.background));

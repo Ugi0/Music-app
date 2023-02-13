@@ -58,7 +58,7 @@ public class PrevNextList {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             randomizer = new Random(Instant.now().toEpochMilli());
         } else {
-            randomizer = new Random(898347435);
+            randomizer = new Random(11413503);
         }
         songOrder = new ArrayList<>(currentlyPlayingSongs);
         Collections.shuffle(songOrder, randomizer);
@@ -74,7 +74,7 @@ public class PrevNextList {
         if (settings.getInt("REPLAY_MODE",1) == 1 && !force) { //Play one song
             return current;
         }
-        if (!settings.getBoolean("SHUFFLE", true)) { //Play songs in list order
+        if (!settings.getBoolean("SHUFFLE", false)) { //Play songs in list order
             if (wholeList) li = MainActivity.wholeSongList;
             else { li = currentlyPlayingSongs; }
             int index = li.indexOf(current)+1;

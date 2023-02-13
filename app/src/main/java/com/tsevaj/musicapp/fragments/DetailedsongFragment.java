@@ -51,7 +51,7 @@ public class DetailedsongFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ll = inflater.inflate(R.layout.song_detailed_view, container, false);
 
-        MainActivity.setBackground(ll, getResources());
+        main.setBackground(ll, getResources());
         MainActivity.currentFragment = this;
 
         initWindowElements(ll);

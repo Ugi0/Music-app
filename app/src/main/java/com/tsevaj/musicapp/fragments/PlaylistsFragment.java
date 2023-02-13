@@ -34,7 +34,7 @@ public class PlaylistsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View ll = inflater.inflate(R.layout.songlist_recyclerview, container, false);
         RecyclerView recyclerView = ll.findViewById(R.id.recyclerView);
-        MainActivity.setBackground(ll, getResources());
+        player.main.setBackground(ll, getResources());
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
 

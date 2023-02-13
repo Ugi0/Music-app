@@ -15,8 +15,10 @@ import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 import android.view.View;
@@ -41,7 +43,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class MusicPlayer implements NotificationController, ServiceConnection {
-    public MediaPlayer player;
+    private MediaPlayer player;
     public MediaSessionCompat.Token sessionToken;
     private String currentSong;
     public MyList currentPlayingSong = new MyList("", "", "", 0, "", 0, "", 0);
@@ -77,6 +79,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         player = new MediaPlayer();
         this.currentSong = null;
         pausedByAudioFocus = false;
+        player.setOnErrorListener((mediaPlayer, i, i1) -> true);
+        player.setWakeMode(c, PowerManager.PARTIAL_WAKE_LOCK);
+        player.setOnCompletionListener(mediaPlayer -> donePlayNext());
     }
 
     @SuppressLint("NewApi")
@@ -84,13 +89,19 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         String song = mylist.getLocation();
         if (currentSong != null) if (currentSong.equals(song) && this.player.isPlaying()) return;
         relativeLayout = ((Activity) c).findViewById(R.id.music_bar);
-        player.setOnErrorListener((mediaPlayer, i, i1) -> true);
         if (songDone) main.showNotification(R.drawable.ic_baseline_pause_24, mylist.getHead());
         this.songDone = false;
         playing = true;
         currentSong = song;
         songName = mylist.getHead();
         songArtist = mylist.getArtist();
+
+        currentDuration = new BigDecimal(String.valueOf(mylist.getDuration()));
+        currentPlayingSong = mylist;
+        main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
+        player.release();
+        player = MediaPlayer.create(c, Uri.parse(song));
+        player.start();
         if (!serviceStarted) {
             Intent intent = new Intent(c, NotificationService.class);
             c.bindService(intent, this, 0);
@@ -99,26 +110,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             requestFocus(c);
             serviceStarted = true;
         }
-        currentDuration = new BigDecimal(String.valueOf(mylist.getDuration()));
-        currentPlayingSong = mylist;
-        main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
-        try {
-            player.reset();
-            player.setDataSource(song);
-            player.setAudioAttributes(
-                    new AudioAttributes
-                            .Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .build());
-            player.prepareAsync();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        player.setOnPreparedListener(mp -> {
-            player.start();
+        else {
             prepareButtons();
-        });
-        player.setOnCompletionListener(mediaPlayer -> donePlayNext());
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -318,7 +312,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     public void destroy() {
         if (this.player != null) {
             if (main.t != null) main.t.stopThread();
-            this.player.reset();
             this.player.release();
             this.player = null;
             currentSong = null;

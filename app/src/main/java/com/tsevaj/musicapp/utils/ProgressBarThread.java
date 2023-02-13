@@ -40,15 +40,13 @@ public class ProgressBarThread extends Thread {
                 executor.scheduleAtFixedRate(() -> {
                     while (progressBarValue < 1000) {
                         if (!stopped) {
-                            BigDecimal playedSoFar = new BigDecimal(main.player.getCurrentPosition() + "000");
                             try {
-                                progressBarValue = (
-                                        playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());
-                            }
-                            catch (Exception exception) {
-                                progressBarValue = 0;
-                            }
-                            seekBar.setProgress((int) progressBarValue);
+                                BigDecimal playedSoFar = new BigDecimal(main.player.getCurrentPosition() + "000");
+                                progressBarValue = (playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());}
+                            catch (Exception exception) {progressBarValue = 0;}
+
+                            try { circularSeekBar.setProgress((int) progressBarValue); }
+                            catch (Exception ignored) {}
                         }
                     }
                 }, 0, 100, TimeUnit.MILLISECONDS);
@@ -59,15 +57,13 @@ public class ProgressBarThread extends Thread {
                 executor.scheduleAtFixedRate(() -> {
                     while (progressBarValue < 10000) {
                         if (!stopped) {
-                            BigDecimal playedSoFar = new BigDecimal(main.player.getCurrentPosition() + "0000");
                             try {
-                                progressBarValue = (
-                                        playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());
-                            }
-                            catch (Exception exception) {
-                                progressBarValue = 0;
-                            }
-                            circularSeekBar.setProgress((int) progressBarValue);
+                                BigDecimal playedSoFar = new BigDecimal(main.player.getCurrentPosition() + "0000");
+                                progressBarValue = (playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());}
+                            catch (Exception exception) {progressBarValue = 0;}
+
+                            try { circularSeekBar.setProgress((int) progressBarValue); }
+                            catch (Exception ignored) {}
                         }
                     }
                 }, 0, 100, TimeUnit.MILLISECONDS);

@@ -45,7 +45,7 @@ public class LibraryFragment extends Fragment {
         recyclerView = ll.findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        MainActivity.setBackground(ll, getResources());
+        player.main.setBackground(ll, getResources());
         player.main.setDrawer();
 
         SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
