@@ -177,6 +177,8 @@ public class DetailedsongFragment extends Fragment {
                     case R.id.song_delete: {
                         try {
                             Files.delete(Paths.get(player.currentPlayingSong.getLocation()));
+                            MainActivity.wholeSongList.remove(player.currentPlayingSong);
+                            main.PrevAndNextSongs.removeFromPrev(player.currentPlayingSong);
                             player.playNext(true);
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -202,12 +204,12 @@ public class DetailedsongFragment extends Fragment {
         BtnPrev.setOnClickListener(view -> detailed_prev());
         BtnPause.setOnClickListener(view -> {
             if (MusicPlayer.playing) {
-                player.pause();
+                player.playPause();
                 MusicPlayer.playing = false;
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
             }
             else {
-                player.resume();
+                player.playPause();
                 MusicPlayer.playing = true;
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
             }

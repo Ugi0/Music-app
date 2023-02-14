@@ -89,7 +89,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         String song = mylist.getLocation();
         if (currentSong != null) if (currentSong.equals(song) && this.player.isPlaying()) return;
         relativeLayout = ((Activity) c).findViewById(R.id.music_bar);
-        if (songDone) main.showNotification(R.drawable.ic_baseline_pause_24, mylist.getHead());
         this.songDone = false;
         playing = true;
         currentSong = song;

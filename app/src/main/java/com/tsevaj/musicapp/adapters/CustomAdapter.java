@@ -198,8 +198,10 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             Files.delete(Paths.get(myList.getLocation()));
                         }
+                        MainActivity.wholeSongList.remove(myList);
                         list.remove(position);
-                        notifyItemRemoved(position);
+                        player.main.PrevAndNextSongs.removeFromPrev(myList);
+                        notifyDataSetChanged();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

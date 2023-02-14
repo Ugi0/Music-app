@@ -66,7 +66,17 @@ public class PrevNextList {
     }
 
     public void setCurrent(MyList item) {
+        if (!Prev.remove(current) && Prev.size() >= 40) {
+            Prev.remove(0);
+        }
+        Prev.add(current);
         this.current = item;
+    }
+
+    public void removeFromPrev(MyList item) {
+        try {
+            this.Prev.remove(item);
+        } catch (Exception ignored) {}
     }
 
     public MyList Next(Boolean force) {
@@ -81,14 +91,18 @@ public class PrevNextList {
             if (index == 0) {
                 index = randomizer.nextInt(li.size());
             }
-            Prev.remove(current);
+            if (!Prev.remove(current) && Prev.size() >= 40) {
+                Prev.remove(0);
+            }
             Prev.add(current);
             current = li.get((index) % li.size());
             return current;
         }
         if (wholeList) {
             int index = allSongs.indexOf(current)+1;
-            Prev.remove(current);
+            if (!Prev.remove(current) && Prev.size() >= 40) {
+                Prev.remove(0);
+            }
             Prev.add(current);
             current = allSongs.get((index) % allSongs.size());
             return current;
@@ -97,7 +111,9 @@ public class PrevNextList {
         if (index == 0) {
             index = randomizer.nextInt(songOrder.size());
         }
-        Prev.remove(current);
+        if (!Prev.remove(current) && Prev.size() >= 40) {
+            Prev.remove(0);
+        }
         Prev.add(current);
         current = songOrder.get((index) % songOrder.size());
         return current;

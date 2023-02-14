@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity
     private DrawerLayout drawer;
     public static Fragment currentFragment;
     NavigationView navigationView;
-    public ArrayList<MyList> songList = new ArrayList<>();
     public PrevNextList PrevAndNextSongs = new PrevNextList(getBaseContext());
     public NotificationUtils utils;
     public ProgressBarThread t;

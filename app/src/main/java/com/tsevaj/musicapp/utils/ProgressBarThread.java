@@ -1,5 +1,6 @@
 package com.tsevaj.musicapp.utils;
 
+import android.util.Log;
 import android.widget.SeekBar;
 
 import com.tsevaj.musicapp.MainActivity;
@@ -38,33 +39,30 @@ public class ProgressBarThread extends Thread {
             t = new Thread(() -> {
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                 executor.scheduleAtFixedRate(() -> {
-                    while (progressBarValue < 1000) {
-                        if (!stopped) {
-                            try {
-                                BigDecimal playedSoFar = new BigDecimal(main.player.getCurrentPosition() + "000");
-                                progressBarValue = (playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());}
-                            catch (Exception exception) {progressBarValue = 0;}
+                    if (!stopped) {
+                        try {
+                            BigDecimal playedSoFar = new BigDecimal(main.player.getCurrentPosition() + "000");
+                            progressBarValue = (playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());}
+                        catch (Exception exception) {progressBarValue = 0;}
 
-                            try { circularSeekBar.setProgress((int) progressBarValue); }
-                            catch (Exception ignored) {}
-                        }
+                        try { seekBar.setProgress((int) progressBarValue); }
+                        catch (Exception ignored) {}
                     }
-                }, 0, 100, TimeUnit.MILLISECONDS);
+                }
+                , 0, 100, TimeUnit.MILLISECONDS);
                 });}
         else {
             t = new Thread(() -> {
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                 executor.scheduleAtFixedRate(() -> {
-                    while (progressBarValue < 10000) {
-                        if (!stopped) {
-                            try {
-                                BigDecimal playedSoFar = new BigDecimal(main.player.getCurrentPosition() + "0000");
-                                progressBarValue = (playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());}
-                            catch (Exception exception) {progressBarValue = 0;}
+                    if (!stopped) {
+                        try {
+                            BigDecimal playedSoFar = new BigDecimal(main.player.getCurrentPosition() + "0000");
+                            progressBarValue = (playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());}
+                        catch (Exception exception) {progressBarValue = 0;}
 
-                            try { circularSeekBar.setProgress((int) progressBarValue); }
-                            catch (Exception ignored) {}
-                        }
+                        try { circularSeekBar.setProgress((int) progressBarValue); }
+                        catch (Exception ignored) {}
                     }
                 }, 0, 100, TimeUnit.MILLISECONDS);
             });}
