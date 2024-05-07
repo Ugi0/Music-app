@@ -100,6 +100,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
         player.release();
         player = MediaPlayer.create(c, Uri.parse(song));
+        player.setOnErrorListener((mediaPlayer, i, i1) -> true);
+        player.setWakeMode(c, PowerManager.PARTIAL_WAKE_LOCK);
+        player.setOnCompletionListener(mediaPlayer -> donePlayNext());
         player.start();
         if (!serviceStarted) {
             Intent intent = new Intent(c, NotificationService.class);
@@ -114,7 +117,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void recreateList(MyList mylist) {
         if (main.PrevAndNextSongs.createdFragment == null) {
             main.PrevAndNextSongs = new PrevNextList(new ArrayList<>(visibleSongs), mylist, MainActivity.currentFragment, c);
@@ -127,7 +129,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     @SuppressLint("NewApi")
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void prepareButtons() {
         if (!MainActivity.currentFragment.getClass().equals(DetailedsongFragment.class)) {
             BtnNext.setOnClickListener(view -> {
@@ -146,13 +147,11 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         main.songQueue.add(mylist);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void donePlayNext() {
         playNext(false);
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void playNext(Boolean force) {
         if (!playing) try {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
@@ -170,7 +169,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     @SuppressLint({"NewApi", "NotifyDataSetChanged"})
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void playPrev(Boolean force) {
         if (!playing) try {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
@@ -186,7 +184,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void playPause() {
         if (playing) {
             main.showNotification(R.drawable.ic_baseline_play_arrow_24, currentPlayingSong.getHead());
@@ -213,7 +210,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         player.pause();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void resume() {
         playing = true;
         try {
@@ -321,48 +317,27 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            audioManager.requestAudioFocus(new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                    .setAudioAttributes(
-                            new AudioAttributes.Builder()
-                                    .setUsage(AudioAttributes.USAGE_GAME)
-                                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                                    .build()
-                    )
-                    .setAcceptsDelayedFocusGain(true)
-                    .setOnAudioFocusChangeListener(new AudioManager.OnAudioFocusChangeListener() {
+        audioManager.requestAudioFocus(new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                .setAudioAttributes(
+                        new AudioAttributes.Builder()
+                                .setUsage(AudioAttributes.USAGE_GAME)
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                                .build()
+                )
+                .setAcceptsDelayedFocusGain(true)
+                .setOnAudioFocusChangeListener(focusChange -> {
+                    switch (audioManager.requestAudioFocus((new OnFocusChangeListener()).getInstance(),
+                            AudioManager.STREAM_MUSIC, AUDIOFOCUS_GAIN)) {
+                        case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
+                            focusGranted = true;
+                            break;
 
-                        @Override
-                        public void onAudioFocusChange(int focusChange) {
-                            switch (audioManager.requestAudioFocus((new OnFocusChangeListener()).getInstance(),
-                                    AudioManager.STREAM_MUSIC, AUDIOFOCUS_GAIN)) {
-                                case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
-                                    focusGranted = true;
-                                    break;
-
-                                case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
-                                    focusGranted = false;
-                                    break;
-                            }
-                        }
-                    }).build()
-            );
-        } else {
-            audioManager.requestAudioFocus(focusChange -> {
-                        switch (audioManager.requestAudioFocus((new OnFocusChangeListener()).getInstance(),
-                                AudioManager.STREAM_MUSIC, AUDIOFOCUS_GAIN)) {
-                            case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
-                                focusGranted = true;
-                                break;
-
-                            case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
-                                focusGranted = false;
-                                break;
-                        }
-                    },
-                    AudioManager.STREAM_MUSIC,
-                    AudioManager.AUDIOFOCUS_GAIN);
-        }
+                        case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
+                            focusGranted = false;
+                            break;
+                    }
+                }).build()
+        );
     }
 
     private final class OnFocusChangeListener implements AudioManager.OnAudioFocusChangeListener {

@@ -45,7 +45,6 @@ public class DetailedsongFragment extends Fragment {
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -67,13 +66,10 @@ public class DetailedsongFragment extends Fragment {
     }
 
     public void initWindowElements() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            initWindowElements(currentView);
-        }
+        initWindowElements(currentView);
     }
 
     @SuppressLint({"UseCompatTextViewDrawableApis", "NewApi", "NonConstantResourceId"})
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void initWindowElements(View parentView) {
         int textColor = Color.parseColor(main.getBaseContext().getSharedPreferences("SAVEDATA", 0).getString("THEME_COLOR", "#FFFFFF"));
 
@@ -217,12 +213,10 @@ public class DetailedsongFragment extends Fragment {
         progressBar.setOnSeekBarChangeListener(new CircleSeekBarListener(progressBar, BtnPause));
         main.t = new ProgressBarThread(progressBar, main);
     }
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void detailed_next() {
         player.playNext(true);
         initWindowElements(ll);
     }
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void detailed_prev() {
         player.playPrev(true);
         initWindowElements(ll);
@@ -254,7 +248,6 @@ public class DetailedsongFragment extends Fragment {
             main.t.stopThread();
         }
 
-        @RequiresApi(api = Build.VERSION_CODES.O)
         @Override
         public void onStopTrackingTouch(CircularSeekBar seekBar) {
             player.resume();

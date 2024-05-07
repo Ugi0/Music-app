@@ -136,8 +136,76 @@
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
     <androidx.cardview.widget.CardView
-        android:id="@+id/settings_background"
+        android:id="@+id/save_state"
         android:layout_below="@id/settings_songs_folder"
+        android:layout_width="match_parent"
+        android:backgroundTint="@android:color/transparent"
+        android:layout_height="wrap_content"
+        app:cardElevation="0dp"
+        tools:ignore="MissingConstraints">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+
+            <TextView
+                android:id="@+id/state_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingStart="20dp"
+                android:paddingTop="10dp"
+                android:text="@string/save_state"
+                android:textAppearance="?android:textAppearanceLarge"
+                android:textStyle="bold"
+                tools:ignore="RtlSymmetry" />
+            <CheckBox
+                android:id="@+id/save_state_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:buttonTint="@color/black"
+                android:layout_marginEnd="20dp"/>
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+    <androidx.cardview.widget.CardView
+        android:id="@+id/dark_mode"
+        android:layout_below="@id/save_state"
+        android:layout_width="match_parent"
+        android:backgroundTint="@android:color/transparent"
+        android:layout_height="wrap_content"
+        app:cardElevation="0dp"
+        tools:ignore="MissingConstraints">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+
+            <TextView
+                android:id="@+id/dark_mode_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingStart="20dp"
+                android:paddingTop="10dp"
+                android:text="@string/dark_mode"
+                android:textAppearance="?android:textAppearanceLarge"
+                android:textStyle="bold"
+                tools:ignore="RtlSymmetry" />
+            <CheckBox
+                android:id="@+id/dark_mode_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:buttonTint="@color/black"
+                android:layout_marginEnd="20dp"/>
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+    <androidx.cardview.widget.CardView
+        android:id="@+id/settings_background"
+        android:layout_below="@id/dark_mode"
         android:layout_width="match_parent"
         android:backgroundTint="@android:color/transparent"
         android:layout_height="wrap_content"

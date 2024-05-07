@@ -55,11 +55,8 @@ public class PrevNextList {
     }
 
     public void reRoll() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            randomizer = new Random(Instant.now().toEpochMilli());
-        } else {
-            randomizer = new Random(11413503);
-        }
+        randomizer = new Random(Instant.now().toEpochMilli());
+
         songOrder = new ArrayList<>(currentlyPlayingSongs);
         Collections.shuffle(songOrder, randomizer);
         Collections.shuffle(allSongs, randomizer);

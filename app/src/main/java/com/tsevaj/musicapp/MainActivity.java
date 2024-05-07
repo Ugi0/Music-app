@@ -32,6 +32,7 @@ import android.widget.SearchView;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -55,6 +56,7 @@ import com.tsevaj.musicapp.utils.ProgressBarThread;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -72,7 +74,6 @@ public class MainActivity extends AppCompatActivity
 
     public File BackgroundDestinationPath;
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,7 +94,7 @@ public class MainActivity extends AppCompatActivity
         registerReceiver(new MyController(player, this), new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
 
         BackgroundDestinationPath = getExternalFilesDir("");
-        BackgroundDestinationPath.getParentFile().mkdirs();
+        boolean result = Objects.requireNonNull(BackgroundDestinationPath.getParentFile()).mkdirs();
 
         utils = new NotificationUtils();
 
@@ -112,18 +113,16 @@ public class MainActivity extends AppCompatActivity
         PrevNextList.allSongs = new ArrayList<>(li);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public void showNotification(int playPauseButton, String songName) {
         utils.displayNotification(this, songName, playPauseButton);
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
     public void setBackground(View view, Resources resources) {
         if (new File(this.player.main.BackgroundDestinationPath+"/background").exists()) {
             view.setBackground(new BitmapDrawable(resources, BitmapFactory.decodeFile(this.player.main.BackgroundDestinationPath+"/background")));
         }
         else {
-            view.setBackground(resources.getDrawable(R.drawable.background));
+            view.setBackground(ResourcesCompat.getDrawable(resources, R.drawable.background, null));
         }
     }
 
@@ -257,6 +256,11 @@ public class MainActivity extends AppCompatActivity
     protected void onDestroy() {
         Intent intent1 = new Intent(getApplicationContext(), NotificationService.class);
         stopService(intent1);
+        SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("SAVED_SONG_NAME", player.currentPlayingSong.getHead());
+        editor.putString("SAVED_SONG_DURATION", player.currentDuration.toString());
+        editor.apply();
         player.destroy();
         if (receiver != null) {
             unregisterReceiver(receiver);
@@ -266,7 +270,6 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
     }
 
-    @SuppressLint("NonConstantResourceId")
     private void showSortPopup(View v) {
         PopupMenu popup = new PopupMenu(this, v);
         MenuInflater inflater = popup.getMenuInflater();
@@ -275,34 +278,25 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences.Editor editor = settings.edit();
         popup.getMenu().getItem(3).setChecked(settings.getBoolean("ASCENDING", true));
         popup.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.sort_date:{
-                    editor.putString("REPLAY", "DATE");
-                    editor.apply();
-                    break;
+            if (item.getItemId() == R.id.sort_date) {
+                editor.putString("REPLAY", "DATE");
+                editor.apply();
+            } else if (item.getItemId() == R.id.sort_length) {
+                editor.putString("REPLAY", "LENGTH");
+                editor.apply();
+            } else if (item.getItemId() == R.id.sort_title) {
+                editor.putString("REPLAY", "TITLE");
+                editor.apply();
+            } else if (item.getItemId() == R.id.sort_reverse) {
+                if (settings.getBoolean("ASCENDING", true)) {
+                    popup.getMenu().getItem(3).setChecked(false);
+                    editor.putBoolean("ASCENDING", false);
                 }
-                case R.id.sort_length: {
-                    editor.putString("REPLAY", "LENGTH");
-                    editor.apply();
-                    break;
+                else {
+                    popup.getMenu().getItem(3).setChecked(true);
+                    editor.putBoolean("ASCENDING", true);
                 }
-                case R.id.sort_title: {
-                    editor.putString("REPLAY", "TITLE");
-                    editor.apply();
-                    break;
-                }
-                case R.id.sort_reverse: {
-                    if (settings.getBoolean("ASCENDING", true)) {
-                        popup.getMenu().getItem(3).setChecked(false);
-                        editor.putBoolean("ASCENDING", false);
-                    }
-                    else {
-                        popup.getMenu().getItem(3).setChecked(true);
-                        editor.putBoolean("ASCENDING", true);
-                    }
-                    editor.apply();
-                    break;
-                }
+                editor.apply();
             }
             Fragment newFragment = null;
             if (currentFragment.getClass().equals(LibraryFragment.class)) {

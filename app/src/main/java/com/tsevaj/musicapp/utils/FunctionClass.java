@@ -35,7 +35,6 @@ import java.util.stream.Stream;
 
 public class FunctionClass {
     @SuppressLint("NotifyDataSetChanged")
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public static void getMusicAndSet(RecyclerView recyclerView, Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
         ArrayList<MyList> li = getMusic(activity, player, c, filter, nameFilter);
         LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
@@ -49,7 +48,6 @@ public class FunctionClass {
         adapter.notifyDataSetChanged();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public static ArrayList<MyList> getMusic(Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
         final int FILTER_SECONDS = activity.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",120);
         boolean REVERSE_ORDER = c.getSharedPreferences("SAVEDATA", 0).getBoolean("ASCENDING", true);
@@ -81,22 +79,22 @@ public class FunctionClass {
         ArrayList<MyList> li2 = new ArrayList<>(MainActivity.wholeSongList);
         if (REVERSE_ORDER) {
             if (favorites.equals("LENGTH")) {
-                Collections.sort(li, Comparator.comparingInt(MyList::getDuration));
-                Collections.sort(li2, Comparator.comparingInt(MyList::getDuration));
+                li.sort(Comparator.comparingInt(MyList::getDuration));
+                li2.sort(Comparator.comparingInt(MyList::getDuration));
             } else if (favorites.equals("TITLE")) {
-                Collections.sort(li, (o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
-                Collections.sort(li2, (o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
+                li.sort((o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
+                li2.sort((o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
             } else {
                 Collections.reverse(li);
                 Collections.reverse(li2);
             }
         } else {
             if (favorites.equals("LENGTH")) {
-                Collections.sort(li, (o1, o2) -> Integer.compare(o2.getDuration(), o1.getDuration()));
-                Collections.sort(li2, (o1, o2) -> Integer.compare(o2.getDuration(), o1.getDuration()));
+                li.sort((o1, o2) -> Integer.compare(o2.getDuration(), o1.getDuration()));
+                li2.sort((o1, o2) -> Integer.compare(o2.getDuration(), o1.getDuration()));
             } else if (favorites.equals("TITLE")) {
-                Collections.sort(li, (o1, o2) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
-                Collections.sort(li2, (o1, o2) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
+                li.sort((o1, o2) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
+                li2.sort((o1, o2) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
             } else {
                 Collections.reverse(li);
                 Collections.reverse(li2);

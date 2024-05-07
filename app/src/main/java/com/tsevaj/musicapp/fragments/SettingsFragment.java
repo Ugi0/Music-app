@@ -1,30 +1,26 @@
 package com.tsevaj.musicapp.fragments;
 
+import static androidx.core.content.ContextCompat.getColorStateList;
+
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.provider.OpenableColumns;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -44,7 +40,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.FileChannel;
 import java.util.Objects;
 
 import top.defaults.colorpicker.ColorWheelView;
@@ -62,13 +57,18 @@ public class SettingsFragment extends Fragment {
     TextView folderText;
     TextView backgroundText;
 
+    TextView saveStateText;
+    CheckBox saveStateButton;
+
+    TextView darkModeText;
+    CheckBox darkModeButton;
+
     MainActivity main;
 
     public SettingsFragment(MainActivity main) {
         this.main = main;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -85,10 +85,22 @@ public class SettingsFragment extends Fragment {
         songLengthMin = ll.findViewById(R.id.numpicker_minutes);
         songLengthSec = ll.findViewById(R.id.numpicker_seconds);
 
+        saveStateText = ll.findViewById(R.id.state_text);
+        saveStateButton = ll.findViewById(R.id.save_state_button);
+
+        darkModeText = ll.findViewById(R.id.dark_mode_text);
+        darkModeButton = ll.findViewById(R.id.dark_mode_button);
+
         themeText = ll.findViewById(R.id.Theme_text);
         lengthText = ll.findViewById(R.id.min_length_text);
         folderText = ll.findViewById(R.id.folder_text);
         backgroundText = ll.findViewById(R.id.background_text);
+
+        boolean saveState = requireContext().getSharedPreferences("SAVEDATA", 0).getBoolean("SAVE_STATE", false);
+        saveStateButton.setChecked(saveState);
+
+        boolean darkMode = requireContext().getSharedPreferences("SAVEDATA", 0).getBoolean("DARK_MODE", false);
+        darkModeButton.setChecked(darkMode);
 
         setTextColors(requireContext().getSharedPreferences("SAVEDATA", 0).getString("THEME_COLOR", "#FFFFFF"));
         main.setClickable();
@@ -111,6 +123,20 @@ public class SettingsFragment extends Fragment {
                 editor.apply();
                 setTextColors(String.format("#%06X", (0xFFFFFF & color)));
             }
+        });
+
+        saveStateButton.setOnClickListener(view -> {
+            boolean saveState1 = requireContext().getSharedPreferences("SAVEDATA", 0).getBoolean("SAVE_STATE", false);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putBoolean("SAVE_STATE", !saveState1);
+            editor.apply();
+        });
+
+        darkModeButton.setOnClickListener(view -> {
+            boolean darkMode1 = requireContext().getSharedPreferences("SAVEDATA", 0).getBoolean("DARK_MODE", false);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putBoolean("DARK_MODE", !darkMode1);
+            editor.apply();
         });
 
         colorWheelText.addTextChangedListener(new TextWatcher() {
@@ -184,11 +210,12 @@ public class SettingsFragment extends Fragment {
         backgroundText.setTextColor(textColor);
         colorWheelText.setTextColor(textColor);
         songsFolder.setTextColor(textColor);
+        saveStateText.setTextColor(textColor);
+        darkModeText.setTextColor(textColor);
+        saveStateButton.setTextColor(textColor);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            songLengthSec.setTextColor(textColor);
-            songLengthMin.setTextColor(textColor);
-        }
+        songLengthSec.setTextColor(textColor);
+        songLengthMin.setTextColor(textColor);
     }
 
 

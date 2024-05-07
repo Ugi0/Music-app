@@ -62,7 +62,6 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
         return new ViewHolder(v);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @SuppressLint({"ResourceType", "NotifyDataSetChanged"})
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
@@ -195,9 +194,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                     menu.show();
                 } else if (itemId == R.id.song_delete) {
                     try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            Files.delete(Paths.get(myList.getLocation()));
-                        }
+                        Files.delete(Paths.get(myList.getLocation()));
                         MainActivity.wholeSongList.remove(myList);
                         list.remove(position);
                         player.main.PrevAndNextSongs.removeFromPrev(myList);
