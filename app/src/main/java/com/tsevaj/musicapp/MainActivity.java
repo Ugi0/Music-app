@@ -49,7 +49,7 @@ import com.tsevaj.musicapp.services.NotificationService;
 import com.tsevaj.musicapp.services.NotificationUtils;
 import com.tsevaj.musicapp.utils.FunctionClass;
 import com.tsevaj.musicapp.utils.MusicPlayer;
-import com.tsevaj.musicapp.utils.MyList;
+import com.tsevaj.musicapp.utils.MusicItem;
 import com.tsevaj.musicapp.utils.PrevNextList;
 import com.tsevaj.musicapp.utils.ProgressBarThread;
 
@@ -69,8 +69,8 @@ public class MainActivity extends AppCompatActivity
     public ProgressBarThread t;
     ActionBarDrawerToggle toggle;
     BroadcastReceiver receiver;
-    public ArrayList<MyList> songQueue = new ArrayList<>();
-    public static ArrayList<MyList> wholeSongList = null;
+    public ArrayList<MusicItem> songQueue = new ArrayList<>();
+    public static ArrayList<MusicItem> wholeSongList = null;
 
     public File BackgroundDestinationPath;
 
@@ -105,11 +105,11 @@ public class MainActivity extends AppCompatActivity
         }
 
     }
-    public void changePlayingList(ArrayList<MyList> li) {
+    public void changePlayingList(ArrayList<MusicItem> li) {
         PrevAndNextSongs.setList(li);
     }
 
-    public static void changeSongListWholeList(ArrayList<MyList> li) {
+    public static void changeSongListWholeList(ArrayList<MusicItem> li) {
         PrevNextList.allSongs = new ArrayList<>(li);
     }
 

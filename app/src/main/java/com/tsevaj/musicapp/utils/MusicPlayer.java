@@ -46,9 +46,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     private MediaPlayer player;
     public MediaSessionCompat.Token sessionToken;
     private String currentSong;
-    public MyList currentPlayingSong = new MyList("", "", "", 0, "", 0, "", 0);
+    public MusicItem currentPlayingSong = new MusicItem("", "", "", 0, "", 0, "", 0);
     public CustomAdapter adapter = null;
-    public ArrayList<MyList> visibleSongs;
+    public ArrayList<MusicItem> visibleSongs;
     public RecyclerView recyclerview;
     public View relativeLayout;
     public boolean songDone = true;
@@ -85,7 +85,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     @SuppressLint("NewApi")
-    public void play(MyList mylist) {
+    public void play(MusicItem mylist) {
         String song = mylist.getLocation();
         if (currentSong != null) if (currentSong.equals(song) && this.player.isPlaying()) return;
         relativeLayout = ((Activity) c).findViewById(R.id.music_bar);
@@ -117,7 +117,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         }
     }
 
-    public void recreateList(MyList mylist) {
+    public void recreateList(MusicItem mylist) {
         if (main.PrevAndNextSongs.createdFragment == null) {
             main.PrevAndNextSongs = new PrevNextList(new ArrayList<>(visibleSongs), mylist, MainActivity.currentFragment, c);
         }
@@ -143,7 +143,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         }
     }
 
-    public void setNext(MyList mylist) {
+    public void setNext(MusicItem mylist) {
         main.songQueue.add(mylist);
     }
 

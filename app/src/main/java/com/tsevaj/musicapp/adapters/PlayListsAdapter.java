@@ -24,20 +24,20 @@ import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.fragments.LibraryFragment;
 import com.tsevaj.musicapp.fragments.PlaylistsFragment;
 import com.tsevaj.musicapp.utils.MusicPlayer;
-import com.tsevaj.musicapp.utils.MyList;
+import com.tsevaj.musicapp.utils.MusicItem;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.ViewHolder> {
 
-    private ArrayList<MyList> list;
+    private ArrayList<MusicItem> list;
     private final Context context;
     private final MusicPlayer player;
     private final PlaylistsFragment parent;
     private View listView;
 
-    public PlayListsAdapter(ArrayList<MyList> list, Context mCtx, MusicPlayer player, PlaylistsFragment playlistsFragment) {
+    public PlayListsAdapter(ArrayList<MusicItem> list, Context mCtx, MusicPlayer player, PlaylistsFragment playlistsFragment) {
         this.list = list;
         this.context = mCtx;
         this.player = player;
@@ -109,7 +109,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                                 editor.putString("PLAYLISTS", "");
                                 editor.apply();
                                 list = new ArrayList<>();
-                                list.add(new MyList("Create a new playlist","","",0, "", 0, "", 0));
+                                list.add(new MusicItem("Create a new playlist","","",0, "", 0, "", 0));
                                 dialog.cancel();
                                 parent.changeFragments(new PlaylistsFragment(player, player.main), false);
                             }
@@ -121,7 +121,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                                 else { editor.putString("PLAYLISTS", playlists + "\n" + input.getText().toString()); }
                                 editor.putString("PLAYLIST_"+ input.getText().toString(),"");
                                 editor.apply();
-                                list.add(0, new MyList(input.getText().toString(),"","",0, "", 0, "", 0));
+                                list.add(0, new MusicItem(input.getText().toString(),"","",0, "", 0, "", 0));
                                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                                 dialog.cancel();
                                 parent.changeFragments(new PlaylistsFragment(player, player.main), false);

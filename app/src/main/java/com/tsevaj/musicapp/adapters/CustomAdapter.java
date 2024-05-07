@@ -23,7 +23,7 @@ import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.fragments.FavoritesFragment;
 import com.tsevaj.musicapp.utils.FunctionClass;
 import com.tsevaj.musicapp.utils.MusicPlayer;
-import com.tsevaj.musicapp.utils.MyList;
+import com.tsevaj.musicapp.utils.MusicItem;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,8 +33,8 @@ import java.util.Arrays;
 
 public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder> {
 
-    private ArrayList<MyList> list;
-    private final ArrayList<MyList> backupList;
+    private ArrayList<MusicItem> list;
+    private final ArrayList<MusicItem> backupList;
     private final Context mCtx;
     MusicPlayer player;
     FragmentActivity c;
@@ -44,7 +44,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
     private String chosenColor;
 
     @SuppressLint("ResourceType")
-    public CustomAdapter(ArrayList<MyList> list, Context mCtx, FragmentActivity c, MusicPlayer player, String playlist) {
+    public CustomAdapter(ArrayList<MusicItem> list, Context mCtx, FragmentActivity c, MusicPlayer player, String playlist) {
         this.list = new ArrayList<>(list);
         this.backupList = new ArrayList<>(list);
         this.mCtx = mCtx;
@@ -65,7 +65,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
     @SuppressLint({"ResourceType", "NotifyDataSetChanged"})
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
-        MyList myList = list.get(position);
+        MusicItem myList = list.get(position);
         if (player.main.PrevAndNextSongs.wholeList) {
             chosenColor = "#2A0B35";
         } else {
@@ -126,7 +126,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                         editor.putString("FAVORITES", String.join("\n", li));
                         editor.apply();
                         for (int i = 0; i < getList().size(); i++) {
-                            MyList listItem = getList().get(i);
+                            MusicItem listItem = getList().get(i);
                             if (listItem.getHead().equals(myList.getHead())) {
                                 ind = i;
                                 break;
@@ -143,7 +143,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                         editor.putString("FAVORITES", String.join("\n", li));
                         editor.apply();
                         for (int i = 0; i < getList().size(); i++) {
-                            MyList listItem = getList().get(i);
+                            MusicItem listItem = getList().get(i);
                             if (listItem.getHead().equals(myList.getHead())) {
                                 ind = i;
                                 break;
@@ -249,7 +249,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
         this.list.remove(ind);
     }
 
-    public ArrayList<MyList> getList() {
+    public ArrayList<MusicItem> getList() {
         return this.list;
     }
 

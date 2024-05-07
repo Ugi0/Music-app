@@ -11,7 +11,7 @@ import java.sql.Date;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 
-public class MyList implements Comparable<MyList> {
+public class MusicItem implements Comparable<MusicItem> {
     private final String head;
     private String desc;
     private final String location;
@@ -23,7 +23,7 @@ public class MyList implements Comparable<MyList> {
     private final String dateModified;
     private String locationFolder;
 
-    public MyList(String currentTitle, String length, String currentArtist, int currentSize, String currentType, long currentModified, String currentLocation, int currentLength) {
+    public MusicItem(String currentTitle, String length, String currentArtist, int currentSize, String currentType, long currentModified, String currentLocation, int currentLength) {
         this.head = currentTitle;
         this.desc = length+"   "+currentArtist;
         this.location = currentLocation;
@@ -90,7 +90,7 @@ public class MyList implements Comparable<MyList> {
     }
 
     @Override
-    public int compareTo(MyList o) {
+    public int compareTo(MusicItem o) {
         if (o == null) {
             return -1;
         }

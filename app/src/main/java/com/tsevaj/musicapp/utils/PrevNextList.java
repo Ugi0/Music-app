@@ -16,11 +16,11 @@ import java.util.Random;
 
 public class PrevNextList {
     private final int listSize = 20;
-    public static ArrayList<MyList> allSongs;
-    private ArrayList<MyList> currentlyPlayingSongs;
-    private ArrayList<MyList> Prev;
-    private ArrayList<MyList> songOrder;
-    private MyList current;
+    public static ArrayList<MusicItem> allSongs;
+    private ArrayList<MusicItem> currentlyPlayingSongs;
+    private ArrayList<MusicItem> Prev;
+    private ArrayList<MusicItem> songOrder;
+    private MusicItem current;
     private Random randomizer;
 
     public Fragment createdFragment;
@@ -29,7 +29,7 @@ public class PrevNextList {
 
     public boolean wholeList;
 
-    public PrevNextList(ArrayList<MyList> list, MyList current, Fragment currentFragment, Context c) {
+    public PrevNextList(ArrayList<MusicItem> list, MusicItem current, Fragment currentFragment, Context c) {
         this.currentlyPlayingSongs = new ArrayList<>(list);
         this.current = current;
         this.c = c;
@@ -48,7 +48,7 @@ public class PrevNextList {
         Prev = new ArrayList<>();
     }
 
-    public void setList(ArrayList<MyList> li) {
+    public void setList(ArrayList<MusicItem> li) {
         this.currentlyPlayingSongs = li;
         this.songOrder = li;
         reRoll();
@@ -62,7 +62,7 @@ public class PrevNextList {
         Collections.shuffle(allSongs, randomizer);
     }
 
-    public void setCurrent(MyList item) {
+    public void setCurrent(MusicItem item) {
         if (!Prev.remove(current) && Prev.size() >= 40) {
             Prev.remove(0);
         }
@@ -70,14 +70,14 @@ public class PrevNextList {
         this.current = item;
     }
 
-    public void removeFromPrev(MyList item) {
+    public void removeFromPrev(MusicItem item) {
         try {
             this.Prev.remove(item);
         } catch (Exception ignored) {}
     }
 
-    public MyList Next(Boolean force) {
-        ArrayList<MyList> li;
+    public MusicItem Next(Boolean force) {
+        ArrayList<MusicItem> li;
         if (settings.getInt("REPLAY_MODE",1) == 1 && !force) { //Play one song
             return current;
         }
@@ -116,9 +116,9 @@ public class PrevNextList {
         return current;
     }
 
-    public MyList Prev() {
+    public MusicItem Prev() {
         if (Prev.size() == 0) return current;
-        MyList item = Prev.get(Prev.size()-1);
+        MusicItem item = Prev.get(Prev.size()-1);
         Prev.remove(Prev.size()-1);
         return item;
     }

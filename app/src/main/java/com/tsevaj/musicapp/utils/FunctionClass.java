@@ -36,7 +36,7 @@ import java.util.stream.Stream;
 public class FunctionClass {
     @SuppressLint("NotifyDataSetChanged")
     public static void getMusicAndSet(RecyclerView recyclerView, Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
-        ArrayList<MyList> li = getMusic(activity, player, c, filter, nameFilter);
+        ArrayList<MusicItem> li = getMusic(activity, player, c, filter, nameFilter);
         LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
         CustomAdapter adapter = new CustomAdapter(li, activity, c, player, filter) {};
         recyclerView.setAdapter(adapter);
@@ -48,16 +48,16 @@ public class FunctionClass {
         adapter.notifyDataSetChanged();
     }
 
-    public static ArrayList<MyList> getMusic(Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
+    public static ArrayList<MusicItem> getMusic(Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
         final int FILTER_SECONDS = activity.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",120);
         boolean REVERSE_ORDER = c.getSharedPreferences("SAVEDATA", 0).getBoolean("ASCENDING", true);
         final String musicFolder = activity.getSharedPreferences("SAVEDATA", 0).getString("SONG_FOLDER","");
-        ArrayList<MyList> li = new ArrayList<>();
+        ArrayList<MusicItem> li = new ArrayList<>();
 
         if (MainActivity.wholeSongList == null) loadList(player.main, (Activity) activity);
 
         SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
-        for (MyList item: MainActivity.wholeSongList) {
+        for (MusicItem item: MainActivity.wholeSongList) {
             // filtering for favorites etc..
             if (!filter.equals("")) {
                 String wanted = settings.getString(filter, "");
@@ -76,11 +76,11 @@ public class FunctionClass {
             }
         }
         String favorites = settings.getString("REPLAY", "");
-        ArrayList<MyList> li2 = new ArrayList<>(MainActivity.wholeSongList);
+        ArrayList<MusicItem> li2 = new ArrayList<>(MainActivity.wholeSongList);
         if (REVERSE_ORDER) {
             if (favorites.equals("LENGTH")) {
-                li.sort(Comparator.comparingInt(MyList::getDuration));
-                li2.sort(Comparator.comparingInt(MyList::getDuration));
+                li.sort(Comparator.comparingInt(MusicItem::getDuration));
+                li2.sort(Comparator.comparingInt(MusicItem::getDuration));
             } else if (favorites.equals("TITLE")) {
                 li.sort((o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
                 li2.sort((o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
@@ -115,13 +115,13 @@ public class FunctionClass {
         return String.format("%02d", first)+":"+String.format("%02d", second);
     }
     public static void playlistView(RecyclerView recyclerView, Context activity, MusicPlayer player, FragmentActivity c, PlaylistsFragment playlistsFragment) {
-        ArrayList<MyList> list = new ArrayList<>();
+        ArrayList<MusicItem> list = new ArrayList<>();
         LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
         SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
-        list.add(new MyList("Create a new playlist","","",0, "", 0, "", 0));
+        list.add(new MusicItem("Create a new playlist","","",0, "", 0, "", 0));
         if (!settings.getString("PLAYLISTS", "").isEmpty()) {
             for (String playlist : settings.getString("PLAYLISTS", "").split("\n")) {
-                list.add(0, new MyList(playlist, "","",0, "", 0, "", 0));
+                list.add(0, new MusicItem(playlist, "","",0, "", 0, "", 0));
             }
         }
         PlayListsAdapter adapter = new PlayListsAdapter(list, c, player, playlistsFragment) {};
@@ -132,7 +132,7 @@ public class FunctionClass {
     public static void loadList(MainActivity main, Activity activity) {
         final int FILTER_SECONDS = activity.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",120);
         int FILTER_LENGTH = FILTER_SECONDS * 1000;
-        ArrayList<MyList> list = new ArrayList<>();
+        ArrayList<MusicItem> list = new ArrayList<>();
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor songCursor = main.getContentResolver().query(songUri, null, null, null, null);
         if (songCursor != null && songCursor.moveToFirst()) {
@@ -150,7 +150,7 @@ public class FunctionClass {
                 String currentType = songCursor.getString(songType);
                 long currentModified = songCursor.getLong(songModified);
                 String currentArtist = "<unknown>";
-                MyList myList = new MyList(
+                MusicItem myList = new MusicItem(
                         currentTitle,
                         milliSecondsToTime(currentLength),
                         currentArtist,
@@ -169,7 +169,7 @@ public class FunctionClass {
     }
     public static void getAuthors(MusicPlayer player, Activity activity) {
         @SuppressLint("NotifyDataSetChanged") Thread t = new Thread(() -> {
-            for (MyList item: MainActivity.wholeSongList) {
+            for (MusicItem item: MainActivity.wholeSongList) {
                 try {
                     String Artist = read(new File(item.getLocation())).getTag().getFirst(FieldKey.ARTIST);
                     item.setArtist(Artist);
