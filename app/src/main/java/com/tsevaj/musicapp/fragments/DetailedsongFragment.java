@@ -125,7 +125,6 @@ public class DetailedsongFragment extends Fragment {
             shuffle.setActivated(!shuffle.isActivated());
             editor.putBoolean("SHUFFLE",shuffle.isActivated());
             editor.apply();
-            main.PrevAndNextSongs.reRoll();
             player.prepareButtons();
         });
         replay.setOnClickListener(view -> {
@@ -141,7 +140,6 @@ public class DetailedsongFragment extends Fragment {
                 replay.setActivated(true);
                 editor.putInt("REPLAY_MODE",-1);
                 editor.apply();
-                main.PrevAndNextSongs.reRoll();
             }
         });
         menuButton.setOnClickListener(view -> {

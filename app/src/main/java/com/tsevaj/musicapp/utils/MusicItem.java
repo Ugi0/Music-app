@@ -38,7 +38,6 @@ public class MusicItem implements Comparable<MusicItem> {
 
     }
 
-    //getters
     public String getHead() {
         return head;
     }

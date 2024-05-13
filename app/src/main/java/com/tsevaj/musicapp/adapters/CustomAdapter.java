@@ -43,7 +43,6 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
     private final String playlist;
     private String chosenColor;
 
-    @SuppressLint("ResourceType")
     public CustomAdapter(ArrayList<MusicItem> list, Context mCtx, FragmentActivity c, MusicPlayer player, String playlist) {
         this.list = new ArrayList<>(list);
         this.backupList = new ArrayList<>(list);

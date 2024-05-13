@@ -130,7 +130,7 @@ public class FunctionClass {
     }
     @SuppressLint("NewApi")
     public static void loadList(MainActivity main, Activity activity) {
-        final int FILTER_SECONDS = activity.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",120);
+        final int FILTER_SECONDS = activity.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",60);
         int FILTER_LENGTH = FILTER_SECONDS * 1000;
         ArrayList<MusicItem> list = new ArrayList<>();
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -157,7 +157,8 @@ public class FunctionClass {
                         currentSize,
                         currentType,
                         currentModified,
-                        currentLocation, currentLength);
+                        currentLocation, currentLength
+                );
                 list.add(myList);
             } while (songCursor.moveToNext());
         }

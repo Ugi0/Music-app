@@ -157,7 +157,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         } catch (Exception ignored) {
         }
-        play(main.PrevAndNextSongs.Next(force));
+        MusicItem song = main.PrevAndNextSongs.Next(force);
+
+        play(song);
 
         adapter.reset();
         adapter.notifyDataSetChanged();

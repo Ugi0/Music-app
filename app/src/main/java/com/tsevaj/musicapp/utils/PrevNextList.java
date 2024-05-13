@@ -12,7 +12,10 @@ import com.tsevaj.musicapp.MainActivity;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class PrevNextList {
     private final int listSize = 20;
@@ -36,8 +39,8 @@ public class PrevNextList {
         this.createdFragment = currentFragment;
         allSongs = new ArrayList<>(MainActivity.wholeSongList);
         this.settings = c.getSharedPreferences("SAVEDATA", 0);
+        randomizer = new Random(Instant.now().toEpochMilli());
         initializePrev();
-        reRoll();
     }
 
     public PrevNextList(Context c) {
@@ -51,15 +54,6 @@ public class PrevNextList {
     public void setList(ArrayList<MusicItem> li) {
         this.currentlyPlayingSongs = li;
         this.songOrder = li;
-        reRoll();
-    }
-
-    public void reRoll() {
-        randomizer = new Random(Instant.now().toEpochMilli());
-
-        songOrder = new ArrayList<>(currentlyPlayingSongs);
-        Collections.shuffle(songOrder, randomizer);
-        Collections.shuffle(allSongs, randomizer);
     }
 
     public void setCurrent(MusicItem item) {
@@ -78,46 +72,39 @@ public class PrevNextList {
 
     public MusicItem Next(Boolean force) {
         ArrayList<MusicItem> li;
+        int index;
         if (settings.getInt("REPLAY_MODE",1) == 1 && !force) { //Play one song
             return current;
         }
         if (!settings.getBoolean("SHUFFLE", false)) { //Play songs in list order
             if (wholeList) li = MainActivity.wholeSongList;
             else { li = currentlyPlayingSongs; }
-            int index = li.indexOf(current)+1;
-            if (index == 0) {
-                index = randomizer.nextInt(li.size());
-            }
-            if (!Prev.remove(current) && Prev.size() >= 40) {
-                Prev.remove(0);
-            }
-            Prev.add(current);
-            current = li.get((index) % li.size());
-            return current;
+
+            index = li.indexOf(current)+1;
         }
-        if (wholeList) {
-            int index = allSongs.indexOf(current)+1;
-            if (!Prev.remove(current) && Prev.size() >= 40) {
-                Prev.remove(0);
+        else { //else Play a random song
+            if (wholeList) li = MainActivity.wholeSongList;
+            else { li = currentlyPlayingSongs; }
+            List<Integer> list = IntStream.rangeClosed(0, li.size()-1).boxed().collect(Collectors.toList());
+            list.remove(li.indexOf(current));
+            Log.d("test", list.toString());
+
+            index = list.get(randomizer.nextInt(li.size()-1));
+            if (index == li.indexOf(current)) { //If next song happens to be the same
+                index = list.get(randomizer.nextInt(li.size()-1));
             }
-            Prev.add(current);
-            current = allSongs.get((index) % allSongs.size());
-            return current;
         }
-        int index = songOrder.indexOf(current)+1;
-        if (index == 0) {
-            index = randomizer.nextInt(songOrder.size());
-        }
+        MusicItem cur = li.get(index % li.size());
         if (!Prev.remove(current) && Prev.size() >= 40) {
             Prev.remove(0);
         }
         Prev.add(current);
-        current = songOrder.get((index) % songOrder.size());
+        current = cur;
         return current;
     }
 
     public MusicItem Prev() {
-        if (Prev.size() == 0) return current;
+        if (Prev.isEmpty()) return current;
         MusicItem item = Prev.get(Prev.size()-1);
         Prev.remove(Prev.size()-1);
         return item;
