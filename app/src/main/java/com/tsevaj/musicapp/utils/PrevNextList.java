@@ -87,8 +87,6 @@ public class PrevNextList {
             else { li = currentlyPlayingSongs; }
             List<Integer> list = IntStream.rangeClosed(0, li.size()-1).boxed().collect(Collectors.toList());
             list.remove(li.indexOf(current));
-            Log.d("test", list.toString());
-
             index = list.get(randomizer.nextInt(li.size()-1));
             if (index == li.indexOf(current)) { //If next song happens to be the same
                 index = list.get(randomizer.nextInt(li.size()-1));
