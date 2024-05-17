@@ -49,6 +49,7 @@ public class LibraryFragment extends Fragment {
         SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
         swipeRefreshLayout.setOnRefreshListener(() -> {
             MainActivity.wholeSongList = null;
+            player.main.PrevAndNextSongs.setList(null);
             player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "", nameFilter);
             swipeRefreshLayout.setRefreshing(false);
         });

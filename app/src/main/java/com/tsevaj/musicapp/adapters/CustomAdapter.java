@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.fragments.FavoritesFragment;
+import com.tsevaj.musicapp.utils.AlertPopup;
 import com.tsevaj.musicapp.utils.FunctionClass;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.utils.MusicItem;
@@ -192,15 +193,18 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                     });
                     menu.show();
                 } else if (itemId == R.id.song_delete) {
-                    try {
-                        Files.delete(Paths.get(myList.getLocation()));
-                        MainActivity.wholeSongList.remove(myList);
-                        list.remove(position);
-                        player.main.PrevAndNextSongs.removeFromPrev(myList);
-                        notifyDataSetChanged();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    Runnable callback = () -> {
+                        try {
+                            Files.delete(Paths.get(myList.getLocation()));
+                            MainActivity.wholeSongList.remove(myList);
+                            list.remove(position);
+                            player.main.PrevAndNextSongs.removeFromPrev(myList);
+                            notifyDataSetChanged();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    };
+                    new AlertPopup(c, "Delete", "Are you sure you want to delete?", callback).show();
                 } else if (itemId == R.id.song_properties) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(c);
                     builder.setTitle("Song properties")

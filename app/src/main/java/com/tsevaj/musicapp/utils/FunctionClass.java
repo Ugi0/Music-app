@@ -56,7 +56,6 @@ public class FunctionClass {
         SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
 
         ArrayList<MusicItem> li = new ArrayList<>();
-        Log.d("test", filter);
 
         for (MusicItem item: MainActivity.wholeSongList) {
             // filtering for favorites etc..
@@ -92,8 +91,6 @@ public class FunctionClass {
                 list.sort(Comparator.comparingInt(MusicItem::getDuration));
             } else if (order.equals("TITLE")) {
                 list.sort((o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
-            } else {
-                Collections.reverse(list);
             }
         } else {
             if (order.equals("LENGTH")) {

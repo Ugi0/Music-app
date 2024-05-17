@@ -22,6 +22,7 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.utils.AlertPopup;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.utils.ProgressBarThread;
 import com.tsevaj.musicapp.R;
@@ -169,14 +170,17 @@ public class DetailedsongFragment extends Fragment {
                         break;
                     }
                     case R.id.song_delete: {
-                        try {
-                            Files.delete(Paths.get(player.currentPlayingSong.getLocation()));
-                            MainActivity.wholeSongList.remove(player.currentPlayingSong);
-                            main.PrevAndNextSongs.removeFromPrev(player.currentPlayingSong);
-                            player.playNext(true);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        Runnable callback = () -> {
+                            try {
+                                Files.delete(Paths.get(player.currentPlayingSong.getLocation()));
+                                MainActivity.wholeSongList.remove(player.currentPlayingSong);
+                                main.PrevAndNextSongs.removeFromPrev(player.currentPlayingSong);
+                                player.playNext(true);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        };
+                        new AlertPopup(requireContext(), "Delete", "Are you sure you want to delete?", callback).show();
                         break;
                     }
                 }

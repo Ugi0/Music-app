@@ -129,7 +129,8 @@ public class PrevNextList {
                 if (reverse) {
                     currentlyPlayingSongs.sort((o1, o2) -> o2.getDateModified().compareTo(o1.getDateModified()));
                 } else {
-                    currentlyPlayingSongs.sort(Comparator.comparing(MusicItem::getDateModified));
+                    //currentlyPlayingSongs.sort(Comparator.comparing(MusicItem::getDateModified));
+                    currentlyPlayingSongs.sort((o1, o2) -> o1.getDateModified().compareTo(o2.getDateModified()));
                 }
                 break;
             case "TITLE":
