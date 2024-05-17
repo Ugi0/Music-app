@@ -45,4 +45,5 @@
     <string name="play_same_or_different_songs">Play same or different songs</string>
     <string name="save_state">Save state</string>
     <string name="dark_mode">Dark mode</string>
+    <string name="random_order">Random order</string>
 </resources>

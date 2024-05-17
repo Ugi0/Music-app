@@ -109,7 +109,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                                 editor.putString("PLAYLISTS", "");
                                 editor.apply();
                                 list = new ArrayList<>();
-                                list.add(new MusicItem("Create a new playlist","","",0, "", 0, "", 0));
+                                list.add(new MusicItem("Create a new playlist","","",0, "", 0, "", 0, false));
                                 dialog.cancel();
                                 parent.changeFragments(new PlaylistsFragment(player, player.main), false);
                             }
@@ -121,7 +121,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                                 else { editor.putString("PLAYLISTS", playlists + "\n" + input.getText().toString()); }
                                 editor.putString("PLAYLIST_"+ input.getText().toString(),"");
                                 editor.apply();
-                                list.add(0, new MusicItem(input.getText().toString(),"","",0, "", 0, "", 0));
+                                list.add(0, new MusicItem(input.getText().toString(),"","",0, "", 0, "", 0, false));
                                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                                 dialog.cancel();
                                 parent.changeFragments(new PlaylistsFragment(player, player.main), false);

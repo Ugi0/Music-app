@@ -31,37 +31,39 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FunctionClass {
-    @SuppressLint("NotifyDataSetChanged")
-    public static void getMusicAndSet(RecyclerView recyclerView, Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
-        ArrayList<MusicItem> li = getMusic(activity, player, c, filter, nameFilter);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
-        CustomAdapter adapter = new CustomAdapter(li, activity, c, player, filter) {};
-        recyclerView.setAdapter(adapter);
-        if (recyclerView.getItemDecorationCount() == 0) recyclerView.addItemDecoration(new DividerItemDecoration(activity, layoutManager.getOrientation()));
-        player.main.changePlayingList(li);
-        player.recyclerview = recyclerView;
-        player.adapter = adapter;
-        adapter.reset();
-        adapter.notifyDataSetChanged();
-    }
-
     public static ArrayList<MusicItem> getMusic(Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
-        final int FILTER_SECONDS = activity.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",120);
         boolean REVERSE_ORDER = c.getSharedPreferences("SAVEDATA", 0).getBoolean("ASCENDING", true);
-        final String musicFolder = activity.getSharedPreferences("SAVEDATA", 0).getString("SONG_FOLDER","");
-        ArrayList<MusicItem> li = new ArrayList<>();
 
         if (MainActivity.wholeSongList == null) loadList(player.main, (Activity) activity);
 
         SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
+
+        ArrayList<MusicItem> li = filterMusicList(c, filter, nameFilter);
+
+        String order = settings.getString("REPLAY", "");
+
+        return sortMusicList(li, order, REVERSE_ORDER);
+    }
+
+    public static ArrayList<MusicItem> filterMusicList(FragmentActivity c, String filter, String nameFilter) {
+        final int FILTER_SECONDS = c.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",120);
+        boolean REVERSE_ORDER = c.getSharedPreferences("SAVEDATA", 0).getBoolean("ASCENDING", true);
+        final String musicFolder = c.getSharedPreferences("SAVEDATA", 0).getString("SONG_FOLDER","");
+        SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
+
+        ArrayList<MusicItem> li = new ArrayList<>();
+        Log.d("test", filter);
+
         for (MusicItem item: MainActivity.wholeSongList) {
             // filtering for favorites etc..
-            if (!filter.equals("")) {
-                String wanted = settings.getString(filter, "");
-                if ((!Arrays.asList(wanted.split("\n")).contains(item.getHead()))) continue;
+            if (filter.equals("FAVORITES")) {
+                if (!item.getFavorited()) continue;
+                //String wanted = settings.getString(filter, "");
+                //if ((!Arrays.asList(wanted.split("\n")).contains(item.getHead()))) continue;
             }
             if (!(item.getHead().toLowerCase().contains(nameFilter.toLowerCase()) || item.getArtist().toLowerCase().contains(nameFilter.toLowerCase()))) {
                 continue;
@@ -75,34 +77,36 @@ public class FunctionClass {
                 }
             }
         }
-        String favorites = settings.getString("REPLAY", "");
-        ArrayList<MusicItem> li2 = new ArrayList<>(MainActivity.wholeSongList);
-        if (REVERSE_ORDER) {
-            if (favorites.equals("LENGTH")) {
-                li.sort(Comparator.comparingInt(MusicItem::getDuration));
-                li2.sort(Comparator.comparingInt(MusicItem::getDuration));
-            } else if (favorites.equals("TITLE")) {
-                li.sort((o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
-                li2.sort((o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
-            } else {
-                Collections.reverse(li);
-                Collections.reverse(li2);
-            }
-        } else {
-            if (favorites.equals("LENGTH")) {
-                li.sort((o1, o2) -> Integer.compare(o2.getDuration(), o1.getDuration()));
-                li2.sort((o1, o2) -> Integer.compare(o2.getDuration(), o1.getDuration()));
-            } else if (favorites.equals("TITLE")) {
-                li.sort((o1, o2) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
-                li2.sort((o1, o2) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
-            } else {
-                Collections.reverse(li);
-                Collections.reverse(li2);
-            }
-        }
-        MainActivity.changeSongListWholeList(li2);
         return li;
     }
+
+    public static ArrayList<MusicItem> nameFilterMusicList(ArrayList<MusicItem> list, String nameFilter) {
+        return (ArrayList<MusicItem>) list.stream().filter(musicItem ->
+                musicItem.getHead().toLowerCase().contains(nameFilter.toLowerCase()) || musicItem.getArtist().toLowerCase().contains(nameFilter.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    public static ArrayList<MusicItem> sortMusicList(ArrayList<MusicItem> list, String order, boolean reverse) {
+        if (reverse) {
+            if (order.equals("LENGTH")) {
+                list.sort(Comparator.comparingInt(MusicItem::getDuration));
+            } else if (order.equals("TITLE")) {
+                list.sort((o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
+            } else {
+                Collections.reverse(list);
+            }
+        } else {
+            if (order.equals("LENGTH")) {
+                list.sort((o1, o2) -> Integer.compare(o2.getDuration(), o1.getDuration()));
+            } else if (order.equals("TITLE")) {
+                list.sort((o1, o2) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
+            } else {
+                Collections.reverse(list);
+            }
+        }
+        return list;
+    }
+
     @SuppressLint("DefaultLocale")
     public static String milliSecondsToTime(int time) {
         int first = (time/1000)/60;
@@ -118,10 +122,10 @@ public class FunctionClass {
         ArrayList<MusicItem> list = new ArrayList<>();
         LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
         SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
-        list.add(new MusicItem("Create a new playlist","","",0, "", 0, "", 0));
+        list.add(new MusicItem("Create a new playlist","","",0, "", 0, "", 0, false));
         if (!settings.getString("PLAYLISTS", "").isEmpty()) {
             for (String playlist : settings.getString("PLAYLISTS", "").split("\n")) {
-                list.add(0, new MusicItem(playlist, "","",0, "", 0, "", 0));
+                list.add(0, new MusicItem(playlist, "","",0, "", 0, "", 0, false));
             }
         }
         PlayListsAdapter adapter = new PlayListsAdapter(list, c, player, playlistsFragment) {};
@@ -135,6 +139,7 @@ public class FunctionClass {
         ArrayList<MusicItem> list = new ArrayList<>();
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor songCursor = main.getContentResolver().query(songUri, null, null, null, null);
+        ArrayList<String> favorites = main.getFavorites();
         if (songCursor != null && songCursor.moveToFirst()) {
             int songTitle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songLength = songCursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
@@ -157,7 +162,8 @@ public class FunctionClass {
                         currentSize,
                         currentType,
                         currentModified,
-                        currentLocation, currentLength
+                        currentLocation, currentLength,
+                        favorites.contains(currentTitle)
                 );
                 list.add(myList);
             } while (songCursor.moveToNext());

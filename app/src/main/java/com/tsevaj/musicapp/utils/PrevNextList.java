@@ -1,28 +1,42 @@
 package com.tsevaj.musicapp.utils;
 
+import static com.tsevaj.musicapp.utils.FunctionClass.filterMusicList;
+import static com.tsevaj.musicapp.utils.FunctionClass.getMusic;
+import static com.tsevaj.musicapp.utils.FunctionClass.nameFilterMusicList;
+import static com.tsevaj.musicapp.utils.FunctionClass.sortMusicList;
+
+import static org.jaudiotagger.audio.AudioFileIO.read;
+
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.util.Log;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.adapters.CustomAdapter;
 
+import org.jaudiotagger.tag.FieldKey;
+
+import java.io.File;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PrevNextList {
-    private final int listSize = 20;
-    public static ArrayList<MusicItem> allSongs;
     private ArrayList<MusicItem> currentlyPlayingSongs;
     private ArrayList<MusicItem> Prev;
-    private ArrayList<MusicItem> songOrder;
     private MusicItem current;
     private Random randomizer;
 
@@ -32,12 +46,14 @@ public class PrevNextList {
 
     public boolean wholeList;
 
+    private String lastFilter = "";
+    private String lastNameFilter = "";
+
     public PrevNextList(ArrayList<MusicItem> list, MusicItem current, Fragment currentFragment, Context c) {
         this.currentlyPlayingSongs = new ArrayList<>(list);
         this.current = current;
         this.c = c;
         this.createdFragment = currentFragment;
-        allSongs = new ArrayList<>(MainActivity.wholeSongList);
         this.settings = c.getSharedPreferences("SAVEDATA", 0);
         randomizer = new Random(Instant.now().toEpochMilli());
         initializePrev();
@@ -53,7 +69,6 @@ public class PrevNextList {
 
     public void setList(ArrayList<MusicItem> li) {
         this.currentlyPlayingSongs = li;
-        this.songOrder = li;
     }
 
     public void setCurrent(MusicItem item) {
@@ -106,5 +121,67 @@ public class PrevNextList {
         MusicItem item = Prev.get(Prev.size()-1);
         Prev.remove(Prev.size()-1);
         return item;
+    }
+
+    public void sortFilterList(String sort, boolean reverse) {
+        switch (sort) {
+            case "DATE":
+                if (reverse) {
+                    currentlyPlayingSongs.sort((o1, o2) -> o2.getDateModified().compareTo(o1.getDateModified()));
+                } else {
+                    currentlyPlayingSongs.sort(Comparator.comparing(MusicItem::getDateModified));
+                }
+                break;
+            case "TITLE":
+                if (reverse) {
+                    currentlyPlayingSongs.sort((o1, o2) -> o2.getHead().compareToIgnoreCase(o1.getHead()));
+                } else {
+                    currentlyPlayingSongs.sort((o1, o2) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
+                }
+                break;
+            case "LENGTH":
+                if (reverse) {
+                    currentlyPlayingSongs.sort(Comparator.comparingInt(MusicItem::getDuration));
+                } else {
+                    currentlyPlayingSongs.sort((o1, o2) -> Integer.compare(o2.getDuration(), o1.getDuration()));
+                }
+                break;
+            case "RANDOM":
+                Collections.shuffle(currentlyPlayingSongs);
+                break;
+            default:
+                break;
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void getMusicAndSet(RecyclerView recyclerView, Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
+        ArrayList<MusicItem> li;
+        if (currentlyPlayingSongs == null) {
+            //if (Objects.equals(filter, lastFilter) && !Objects.equals(nameFilter, lastNameFilter))
+            li = getMusic(activity, player, c, filter, nameFilter);
+            currentlyPlayingSongs = li;
+        } else if (!(filter.equals(lastFilter))) {
+            lastFilter = filter;
+            li = getMusic(activity, player, c, filter, nameFilter);
+            currentlyPlayingSongs = li;
+        } else if (!(Objects.equals(nameFilter, lastNameFilter))) {
+            lastNameFilter = nameFilter;
+            li = filterMusicList((FragmentActivity) activity, filter, nameFilter);
+            currentlyPlayingSongs = li;
+        } else {
+            li = currentlyPlayingSongs;
+        }
+        LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
+        CustomAdapter adapter = new CustomAdapter(li, activity, c, player, filter) {
+        };
+        recyclerView.setAdapter(adapter);
+        if (recyclerView.getItemDecorationCount() == 0)
+            recyclerView.addItemDecoration(new DividerItemDecoration(activity, layoutManager.getOrientation()));
+        //player.main.changePlayingList(li);
+        player.recyclerview = recyclerView;
+        player.adapter = adapter;
+        adapter.reset();
+        adapter.notifyDataSetChanged();
     }
 }

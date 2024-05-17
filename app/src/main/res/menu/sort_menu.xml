@@ -9,6 +9,9 @@
     <item
         android:id="@+id/sort_length"
         android:title="@string/sort_by_length"/>
+    <item
+        android:id="@+id/sort_random"
+        android:title="@string/random_order"/>
     <item android:id="@+id/sort_reverse"
         android:title="@string/ascending"
         android:checkable="true"/>

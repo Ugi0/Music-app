@@ -20,6 +20,7 @@ import com.tsevaj.musicapp.utils.FunctionClass;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.utils.PrevNextList;
 
 public class FavoritesFragment extends Fragment {
     private final MusicPlayer player;
@@ -45,11 +46,11 @@ public class FavoritesFragment extends Fragment {
         SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
         swipeRefreshLayout.setOnRefreshListener(() -> {
             MainActivity.wholeSongList = null;
-            FunctionClass.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
+            player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
             swipeRefreshLayout.setRefreshing(false);
         });
 
-        FunctionClass.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
+        player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
         MainActivity.currentFragment = this;
         main.setDrawer();
 

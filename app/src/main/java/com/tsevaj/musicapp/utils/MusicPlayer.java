@@ -46,7 +46,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     private MediaPlayer player;
     public MediaSessionCompat.Token sessionToken;
     private String currentSong;
-    public MusicItem currentPlayingSong = new MusicItem("", "", "", 0, "", 0, "", 0);
+    public MusicItem currentPlayingSong = new MusicItem("", "", "", 0, "", 0, "", 0, false);
     public CustomAdapter adapter = null;
     public ArrayList<MusicItem> visibleSongs;
     public RecyclerView recyclerview;

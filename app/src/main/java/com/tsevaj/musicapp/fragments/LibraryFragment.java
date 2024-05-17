@@ -23,16 +23,15 @@ import com.tsevaj.musicapp.utils.FunctionClass;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.utils.PrevNextList;
 
 public class LibraryFragment extends Fragment {
     private RecyclerView recyclerView;
     private final MusicPlayer player;
-    private String filter = "";
     private final String nameFilter;
 
     public LibraryFragment(MusicPlayer player, String filter, String nameFilter) {
         this.player = player;
-        if (!filter.isEmpty()) this.filter = filter;
         this.nameFilter = nameFilter;
     }
 
@@ -50,11 +49,11 @@ public class LibraryFragment extends Fragment {
         SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
         swipeRefreshLayout.setOnRefreshListener(() -> {
             MainActivity.wholeSongList = null;
-            FunctionClass.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), filter, nameFilter);
+            player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "", nameFilter);
             swipeRefreshLayout.setRefreshing(false);
         });
 
-        FunctionClass.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), this.filter, nameFilter);
+        player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "", nameFilter);
         MainActivity.currentFragment = this;
 
         if (!player.songDone) {

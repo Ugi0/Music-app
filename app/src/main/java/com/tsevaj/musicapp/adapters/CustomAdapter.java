@@ -90,11 +90,11 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
             //
             if (player.main.PrevAndNextSongs.wholeList) {
                 chosenColor = "#2A0B35";
-                player.main.PrevAndNextSongs.setList(MainActivity.wholeSongList);
+                player.main.changePlayingList(MainActivity.wholeSongList);
             }
             else {
                 chosenColor = "#DC143C";
-                player.main.PrevAndNextSongs.setList(player.visibleSongs);
+                player.main.changePlayingList(player.visibleSongs);
             }
             if (lastClicked != null) {
                 lastClicked.textViewHead.setTextColor(defaultColor);

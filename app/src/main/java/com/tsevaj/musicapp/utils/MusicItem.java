@@ -20,10 +20,12 @@ public class MusicItem implements Comparable<MusicItem> {
     private final String currentSize;
     private final String type;
     private final int hash;
-    private final String dateModified;
+    private final long dateModified;
+    private final String dateModifiedString;
+    private final boolean favorited;
     private String locationFolder;
 
-    public MusicItem(String currentTitle, String length, String currentArtist, int currentSize, String currentType, long currentModified, String currentLocation, int currentLength) {
+    public MusicItem(String currentTitle, String length, String currentArtist, int currentSize, String currentType, long currentModified, String currentLocation, int currentLength, boolean favorited) {
         this.head = currentTitle;
         this.desc = length+"   "+currentArtist;
         this.location = currentLocation;
@@ -32,7 +34,9 @@ public class MusicItem implements Comparable<MusicItem> {
         this.currentSize = humanReadableByteCountSI(currentSize);
         this.type = currentType;
         this.hash = head.hashCode()+duration+location.hashCode()+artist.hashCode();
-        this.dateModified = DateFormat.format("MM/dd/yyyy", new Date(currentModified*1000)).toString();
+        this.dateModified = currentModified;
+        this.dateModifiedString = DateFormat.format("MM/dd/yyyy", new Date(currentModified*1000)).toString();
+        this.favorited = favorited;
         try { this.locationFolder = currentLocation.split("/", 0)[currentLocation.split("/", 0).length-2]; }
         catch (Exception ignored) {this.locationFolder = "<unknown>";}
 
@@ -62,7 +66,11 @@ public class MusicItem implements Comparable<MusicItem> {
 
     public String getType() { return type; }
 
-    public String getDateModified() { return dateModified; }
+    public String getDateModifiedString() { return dateModifiedString; }
+
+    public boolean getFavorited() { return favorited; }
+
+    public Long getDateModified() { return dateModified; }
 
     @NonNull
     public String toString(){

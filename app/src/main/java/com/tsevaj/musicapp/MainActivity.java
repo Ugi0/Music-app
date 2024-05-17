@@ -109,10 +109,6 @@ public class MainActivity extends AppCompatActivity
         PrevAndNextSongs.setList(li);
     }
 
-    public static void changeSongListWholeList(ArrayList<MusicItem> li) {
-        PrevNextList.allSongs = new ArrayList<>(li);
-    }
-
     public void showNotification(int playPauseButton, String songName) {
         utils.displayNotification(this, songName, playPauseButton);
     }
@@ -276,7 +272,7 @@ public class MainActivity extends AppCompatActivity
         inflater.inflate(R.menu.sort_menu, popup.getMenu());
         SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
         SharedPreferences.Editor editor = settings.edit();
-        popup.getMenu().getItem(3).setChecked(settings.getBoolean("ASCENDING", true));
+        popup.getMenu().getItem(4).setChecked(settings.getBoolean("ASCENDING", true));
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.sort_date) {
                 editor.putString("REPLAY", "DATE");
@@ -287,17 +283,22 @@ public class MainActivity extends AppCompatActivity
             } else if (item.getItemId() == R.id.sort_title) {
                 editor.putString("REPLAY", "TITLE");
                 editor.apply();
+            } else if (item.getItemId() == R.id.sort_random) {
+                editor.putString("REPLAY", "RANDOM");
+                editor.apply();
             } else if (item.getItemId() == R.id.sort_reverse) {
                 if (settings.getBoolean("ASCENDING", true)) {
-                    popup.getMenu().getItem(3).setChecked(false);
+                    popup.getMenu().getItem(4).setChecked(false);
                     editor.putBoolean("ASCENDING", false);
                 }
                 else {
-                    popup.getMenu().getItem(3).setChecked(true);
+                    popup.getMenu().getItem(4).setChecked(true);
                     editor.putBoolean("ASCENDING", true);
                 }
                 editor.apply();
             }
+            player.main.PrevAndNextSongs.sortFilterList(settings.getString("REPLAY", "DATE"), settings.getBoolean("ASCENDING", true));
+
             Fragment newFragment = null;
             if (currentFragment.getClass().equals(LibraryFragment.class)) {
                 newFragment = new LibraryFragment(player, "","");
@@ -337,9 +338,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onQueryTextChange(String s) {
                 if (currentFragment.getClass().equals(LibraryFragment.class)) {
-                    FunctionClass.getMusicAndSet(player.recyclerview, player.main, player, player.main, "", s);
+                    player.main.PrevAndNextSongs.getMusicAndSet(player.recyclerview, player.main, player, player.main, "", s);
                 } else if (currentFragment.getClass().equals(FavoritesFragment.class)) {
-                    FunctionClass.getMusicAndSet(player.recyclerview, player.main, player, player.main, "FAVORITES", s);
+                    player.main.PrevAndNextSongs.getMusicAndSet(player.recyclerview, player.main, player, player.main, "FAVORITES", s);
                 }
                 return false;
             }});
