@@ -20,6 +20,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
@@ -37,6 +39,9 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleEventObserver;
+import androidx.lifecycle.LifecycleOwner;
 
 import com.google.android.material.navigation.NavigationView;
 import com.tsevaj.musicapp.fragments.DetailedsongFragment;
@@ -64,7 +69,7 @@ public class MainActivity extends AppCompatActivity
     private DrawerLayout drawer;
     public static Fragment currentFragment;
     NavigationView navigationView;
-    public PrevNextList PrevAndNextSongs = new PrevNextList(getBaseContext());
+    public PrevNextList PrevAndNextSongs;
     public NotificationUtils utils;
     public ProgressBarThread t;
     ActionBarDrawerToggle toggle;
@@ -87,6 +92,7 @@ public class MainActivity extends AppCompatActivity
 
         setDrawer();
 
+        this.PrevAndNextSongs = new PrevNextList(getBaseContext());
         this.player = new MusicPlayer(getBaseContext());
         this.player.c = this;
         this.player.main = this;
@@ -102,8 +108,23 @@ public class MainActivity extends AppCompatActivity
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     new LibraryFragment(player,"","")).commit();
             navigationView.setCheckedItem(R.id.menu_library);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                SharedPreferences settings = player.main.getSharedPreferences("SAVEDATA", 0);
+                if (settings.getBoolean("SAVE_STATE", false)) {
+                    int hash = Integer.parseInt(settings.getString("SAVED_SONG_HASH", "0"));
+                    int time = Integer.parseInt(settings.getString("SAVED_SONG_TIME", "0"));
+                    if (hash != 0) {
+                        MusicItem song = MainActivity.wholeSongList.stream().filter(e -> e.getHash() == hash).findFirst().orElse(null);
+                        if (song != null) {
+                            player.visibleSongs = MainActivity.wholeSongList;
+                            player.recreateList(song);
+                            player.resumeState(song, time);
+                            player.showBar();
+                        }
+                    }
+                }
+            }, 250);
         }
-
     }
     public void changePlayingList(ArrayList<MusicItem> li) {
         PrevAndNextSongs.setList(li);
@@ -254,15 +275,14 @@ public class MainActivity extends AppCompatActivity
         stopService(intent1);
         SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putString("SAVED_SONG_NAME", player.currentPlayingSong.getHead());
-        editor.putString("SAVED_SONG_DURATION", player.currentDuration.toString());
+        editor.putString("SAVED_SONG_HASH", String.valueOf(player.currentPlayingSong.getHash()));
+        editor.putString("SAVED_SONG_TIME", String.valueOf(player.getCurrentPosition()));
         editor.apply();
         player.destroy();
         if (receiver != null) {
             unregisterReceiver(receiver);
             receiver = null;
         }
-        //TODO save state here
         super.onDestroy();
     }
 

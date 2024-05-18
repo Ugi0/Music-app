@@ -51,20 +51,16 @@ public class PrevNextList {
 
     public PrevNextList(ArrayList<MusicItem> list, MusicItem current, Fragment currentFragment, Context c) {
         this.currentlyPlayingSongs = new ArrayList<>(list);
+        this.Prev = new ArrayList<>();
         this.current = current;
         this.c = c;
         this.createdFragment = currentFragment;
         this.settings = c.getSharedPreferences("SAVEDATA", 0);
         randomizer = new Random(Instant.now().toEpochMilli());
-        initializePrev();
     }
 
     public PrevNextList(Context c) {
         this.c = c;
-    }
-
-    private void initializePrev() {
-        Prev = new ArrayList<>();
     }
 
     public void setList(ArrayList<MusicItem> li) {
@@ -129,8 +125,7 @@ public class PrevNextList {
                 if (reverse) {
                     currentlyPlayingSongs.sort((o1, o2) -> o2.getDateModified().compareTo(o1.getDateModified()));
                 } else {
-                    //currentlyPlayingSongs.sort(Comparator.comparing(MusicItem::getDateModified));
-                    currentlyPlayingSongs.sort((o1, o2) -> o1.getDateModified().compareTo(o2.getDateModified()));
+                    currentlyPlayingSongs.sort(Comparator.comparing(MusicItem::getDateModified));
                 }
                 break;
             case "TITLE":

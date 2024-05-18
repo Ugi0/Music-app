@@ -143,6 +143,13 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         }
     }
 
+    public void resumeState(MusicItem song, int SecDuration) {
+        play(song);
+        player.seekTo(SecDuration);
+        this.pause();
+        adapter.notifyItemChanged(adapter.getList().indexOf(song));
+    }
+
     public void setNext(MusicItem mylist) {
         main.songQueue.add(mylist);
     }
@@ -208,7 +215,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
 
     public void pause() {
         playing = false;
-        main.t.stopThread();
+        if (main.t != null) {
+            main.t.stopThread();
+        }
         player.pause();
     }
 

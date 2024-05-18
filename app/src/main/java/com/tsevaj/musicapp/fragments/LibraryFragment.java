@@ -1,6 +1,7 @@
 package com.tsevaj.musicapp.fragments;
 
 import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +22,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.tsevaj.musicapp.utils.FunctionClass;
 import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.utils.MusicItem;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.utils.PrevNextList;
