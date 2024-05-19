@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.adapters.CustomAdapter;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.adapters.PlayListsAdapter;
@@ -153,7 +154,7 @@ public class FunctionClass {
                 long currentModified = songCursor.getLong(songModified);
                 String currentArtist = "<unknown>";
                 MusicItem myList = new MusicItem(
-                        currentTitle.replaceAll("\\([0-9]\\)", ""), //Replace SongName(1) with just SongName
+                        currentTitle.replaceAll(main.getString(R.string.Regex_replace_filenameNumber), ""), //Replace SongName(1) with just SongName
                         milliSecondsToTime(currentLength),
                         currentArtist,
                         currentSize,
