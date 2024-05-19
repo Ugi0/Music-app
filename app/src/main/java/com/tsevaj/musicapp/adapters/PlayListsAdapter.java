@@ -1,12 +1,9 @@
 package com.tsevaj.musicapp.adapters;
 
-import static androidx.core.content.ContextCompat.getSystemService;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -137,7 +134,8 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                 SharedPreferences settings = context.getSharedPreferences("SAVEDATA", 0);
                 String[] playlists = settings.getString("PLAYLISTS", "").split("\n");
                 String clickedPlaylist = playlists[playlists.length- position -1];
-                parent.changeFragments(new LibraryFragment(player,"PLAYLIST_"+clickedPlaylist,""), true);
+                parent.changeFragments(new LibraryFragment(player,""), true);
+                //parent.changeFragments(new LibraryFragment(player,"PLAYLIST_"+clickedPlaylist,""), true);
             }
         });
     }

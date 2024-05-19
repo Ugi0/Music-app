@@ -1,17 +1,13 @@
 package com.tsevaj.musicapp.fragments;
 
 import android.annotation.SuppressLint;
-import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import androidx.annotation.NonNull;
@@ -20,19 +16,16 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.tsevaj.musicapp.utils.FunctionClass;
 import com.tsevaj.musicapp.MainActivity;
-import com.tsevaj.musicapp.utils.MusicItem;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.R;
-import com.tsevaj.musicapp.utils.PrevNextList;
 
 public class LibraryFragment extends Fragment {
     private RecyclerView recyclerView;
     private final MusicPlayer player;
     private final String nameFilter;
 
-    public LibraryFragment(MusicPlayer player, String filter, String nameFilter) {
+    public LibraryFragment(MusicPlayer player, String nameFilter) {
         this.player = player;
         this.nameFilter = nameFilter;
     }

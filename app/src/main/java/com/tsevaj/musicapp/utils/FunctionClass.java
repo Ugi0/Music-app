@@ -8,18 +8,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.MediaStore;
-import android.util.Log;
 
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.tsevaj.musicapp.R;
-import com.tsevaj.musicapp.adapters.CustomAdapter;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.adapters.PlayListsAdapter;
 import com.tsevaj.musicapp.fragments.PlaylistsFragment;
@@ -28,12 +24,9 @@ import org.jaudiotagger.tag.FieldKey;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FunctionClass {
     public static ArrayList<MusicItem> getMusic(Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
@@ -54,7 +47,6 @@ public class FunctionClass {
         final int FILTER_SECONDS = c.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",120);
         boolean REVERSE_ORDER = c.getSharedPreferences("SAVEDATA", 0).getBoolean("ASCENDING", true);
         final String musicFolder = c.getSharedPreferences("SAVEDATA", 0).getString("SONG_FOLDER","");
-        SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
 
         ArrayList<MusicItem> li = new ArrayList<>();
 
@@ -62,8 +54,6 @@ public class FunctionClass {
             // filtering for favorites etc..
             if (filter.equals("FAVORITES")) {
                 if (!item.getFavorited()) continue;
-                //String wanted = settings.getString(filter, "");
-                //if ((!Arrays.asList(wanted.split("\n")).contains(item.getHead()))) continue;
             }
             if (!(item.getHead().toLowerCase().contains(nameFilter.toLowerCase()) || item.getArtist().toLowerCase().contains(nameFilter.toLowerCase()))) {
                 continue;

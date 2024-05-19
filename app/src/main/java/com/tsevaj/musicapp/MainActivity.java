@@ -1,7 +1,6 @@
 package com.tsevaj.musicapp;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,7 +16,6 @@ import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -39,9 +37,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleEventObserver;
-import androidx.lifecycle.LifecycleOwner;
 
 import com.google.android.material.navigation.NavigationView;
 import com.tsevaj.musicapp.fragments.DetailedsongFragment;
@@ -52,7 +47,6 @@ import com.tsevaj.musicapp.fragments.SettingsFragment;
 import com.tsevaj.musicapp.services.MyController;
 import com.tsevaj.musicapp.services.NotificationService;
 import com.tsevaj.musicapp.services.NotificationUtils;
-import com.tsevaj.musicapp.utils.FunctionClass;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.utils.MusicItem;
 import com.tsevaj.musicapp.utils.PrevNextList;
@@ -106,7 +100,7 @@ public class MainActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new LibraryFragment(player,"","")).commit();
+                    new LibraryFragment(player,"")).commit();
             navigationView.setCheckedItem(R.id.menu_library);
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 SharedPreferences settings = player.main.getSharedPreferences("SAVEDATA", 0);
@@ -181,7 +175,7 @@ public class MainActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case (android.R.id.home): {
                 onBackPressed();
-                currentFragment = new LibraryFragment(player, "","");
+                currentFragment = new LibraryFragment(player,"");
                 setDrawer();
                 break;
             }
@@ -219,7 +213,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         if (currentFragment.getClass().equals(DetailedsongFragment.class)) {
             onBackPressed();
-            currentFragment = new LibraryFragment(player, "","");
+            currentFragment = new LibraryFragment(player,"");
             setDrawer();
             return true;
         }
@@ -227,7 +221,7 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction createdFragment = null;
         if (itemId == R.id.menu_library) {
             createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new LibraryFragment(player, "", ""));
+                    new LibraryFragment(player, ""));
         } else if (itemId == R.id.menu_favorites) {
             createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     new FavoritesFragment(player,"", this));
@@ -251,7 +245,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         if (currentFragment.getClass().equals(DetailedsongFragment.class)) {
-            currentFragment = new LibraryFragment(player, "","");
+            currentFragment = new LibraryFragment(player,"");
             setDrawer();
         }
         super.onBackPressed();
@@ -321,7 +315,7 @@ public class MainActivity extends AppCompatActivity
 
             Fragment newFragment = null;
             if (currentFragment.getClass().equals(LibraryFragment.class)) {
-                newFragment = new LibraryFragment(player, "","");
+                newFragment = new LibraryFragment(player,"");
             }
             else if (currentFragment.getClass().equals(FavoritesFragment.class)) {
                 newFragment = new FavoritesFragment(player,"", this);

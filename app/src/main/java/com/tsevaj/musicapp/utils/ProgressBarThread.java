@@ -1,12 +1,9 @@
 package com.tsevaj.musicapp.utils;
 
-import android.util.Log;
 import android.widget.SeekBar;
 
 import com.tsevaj.musicapp.MainActivity;
-import com.tsevaj.musicapp.utils.CircularSeekBar;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.concurrent.Executors;

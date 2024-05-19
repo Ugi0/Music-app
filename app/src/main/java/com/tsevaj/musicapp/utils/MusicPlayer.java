@@ -16,17 +16,14 @@ import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,7 +35,6 @@ import com.tsevaj.musicapp.fragments.DetailedsongFragment;
 import com.tsevaj.musicapp.services.NotificationController;
 import com.tsevaj.musicapp.services.NotificationService;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 

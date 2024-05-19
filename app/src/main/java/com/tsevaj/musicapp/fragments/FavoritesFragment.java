@@ -1,6 +1,5 @@
 package com.tsevaj.musicapp.fragments;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -10,17 +9,14 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.tsevaj.musicapp.utils.FunctionClass;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.R;
-import com.tsevaj.musicapp.utils.PrevNextList;
 
 public class FavoritesFragment extends Fragment {
     private final MusicPlayer player;

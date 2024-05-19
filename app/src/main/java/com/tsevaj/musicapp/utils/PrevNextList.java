@@ -2,15 +2,10 @@ package com.tsevaj.musicapp.utils;
 
 import static com.tsevaj.musicapp.utils.FunctionClass.filterMusicList;
 import static com.tsevaj.musicapp.utils.FunctionClass.getMusic;
-import static com.tsevaj.musicapp.utils.FunctionClass.nameFilterMusicList;
-import static com.tsevaj.musicapp.utils.FunctionClass.sortMusicList;
-
-import static org.jaudiotagger.audio.AudioFileIO.read;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -21,9 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.adapters.CustomAdapter;
 
-import org.jaudiotagger.tag.FieldKey;
-
-import java.io.File;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
