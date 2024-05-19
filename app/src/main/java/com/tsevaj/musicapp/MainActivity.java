@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity
                     new LibraryFragment(player, ""));
         } else if (itemId == R.id.menu_favorites) {
             createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new FavoritesFragment(player,"", this));
+                    new FavoritesFragment(player,""));
         } else if (itemId == R.id.menu_settings) {
             createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     new SettingsFragment(this));
@@ -280,6 +280,7 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private void showSortPopup(View v) {
         PopupMenu popup = new PopupMenu(this, v);
         MenuInflater inflater = popup.getMenuInflater();
@@ -313,18 +314,20 @@ public class MainActivity extends AppCompatActivity
             }
             player.main.PrevAndNextSongs.sortFilterList(settings.getString("REPLAY", "DATE"), settings.getBoolean("ASCENDING", true));
 
+
             Fragment newFragment = null;
             if (currentFragment.getClass().equals(LibraryFragment.class)) {
-                newFragment = new LibraryFragment(player,"");
+                newFragment = new LibraryFragment(player,"", PrevAndNextSongs.getLastFilter());
             }
             else if (currentFragment.getClass().equals(FavoritesFragment.class)) {
-                newFragment = new FavoritesFragment(player,"", this);
+                newFragment = new FavoritesFragment(player,"");
             }
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             assert newFragment != null;
             transaction.replace(R.id.fragment_container, newFragment);
             transaction.addToBackStack(null);
             transaction.commit();
+
             return true;
         });
         popup.show();
@@ -348,7 +351,6 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
 
-            @SuppressLint("NewApi")
             @Override
             public boolean onQueryTextChange(String s) {
                 if (currentFragment.getClass().equals(LibraryFragment.class)) {
@@ -377,7 +379,6 @@ public class MainActivity extends AppCompatActivity
         editor.apply();
     }
 
-    @SuppressLint("NewApi")
     public void setFavorites(ArrayList<String> li) {
         SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
         SharedPreferences.Editor editor = settings.edit();

@@ -48,4 +48,5 @@
     <string name="random_order">Random order</string>
     <string name="save_state_when_exiting">Save state when exiting</string>
     <string name="Regex_replace_filenameNumber">\\([0-9]\\)</string>
+    <string name="create_a_new_playlist">Create a new playlist</string>
 </resources>

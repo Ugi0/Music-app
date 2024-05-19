@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,19 +23,23 @@ import com.tsevaj.musicapp.fragments.LibraryFragment;
 import com.tsevaj.musicapp.fragments.PlaylistsFragment;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.utils.MusicItem;
+import com.tsevaj.musicapp.utils.PlaylistItem;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.ViewHolder> {
 
-    private ArrayList<MusicItem> list;
+    private ArrayList<PlaylistItem> list;
     private final Context context;
     private final MusicPlayer player;
     private final PlaylistsFragment parent;
     private View listView;
 
-    public PlayListsAdapter(ArrayList<MusicItem> list, Context mCtx, MusicPlayer player, PlaylistsFragment playlistsFragment) {
+    private final int VIEW_TYPE_DEFAULT = 0;
+    private final int VIEW_TYPE_ITEM = 1;
+
+    public PlayListsAdapter(ArrayList<PlaylistItem> list, Context mCtx, MusicPlayer player, PlaylistsFragment playlistsFragment) {
         this.list = list;
         this.context = mCtx;
         this.player = player;
@@ -43,40 +48,28 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
 
     @NonNull
     @Override
-    public PlayListsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.playlists_item, parent, false);
-        listView = v;
-        return new ViewHolder(v);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_ITEM) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.playlists_item, parent, false);
+            listView = v;
+            return new ViewHolder(v);
+        }
+        else {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.playlist_defaultitem, parent, false);
+            listView = v;
+            return new ViewHolder(v);
+        }
+
     }
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
-    public void onBindViewHolder(ViewHolder holder, @SuppressLint("RecyclerView") int position) {
-        holder.textViewHead.setText(list.get(position).getHead());
-        if (list.get(position).getHead().equals("Create a new playlist")) holder.buttonViewOption.setVisibility(View.GONE);
-        listView.findViewById(R.id.textViewOptions).setOnClickListener(view -> {
-            PopupMenu popupMenu = new PopupMenu(context, listView);
-            popupMenu.inflate(R.menu.playlists_menu);
-            popupMenu.setOnMenuItemClickListener(menuItem -> {
-                if (menuItem.getItemId() == R.id.song_delete) {
-                    SharedPreferences settings = context.getSharedPreferences("SAVEDATA", 0);
-                    SharedPreferences.Editor editor = settings.edit();
-                    String playlists = settings.getString("PLAYLISTS", "");
-                    editor.remove("PLAYLIST_"+list.get(position).getHead());
-                    ArrayList<String> li = new ArrayList<>(Arrays.asList(playlists.split("\n")));
-                    li.remove(list.get(position).getHead());
-                    editor.putString("PLAYLISTS",String.join("\n",li));
-                    editor.apply();
-                    list.remove(position);
-                    parent.changeFragments(new PlaylistsFragment(player, player.main), false);
-                }
-                return false;
-            });
-            popupMenu.show();
-        });
-        holder.itemView.setOnClickListener(view -> {
-            if (list.get(position).getHead().equals("Create a new playlist")) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, @SuppressLint("RecyclerView") int position) {
+        if (position == 0) {
+            //Code for the default item
+            holder.itemView.setOnClickListener(view -> {
                 TextInputLayout textInputLayout = new TextInputLayout(context);
                 textInputLayout.setPadding(
                         10,
@@ -106,7 +99,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                                 editor.putString("PLAYLISTS", "");
                                 editor.apply();
                                 list = new ArrayList<>();
-                                list.add(new MusicItem("Create a new playlist","","",0, "", 0, "", 0, false));
+                                //list.add(new MusicItem("Create a new playlist","","",0, "", 0, "", 0, false));
                                 dialog.cancel();
                                 parent.changeFragments(new PlaylistsFragment(player, player.main), false);
                             }
@@ -118,7 +111,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                                 else { editor.putString("PLAYLISTS", playlists + "\n" + input.getText().toString()); }
                                 editor.putString("PLAYLIST_"+ input.getText().toString(),"");
                                 editor.apply();
-                                list.add(0, new MusicItem(input.getText().toString(),"","",0, "", 0, "", 0, false));
+                                list.add(0, new PlaylistItem(input.getText().toString()));
                                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                                 dialog.cancel();
                                 parent.changeFragments(new PlaylistsFragment(player, player.main), false);
@@ -129,20 +122,46 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                             dialog.cancel();
                         })
                         .show();
-            }
-            else {
+            });
+        } else {
+            holder.textViewHead.setText(list.get(position).getTitle());
+            listView.findViewById(R.id.textViewOptions).setOnClickListener(view -> {
+                PopupMenu popupMenu = new PopupMenu(context, listView);
+                popupMenu.inflate(R.menu.playlists_menu);
+                popupMenu.setOnMenuItemClickListener(menuItem -> {
+                    if (menuItem.getItemId() == R.id.song_delete) {
+                        SharedPreferences settings = context.getSharedPreferences("SAVEDATA", 0);
+                        SharedPreferences.Editor editor = settings.edit();
+                        String playlists = settings.getString("PLAYLISTS", "");
+                        editor.remove("PLAYLIST_"+list.get(position).getTitle());
+                        ArrayList<String> li = new ArrayList<>(Arrays.asList(playlists.split("\n")));
+                        li.remove(position-1);
+                        editor.putString("PLAYLISTS",String.join("\n",li));
+                        editor.apply();
+                        list.remove(position);
+                        parent.changeFragments(new PlaylistsFragment(player, player.main), false);
+                    }
+                    return false;
+                });
+                popupMenu.show();
+            });
+            holder.itemView.setOnClickListener(view -> {
                 SharedPreferences settings = context.getSharedPreferences("SAVEDATA", 0);
                 String[] playlists = settings.getString("PLAYLISTS", "").split("\n");
-                String clickedPlaylist = playlists[playlists.length- position -1];
-                parent.changeFragments(new LibraryFragment(player,""), true);
-                //parent.changeFragments(new LibraryFragment(player,"PLAYLIST_"+clickedPlaylist,""), true);
-            }
-        });
+                String clickedPlaylist = playlists[position-1];
+                parent.changeFragments(new LibraryFragment(player,"","PLAYLIST_"+clickedPlaylist), true);
+            });
+        }
     }
 
     @Override
     public int getItemCount() {
         return list.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return (position == 0) ? VIEW_TYPE_DEFAULT : VIEW_TYPE_ITEM;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

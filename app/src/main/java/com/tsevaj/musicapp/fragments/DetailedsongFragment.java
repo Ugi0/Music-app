@@ -192,6 +192,7 @@ public class DetailedsongFragment extends Fragment {
             }
             else {
                 main.addToFavorites(player.currentPlayingSong.getHead());
+                player.currentPlayingSong.setFavorited(true);
                 favoriteButton.setActivated(true);
             }
         });

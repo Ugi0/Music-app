@@ -47,6 +47,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
         this.mCtx = mCtx;
         this.c = c;
         this.player = player;
+        this.player.adapter = this;
         this.playlist = playlist;
         this.defaultColor = Color.parseColor(mCtx.getSharedPreferences("SAVEDATA", 0).getString("THEME_COLOR", "#FFFFFF"));
     }
@@ -129,6 +130,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                                 break;
                             }
                         }
+                        myList.setFavorited(true);
                         removeFromList(ind);
                         notifyItemRemoved(ind);
                         return false;

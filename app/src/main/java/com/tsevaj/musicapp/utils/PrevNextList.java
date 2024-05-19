@@ -6,6 +6,7 @@ import static com.tsevaj.musicapp.utils.FunctionClass.getMusic;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -57,6 +58,10 @@ public class PrevNextList {
 
     public void setList(ArrayList<MusicItem> li) {
         this.currentlyPlayingSongs = li;
+    }
+
+    public String getLastFilter() {
+        return lastFilter;
     }
 
     public void setCurrent(MusicItem item) {
@@ -150,6 +155,7 @@ public class PrevNextList {
             li = getMusic(activity, player, c, filter, nameFilter);
             currentlyPlayingSongs = li;
         } else if (!(filter.equals(lastFilter))) {
+            Log.d("test", "Different filter");
             lastFilter = filter;
             li = getMusic(activity, player, c, filter, nameFilter);
             currentlyPlayingSongs = li;

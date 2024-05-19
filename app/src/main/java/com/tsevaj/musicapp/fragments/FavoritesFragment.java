@@ -21,13 +21,10 @@ import com.tsevaj.musicapp.R;
 public class FavoritesFragment extends Fragment {
     private final MusicPlayer player;
     private final String nameFilter;
-    private final MainActivity main;
 
-
-    public FavoritesFragment(MusicPlayer player, String nameFilter, MainActivity main) {
+    public FavoritesFragment(MusicPlayer player, String nameFilter) {
         this.nameFilter = nameFilter;
         this.player = player;
-        this.main = main;
     }
 
     @Nullable
@@ -36,7 +33,7 @@ public class FavoritesFragment extends Fragment {
         View ll = inflater.inflate(R.layout.songlist_recyclerview, container, false);
         RecyclerView recyclerView = ll.findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
-        main.setBackground(ll, getResources());
+        player.main.setBackground(ll, getResources());
         recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
 
         SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
@@ -49,7 +46,7 @@ public class FavoritesFragment extends Fragment {
 
         player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
         MainActivity.currentFragment = this;
-        main.setDrawer();
+        player.main.setDrawer();
 
         if (!player.songDone) {
             player.relativeLayout = ll.findViewById(R.id.music_bar);

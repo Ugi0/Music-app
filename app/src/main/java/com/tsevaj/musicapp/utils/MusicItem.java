@@ -22,7 +22,7 @@ public class MusicItem implements Comparable<MusicItem> {
     private final int hash;
     private final long dateModified;
     private final String dateModifiedString;
-    private final boolean favorited;
+    private boolean favorited;
     private String locationFolder;
 
     public MusicItem(String currentTitle, String length, String currentArtist, int currentSize, String currentType, long currentModified, String currentLocation, int currentLength, boolean favorited) {
@@ -69,6 +69,8 @@ public class MusicItem implements Comparable<MusicItem> {
     public String getDateModifiedString() { return dateModifiedString; }
 
     public boolean getFavorited() { return favorited; }
+
+    public void setFavorited(boolean value) { this.favorited = value; }
 
     public Long getDateModified() { return dateModified; }
 

@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -24,8 +25,10 @@ import org.jaudiotagger.tag.FieldKey;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class FunctionClass {
@@ -44,28 +47,27 @@ public class FunctionClass {
     }
 
     public static ArrayList<MusicItem> filterMusicList(FragmentActivity c, String filter, String nameFilter) {
-        final int FILTER_SECONDS = c.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",120);
-        boolean REVERSE_ORDER = c.getSharedPreferences("SAVEDATA", 0).getBoolean("ASCENDING", true);
-        final String musicFolder = c.getSharedPreferences("SAVEDATA", 0).getString("SONG_FOLDER","");
+        SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
+        final int FILTER_SECONDS = settings.getInt("MIN_SIZE",120);
+        boolean REVERSE_ORDER = settings.getBoolean("ASCENDING", true);
+        final String musicFolder = settings.getString("SONG_FOLDER","");
 
-        ArrayList<MusicItem> li = new ArrayList<>();
+        ArrayList<MusicItem> li = new ArrayList<>(MainActivity.wholeSongList);
 
-        for (MusicItem item: MainActivity.wholeSongList) {
-            // filtering for favorites etc..
-            if (filter.equals("FAVORITES")) {
-                if (!item.getFavorited()) continue;
-            }
-            if (!(item.getHead().toLowerCase().contains(nameFilter.toLowerCase()) || item.getArtist().toLowerCase().contains(nameFilter.toLowerCase()))) {
-                continue;
-            }
-            int FILTER_LENGTH = FILTER_SECONDS * 1000;
-            if ((item.getLocation().contains(musicFolder)) && item.getDuration() > FILTER_LENGTH) {
-                if (REVERSE_ORDER) {
-                    li.add(0, item);
-                } else {
-                    li.add(item);
-                }
-            }
+        if (filter.equals("FAVORITES")) {
+            li.removeIf(item -> !item.getFavorited());
+        } else if (filter.startsWith("PLAYLIST")) {
+            List<String> songs = Arrays.asList(settings.getString(filter, "").split("\n"));
+            li.removeIf(item -> !songs.contains(item.getHead()));
+        }
+
+        li.removeIf(item -> !(item.getHead().toLowerCase().contains(nameFilter.toLowerCase()) || item.getArtist().toLowerCase().contains(nameFilter.toLowerCase())));
+
+        int FILTER_LENGTH = FILTER_SECONDS * 1000;
+        li.removeIf(item -> !(item.getLocation().contains(musicFolder)) && item.getDuration() > FILTER_LENGTH);
+
+        if (REVERSE_ORDER) {
+            Collections.reverse(li);
         }
         return li;
     }
@@ -107,13 +109,13 @@ public class FunctionClass {
         return String.format("%02d", first)+":"+String.format("%02d", second);
     }
     public static void playlistView(RecyclerView recyclerView, Context activity, MusicPlayer player, FragmentActivity c, PlaylistsFragment playlistsFragment) {
-        ArrayList<MusicItem> list = new ArrayList<>();
+        ArrayList<PlaylistItem> list = new ArrayList<>();
         LinearLayoutManager layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false);
         SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
-        list.add(new MusicItem("Create a new playlist","","",0, "", 0, "", 0, false));
+        list.add(new PlaylistItem());
         if (!settings.getString("PLAYLISTS", "").isEmpty()) {
             for (String playlist : settings.getString("PLAYLISTS", "").split("\n")) {
-                list.add(0, new MusicItem(playlist, "","",0, "", 0, "", 0, false));
+                list.add(new PlaylistItem(playlist));
             }
         }
         PlayListsAdapter adapter = new PlayListsAdapter(list, c, player, playlistsFragment) {};

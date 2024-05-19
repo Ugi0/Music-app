@@ -2,6 +2,7 @@ package com.tsevaj.musicapp.fragments;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -24,10 +25,18 @@ public class LibraryFragment extends Fragment {
     private RecyclerView recyclerView;
     private final MusicPlayer player;
     private final String nameFilter;
+    private final String filter;
 
     public LibraryFragment(MusicPlayer player, String nameFilter) {
         this.player = player;
         this.nameFilter = nameFilter;
+        this.filter = "";
+    }
+
+    public LibraryFragment(MusicPlayer player, String nameFilter, String filter) {
+        this.player = player;
+        this.nameFilter = nameFilter;
+        this.filter = filter;
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -41,15 +50,17 @@ public class LibraryFragment extends Fragment {
         player.main.setBackground(ll, getResources());
         player.main.setDrawer();
 
+        Log.d("test", this.filter);
+
         SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
         swipeRefreshLayout.setOnRefreshListener(() -> {
             MainActivity.wholeSongList = null;
             player.main.PrevAndNextSongs.setList(null);
-            player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "", nameFilter);
+            player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), filter, nameFilter);
             swipeRefreshLayout.setRefreshing(false);
         });
 
-        player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "", nameFilter);
+        player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), filter, nameFilter);
         MainActivity.currentFragment = this;
 
         if (!player.songDone) {
