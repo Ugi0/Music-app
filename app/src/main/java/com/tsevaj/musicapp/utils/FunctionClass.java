@@ -153,7 +153,7 @@ public class FunctionClass {
                 long currentModified = songCursor.getLong(songModified);
                 String currentArtist = "<unknown>";
                 MusicItem myList = new MusicItem(
-                        currentTitle,
+                        currentTitle.replaceAll("\\([0-9]\\)", ""), //Replace SongName(1) with just SongName
                         milliSecondsToTime(currentLength),
                         currentArtist,
                         currentSize,
