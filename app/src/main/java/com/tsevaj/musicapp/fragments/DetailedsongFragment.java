@@ -36,6 +36,7 @@ public class DetailedsongFragment extends Fragment {
     private final MusicPlayer player;
     private final MainActivity main;
     private View currentView;
+    private boolean playing;
 
     public DetailedsongFragment(MusicPlayer player, MainActivity main) {
         this.player = player;
@@ -67,7 +68,7 @@ public class DetailedsongFragment extends Fragment {
         initWindowElements(currentView);
     }
 
-    @SuppressLint({"UseCompatTextViewDrawableApis", "NewApi", "NonConstantResourceId"})
+    @SuppressLint({"UseCompatTextViewDrawableApis", "NonConstantResourceId"})
     public void initWindowElements(View parentView) {
         int textColor = Color.parseColor(main.getBaseContext().getSharedPreferences("SAVEDATA", 0).getString("THEME_COLOR", "#FFFFFF"));
 
@@ -94,12 +95,12 @@ public class DetailedsongFragment extends Fragment {
         songDescView.setCompoundDrawableTintList(ColorStateList.valueOf(textColor));
         songLocView.setCompoundDrawableTintList(ColorStateList.valueOf(textColor));
 
-        favoriteButton.setActivated(favorite.contains(player.currentPlayingSong.getHead()));
+        favoriteButton.setActivated(favorite.contains(MusicPlayer.currentPlayingSong.getHead()));
 
-        songNameView.setText(player.currentPlayingSong.getHead());
-        songDescView.setText(player.currentPlayingSong.getDesc());
-        songLocView.setText(player.currentPlayingSong.getLocationFolder());
-        if (!MusicPlayer.playing) {
+        songNameView.setText(MusicPlayer.currentPlayingSong.getHead());
+        songDescView.setText(MusicPlayer.currentPlayingSong.getDesc());
+        songLocView.setText(MusicPlayer.currentPlayingSong.getLocationFolder());
+        if (!playing) {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
         }
         else {
@@ -154,11 +155,11 @@ public class DetailedsongFragment extends Fragment {
                         menu.setOnMenuItemClickListener(item1 -> {
                             SharedPreferences.Editor editor2 = requireContext().getSharedPreferences("SAVEDATA", 0).edit();
                             String currentPlaylist = requireContext().getSharedPreferences("SAVEDATA", 0).getString("PLAYLIST_" + item1.getTitle(), "");
-                            if (Arrays.asList(currentPlaylist.split("\n")).contains(player.currentPlayingSong.getHead())) return true;
+                            if (Arrays.asList(currentPlaylist.split("\n")).contains(MusicPlayer.currentPlayingSong.getHead())) return true;
                             if (currentPlaylist.isEmpty())
-                                editor2.putString("PLAYLIST_" + item1.getTitle(), player.currentPlayingSong.getHead());
+                                editor2.putString("PLAYLIST_" + item1.getTitle(), MusicPlayer.currentPlayingSong.getHead());
                             else {
-                                editor2.putString("PLAYLIST_" + item1.getTitle(), currentPlaylist + "\n" + player.currentPlayingSong.getHead());
+                                editor2.putString("PLAYLIST_" + item1.getTitle(), currentPlaylist + "\n" + MusicPlayer.currentPlayingSong.getHead());
                             }
                             editor2.apply();
                             return true;
@@ -169,9 +170,9 @@ public class DetailedsongFragment extends Fragment {
                     case R.id.song_delete: {
                         Runnable callback = () -> {
                             try {
-                                Files.delete(Paths.get(player.currentPlayingSong.getLocation()));
-                                MainActivity.wholeSongList.remove(player.currentPlayingSong);
-                                main.PrevAndNextSongs.removeFromPrev(player.currentPlayingSong);
+                                Files.delete(Paths.get(MusicPlayer.currentPlayingSong.getLocation()));
+                                MainActivity.wholeSongList.remove(MusicPlayer.currentPlayingSong);
+                                main.PrevAndNextSongs.removeFromPrev(MusicPlayer.currentPlayingSong);
                                 player.playNext(true);
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -187,26 +188,26 @@ public class DetailedsongFragment extends Fragment {
         });
         favoriteButton.setOnClickListener(view -> {
             if (favoriteButton.isActivated()) {
-                main.removeFromFavorites(player.currentPlayingSong.getHead());
+                main.removeFromFavorites(MusicPlayer.currentPlayingSong.getHead());
                 favoriteButton.setActivated(false);
             }
             else {
-                main.addToFavorites(player.currentPlayingSong.getHead());
-                player.currentPlayingSong.setFavorited(true);
+                main.addToFavorites(MusicPlayer.currentPlayingSong.getHead());
+                MusicPlayer.currentPlayingSong.setFavorited(true);
                 favoriteButton.setActivated(true);
             }
         });
         BtnNext.setOnClickListener(view -> detailed_next());
         BtnPrev.setOnClickListener(view -> detailed_prev());
         BtnPause.setOnClickListener(view -> {
-            if (MusicPlayer.playing) {
+            if (playing) {
                 player.playPause();
-                MusicPlayer.playing = false;
+                playing = false;
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
             }
             else {
                 player.playPause();
-                MusicPlayer.playing = true;
+                playing = true;
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
             }
         });
@@ -233,10 +234,10 @@ public class DetailedsongFragment extends Fragment {
         @Override
         public void onProgressChanged(CircularSeekBar circularSeekBar, int progress, boolean fromUser) {
             if (fromUser) {
-                player.seekTo((int) (player.currentPlayingSong.getDuration()*(1.0*progress/10000)));
+                player.seekTo((int) (MusicPlayer.currentPlayingSong.getDuration()*(1.0*progress/10000)));
                 progressBar.setProgress(progress);
-                if (!MusicPlayer.playing) {
-                    MusicPlayer.playing = true;
+                if (!playing) {
+                    playing = true;
                     BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
                 }
             }

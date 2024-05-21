@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
@@ -35,31 +36,24 @@ import com.tsevaj.musicapp.fragments.DetailedsongFragment;
 import com.tsevaj.musicapp.services.NotificationController;
 import com.tsevaj.musicapp.services.NotificationService;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class MusicPlayer implements NotificationController, ServiceConnection {
     private MediaPlayer player;
     public MediaSessionCompat.Token sessionToken;
-    private String currentSong;
-    public MusicItem currentPlayingSong = new MusicItem("", "", "", 0, "", 0, "", 0, false);
+    public static MusicItem currentPlayingSong;
     public CustomAdapter adapter = null;
     public ArrayList<MusicItem> visibleSongs;
     public RecyclerView recyclerview;
     public View relativeLayout;
-    public boolean songDone = true;
-    public static boolean playing = false;
-    public static String songName;
-    public static String songArtist;
     public FragmentManager manager;
     public MainActivity main;
-    public BigDecimal currentDuration;
     NotificationService notificationService;
     public Context c;
-    private boolean serviceStarted = false;
-    private static AudioManager audioManager;
-    private static boolean focusGranted;
-    private boolean pausedByAudioFocus;
+
+    AudioManager audioManager;
 
     TextView songNameView;
     TextView songDescView;
@@ -69,53 +63,45 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
 
     DetailedsongFragment newFragment;
 
-    @SuppressLint("NewApi")
     public MusicPlayer(Context c) {
         this.c = c;
         player = new MediaPlayer();
-        this.currentSong = null;
-        pausedByAudioFocus = false;
         player.setOnErrorListener((mediaPlayer, i, i1) -> true);
         player.setWakeMode(c, PowerManager.PARTIAL_WAKE_LOCK);
         player.setOnCompletionListener(mediaPlayer -> donePlayNext());
     }
 
-    @SuppressLint("NewApi")
     public void play(MusicItem mylist) {
-        String song = mylist.getLocation();
-        if (currentSong != null) if (currentSong.equals(song) && this.player.isPlaying()) return;
-        relativeLayout = ((Activity) c).findViewById(R.id.music_bar);
-        this.songDone = false;
-        playing = true;
-        currentSong = song;
-        songName = mylist.getHead();
-        songArtist = mylist.getArtist();
-
-        currentDuration = new BigDecimal(String.valueOf(mylist.getDuration()));
-        currentPlayingSong = mylist;
-        main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
-        player.release();
-        player = MediaPlayer.create(c, Uri.parse(song));
-        player.setOnErrorListener((mediaPlayer, i, i1) -> true);
-        player.setWakeMode(c, PowerManager.PARTIAL_WAKE_LOCK);
-        player.setOnCompletionListener(mediaPlayer -> donePlayNext());
-        player.start();
-        if (!serviceStarted) {
+        if (currentPlayingSong != null) {
+            if (currentPlayingSong.getHash() == (mylist.getHash()) && this.player.isPlaying()) return;
+        } else {
             Intent intent = new Intent(c, NotificationService.class);
             c.bindService(intent, this, 0);
             Intent intent1 = new Intent(c, NotificationService.class);
             c.startService(intent1);
             requestFocus(c);
-            serviceStarted = true;
         }
-        else {
-            prepareButtons();
+        relativeLayout = ((Activity) c).findViewById(R.id.music_bar);
+
+        currentPlayingSong = mylist;
+        main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
+        player.reset();
+        try {
+            player.setDataSource(mylist.getLocation());
+            player.prepare();
+            player.start();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        currentPlayingSong = mylist;
+        main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
+
+        prepareButtons();
     }
 
-    public void recreateList(MusicItem mylist) {
+    public void recreateList(MusicItem song) {
         if (main.PrevAndNextSongs.createdFragment == null) {
-            main.PrevAndNextSongs = new PrevNextList(new ArrayList<>(visibleSongs), mylist, MainActivity.currentFragment, c);
+            main.PrevAndNextSongs = new PrevNextList(new ArrayList<>(visibleSongs), song, MainActivity.currentFragment, c);
         }
         if (main.PrevAndNextSongs.wholeList) {
             main.PrevAndNextSongs.setList(MainActivity.wholeSongList);
@@ -124,17 +110,20 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         }
     }
 
-    @SuppressLint("NewApi")
     public void prepareButtons() {
-        if (!MainActivity.currentFragment.getClass().equals(DetailedsongFragment.class)) {
+        if (BtnNext != null) {
             BtnNext.setOnClickListener(view -> {
                 playNext(true);
                 showBar();
             });
+        }
+        if (BtnPrev != null) {
             BtnPrev.setOnClickListener(view -> {
                 playPrev(true);
                 showBar();
             });
+        }
+        if (BtnPause != null) {
             BtnPause.setOnClickListener(view -> playPause());
         }
     }
@@ -146,8 +135,8 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         adapter.notifyItemChanged(adapter.getList().indexOf(song));
     }
 
-    public void setNext(MusicItem mylist) {
-        main.songQueue.add(mylist);
+    public void setNext(MusicItem song) {
+        main.songQueue.add(song);
     }
 
     public void donePlayNext() {
@@ -156,7 +145,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
 
     @SuppressLint("NotifyDataSetChanged")
     public void playNext(Boolean force) {
-        if (!playing) try {
+        if (!player.isPlaying()) try {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         } catch (Exception ignored) {
         }
@@ -173,9 +162,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         }
     }
 
-    @SuppressLint({"NewApi", "NotifyDataSetChanged"})
+    @SuppressLint("NotifyDataSetChanged")
     public void playPrev(Boolean force) {
-        if (!playing) try {
+        if (!player.isPlaying()) try {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         } catch (Exception ignored) {
         }
@@ -190,7 +179,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     public void playPause() {
-        if (playing) {
+        if (player.isPlaying()) {
             main.showNotification(R.drawable.ic_baseline_play_arrow_24, currentPlayingSong.getHead());
             pause();
             try {
@@ -210,7 +199,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     public void pause() {
-        playing = false;
         if (main.t != null) {
             main.t.stopThread();
         }
@@ -218,7 +206,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     public void resume() {
-        playing = true;
         try {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         } catch (Exception ignored) {
@@ -229,7 +216,6 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         main.t.resumeThread();
     }
 
-    @SuppressLint("NewApi")
     public void showBar() {
         try {
             this.relativeLayout.setVisibility(View.VISIBLE);
@@ -243,7 +229,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         SeekBar progressBar = relativeLayout.findViewById(R.id.progress_bar);
         songNameView.setText(currentPlayingSong.getHead());
         songDescView.setText(currentPlayingSong.getDesc());
-        if (!playing) {
+        if (!player.isPlaying()) {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
         } else {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
@@ -255,8 +241,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
                 if (b) {
                     player.seekTo((int) (currentPlayingSong.getDuration() * (1.0 * i / 1000)));
                     progressBar.setProgress(i);
-                    if (!playing) {
-                        playing = true;
+                    if (!player.isPlaying()) {
                         BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
                     }
                 }
@@ -316,15 +301,18 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             if (main.t != null) main.t.stopThread();
             this.player.release();
             this.player = null;
-            currentSong = null;
         }
+    }
+
+    public boolean isInitialized() {
+        return currentPlayingSong != null;
     }
     public void requestFocus(final Context context) {
         if (audioManager == null) {
             audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         }
 
-        audioManager.requestAudioFocus(new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+        audioManager.requestAudioFocus(new AudioFocusRequest.Builder(AUDIOFOCUS_GAIN)
                 .setAudioAttributes(
                         new AudioAttributes.Builder()
                                 .setUsage(AudioAttributes.USAGE_GAME)
@@ -332,22 +320,12 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
                                 .build()
                 )
                 .setAcceptsDelayedFocusGain(true)
-                .setOnAudioFocusChangeListener(focusChange -> {
-                    switch (audioManager.requestAudioFocus((new OnFocusChangeListener()).getInstance(),
-                            AudioManager.STREAM_MUSIC, AUDIOFOCUS_GAIN)) {
-                        case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
-                            focusGranted = true;
-                            break;
-
-                        case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
-                            focusGranted = false;
-                            break;
-                    }
-                }).build()
+                .setOnAudioFocusChangeListener(new OnFocusChangeListener().getInstance()).build()
         );
     }
 
     private final class OnFocusChangeListener implements AudioManager.OnAudioFocusChangeListener {
+        boolean pausedByAudioFocus = false;
 
         private OnFocusChangeListener instance;
 
@@ -362,23 +340,19 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         public void onAudioFocusChange(final int focusChange) {
             switch (focusChange) {
                 case AUDIOFOCUS_GAIN:
-                    if (pausedByAudioFocus && !playing) {
+                    if (pausedByAudioFocus && currentPlayingSong != null) {
                         player.start();
-                        playing = true;
                         pausedByAudioFocus = false;
                         break;
                     }
-
                 case AUDIOFOCUS_LOSS:
                 case AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 case AUDIOFOCUS_LOSS_TRANSIENT:
-                    if (playing) {
+                    if (player.isPlaying()) {
                         try {
-                            playing = false;
-                            main.player.pause();
+                            player.pause();
                             pausedByAudioFocus = true;
-                        } catch (Exception ignored) {
-                        }
+                        } catch (Exception ignored) {}
                         break;
                     }
             }

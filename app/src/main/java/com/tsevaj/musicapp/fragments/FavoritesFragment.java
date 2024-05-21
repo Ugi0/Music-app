@@ -48,7 +48,7 @@ public class FavoritesFragment extends Fragment {
         MainActivity.currentFragment = this;
         player.main.setDrawer();
 
-        if (!player.songDone) {
+        if (player.isInitialized()) {
             player.relativeLayout = ll.findViewById(R.id.music_bar);
             player.showBar();
         }

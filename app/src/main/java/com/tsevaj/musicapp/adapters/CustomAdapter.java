@@ -70,7 +70,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
             chosenColor = "#DC143C"; }
         holder.textViewHead.setText(myList.getHead());
         holder.textViewDesc.setText(myList.getDesc());
-        if (myList.getHead().equals(player.currentPlayingSong.getHead())) {
+        if (myList.equals(MusicPlayer.currentPlayingSong)) {
             holder.textViewHead.setTextColor(Color.parseColor(chosenColor));
             holder.textViewDesc.setTextColor(Color.parseColor(chosenColor));
             lastClicked = holder;
@@ -81,7 +81,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
         }
         holder.itemView.setOnClickListener(view -> {
             player.visibleSongs = list;
-            if (!player.currentPlayingSong.getHead().equals("") && (player.currentPlayingSong.getHash() == myList.getHash())) {
+            if (MusicPlayer.currentPlayingSong != null && (MusicPlayer.currentPlayingSong.equals(myList))) {
                 player.main.PrevAndNextSongs.wholeList ^= true; //XOR Magic
             }
             // Decide what list the player will use in future songs

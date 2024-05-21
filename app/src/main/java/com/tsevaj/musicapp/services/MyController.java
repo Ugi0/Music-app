@@ -35,11 +35,9 @@ public class MyController extends BroadcastReceiver {
         @SuppressLint("InlinedApi") PendingIntent mbrIntent = PendingIntent.getBroadcast(c, 0, mediaButtonIntent, PendingIntent.FLAG_IMMUTABLE);
         ms.setMediaButtonReceiver(mbrIntent);
         ms.setCallback(new MediaSessionCompat.Callback() {
-            @SuppressLint("NewApi")
-            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public boolean onMediaButtonEvent(@NonNull Intent mediaButtonIntent) {
-                if (player.songDone) return true;
+                //if (player.songDone) return true;
                 if (System.currentTimeMillis() - lastButtonPressTime < 500) return true;
                 lastButtonPressTime = System.currentTimeMillis();
                 KeyEvent event = mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);

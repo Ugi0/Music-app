@@ -18,9 +18,8 @@ import java.io.InputStream;
 import java.util.List;
 
 public class FileUtils {
-    private static Uri contentUri = null;
+    private static final Uri contentUri = null;
 
-    @SuppressLint("NewApi")
     public static String getPath(final Context context, final Uri uri) {
         // check here to KITKAT or new version
         final boolean isKitKat = true;
@@ -44,7 +43,7 @@ public class FileUtils {
 
             // DownloadsProvider
             else if (isDownloadsDocument(uri)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                {
                     final String id;
                     try (Cursor cursor = context.getContentResolver().query(uri, new String[]{MediaStore.MediaColumns.DISPLAY_NAME}, null, null, null)) {
                         if (cursor != null && cursor.moveToFirst()) {
@@ -81,22 +80,6 @@ public class FileUtils {
 
                     }
 
-                } else {
-                    final String id = DocumentsContract.getDocumentId(uri);
-                    final boolean isOreo = false;
-                    if (id.startsWith("raw:")) {
-                        return id.replaceFirst("raw:", "");
-                    }
-                    try {
-                        contentUri = ContentUris.withAppendedId(
-                                Uri.parse("content://downloads/public_downloads"), Long.parseLong(id));
-
-                    } catch (NumberFormatException e) {
-                        e.printStackTrace();
-                    }
-                    if (contentUri != null) {
-                        return getDataColumn(context, contentUri, null, null);
-                    }
                 }
 
 
@@ -138,16 +121,8 @@ public class FileUtils {
             if (isGoogleDriveUri(uri)) {
                 return getDriveFilePath(uri, context);
             }
-            if( Build.VERSION.SDK_INT == Build.VERSION_CODES.N)
-            {
-                // return getFilePathFromURI(context,uri);
-                return getMediaFilePathForN(uri, context);
-                // return getRealPathFromURI(context,uri);
-            }else
-            {
 
-                return getDataColumn(context, uri, null, null);
-            }
+            return getDataColumn(context, uri, null, null);
 
 
         }

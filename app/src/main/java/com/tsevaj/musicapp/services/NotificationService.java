@@ -1,6 +1,5 @@
 package com.tsevaj.musicapp.services;
 
-import static com.tsevaj.musicapp.utils.MusicPlayer.songName;
 import static com.tsevaj.musicapp.services.NotificationClass.ACTION_NEXT;
 import static com.tsevaj.musicapp.services.NotificationClass.ACTION_PAUSE;
 import static com.tsevaj.musicapp.services.NotificationClass.ACTION_PREV;
@@ -20,12 +19,13 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
 import com.tsevaj.musicapp.MainActivity;
-import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.utils.MusicPlayer;
 
 public class NotificationService extends Service {
     private final IBinder mBinder = new myBinder();
     private NotificationController notificationController;
+    private boolean playing;
 
     @Nullable
     @Override
@@ -37,7 +37,6 @@ public class NotificationService extends Service {
         public NotificationService getService() { return NotificationService.this; }
     }
 
-    @SuppressLint("NewApi")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent.getAction() != null) {
@@ -78,7 +77,7 @@ public class NotificationService extends Service {
         Intent nextIntent = new Intent(this, NotificationReceiver.class)
                 .setAction("NEXT");
         int playPauseButton;
-        if (MusicPlayer.playing) {
+        if (playing) {
             playPauseButton = R.drawable.ic_baseline_pause_24;
         }
         else {
@@ -99,8 +98,8 @@ public class NotificationService extends Service {
                 .setContentIntent(contentIntent)
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(false);
-        notification.setContentTitle(songName);
-        notification.setContentText(MusicPlayer.songArtist);
+        notification.setContentTitle(MusicPlayer.currentPlayingSong.getHead());
+        notification.setContentText(MusicPlayer.currentPlayingSong.getArtist());
         startForeground(1, notification.build());
         super.onCreate();
     }

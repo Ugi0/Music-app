@@ -122,7 +122,6 @@ public class FunctionClass {
         recyclerView.setAdapter(adapter);
         recyclerView.addItemDecoration(new DividerItemDecoration(activity, layoutManager.getOrientation()));
     }
-    @SuppressLint("NewApi")
     public static void loadList(MainActivity main, Activity activity) {
         final int FILTER_SECONDS = activity.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",60);
         int FILTER_LENGTH = FILTER_SECONDS * 1000;

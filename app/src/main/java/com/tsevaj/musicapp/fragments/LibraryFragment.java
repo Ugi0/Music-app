@@ -50,8 +50,6 @@ public class LibraryFragment extends Fragment {
         player.main.setBackground(ll, getResources());
         player.main.setDrawer();
 
-        Log.d("test", this.filter);
-
         SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
         swipeRefreshLayout.setOnRefreshListener(() -> {
             MainActivity.wholeSongList = null;
@@ -63,7 +61,7 @@ public class LibraryFragment extends Fragment {
         player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), filter, nameFilter);
         MainActivity.currentFragment = this;
 
-        if (!player.songDone) {
+        if (player.isInitialized()) {
             player.relativeLayout = ll.findViewById(R.id.music_bar);
             player.showBar();
         }

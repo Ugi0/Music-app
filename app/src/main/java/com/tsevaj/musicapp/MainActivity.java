@@ -16,6 +16,7 @@ import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -125,7 +126,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void showNotification(int playPauseButton, String songName) {
-        utils.displayNotification(this, songName, playPauseButton);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            utils.displayNotification(this, songName, playPauseButton);
+        }
     }
 
     public void setBackground(View view, Resources resources) {
@@ -269,7 +272,7 @@ public class MainActivity extends AppCompatActivity
         stopService(intent1);
         SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putString("SAVED_SONG_HASH", String.valueOf(player.currentPlayingSong.getHash()));
+        editor.putString("SAVED_SONG_HASH", String.valueOf(MusicPlayer.currentPlayingSong.getHash()));
         editor.putString("SAVED_SONG_TIME", String.valueOf(player.getCurrentPosition()));
         editor.apply();
         player.destroy();

@@ -39,7 +39,7 @@ public class ProgressBarThread extends Thread {
                     if (!stopped) {
                         try {
                             BigDecimal playedSoFar = new BigDecimal(main.player.getCurrentPosition() + "000");
-                            progressBarValue = (playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());}
+                            progressBarValue = (playedSoFar.divide(new BigDecimal(String.valueOf(MusicPlayer.currentPlayingSong.getDuration())), 2, RoundingMode.HALF_UP).doubleValue());}
                         catch (Exception exception) {progressBarValue = 0;}
 
                         try { seekBar.setProgress((int) progressBarValue); }
@@ -55,7 +55,7 @@ public class ProgressBarThread extends Thread {
                     if (!stopped) {
                         try {
                             BigDecimal playedSoFar = new BigDecimal(main.player.getCurrentPosition() + "0000");
-                            progressBarValue = (playedSoFar.divide(main.player.currentDuration, 2, RoundingMode.HALF_UP).doubleValue());}
+                            progressBarValue = (playedSoFar.divide(new BigDecimal(String.valueOf(MusicPlayer.currentPlayingSong.getDuration())), 2, RoundingMode.HALF_UP).doubleValue());}
                         catch (Exception exception) {progressBarValue = 0;}
 
                         try { circularSeekBar.setProgress((int) progressBarValue); }

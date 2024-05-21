@@ -36,7 +36,6 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
     private final PlaylistsFragment parent;
     private View listView;
 
-    private final int VIEW_TYPE_DEFAULT = 0;
     private final int VIEW_TYPE_ITEM = 1;
 
     public PlayListsAdapter(ArrayList<PlaylistItem> list, Context mCtx, MusicPlayer player, PlaylistsFragment playlistsFragment) {
@@ -61,7 +60,6 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
             listView = v;
             return new ViewHolder(v);
         }
-
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -81,7 +79,7 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                 textInputLayout.setBoxStrokeWidthFocused(0);
                 EditText input = new EditText(context);
                 input.setInputType(InputType.TYPE_TEXT_FLAG_CAP_WORDS);
-                input.requestFocus();
+                //input.requestFocus();
                 InputMethodManager imm = (InputMethodManager)   context.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
                 textInputLayout.addView(input);
@@ -161,6 +159,8 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
 
     @Override
     public int getItemViewType(int position) {
+        int VIEW_TYPE_DEFAULT = 0;
+
         return (position == 0) ? VIEW_TYPE_DEFAULT : VIEW_TYPE_ITEM;
     }
 

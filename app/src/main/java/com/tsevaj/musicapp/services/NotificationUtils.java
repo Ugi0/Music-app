@@ -23,8 +23,7 @@ public class NotificationUtils {
     public static final String ACTION_PAUSE  = "PAUSE";
     public final static String OPEN_NOTIFICATION = "notification_open";
 
-    @SuppressLint({"NewApi"})
-    @RequiresApi(api = Build.VERSION_CODES.N)
+    @RequiresApi(api = Build.VERSION_CODES.S)
     public void displayNotification(MainActivity main, String songName, int playPauseButton) {
 
         Intent intent = new Intent(main, MainActivity.class);
@@ -53,7 +52,7 @@ public class NotificationUtils {
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(false);
         notification.setContentTitle(songName);
-        notification.setContentText(MusicPlayer.songArtist);
+        notification.setContentText(MusicPlayer.currentPlayingSong.getArtist());
         NotificationManager notificationManager = (NotificationManager) main.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(NOTIFICATION_ID, notification.build());
     }

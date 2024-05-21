@@ -110,4 +110,12 @@ public class MusicItem implements Comparable<MusicItem> {
             return -1;
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) return false;
+        if (!(o instanceof MusicItem)) return false;
+        MusicItem item = (MusicItem) o;
+        return this.hash == item.getHash();
+    }
 }
