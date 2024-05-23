@@ -1,16 +1,23 @@
 package com.tsevaj.musicapp.services;
 
-import android.annotation.SuppressLint;
+import static com.tsevaj.musicapp.services.NotificationClass.ACTION_NEXT;
+import static com.tsevaj.musicapp.services.NotificationClass.ACTION_PAUSE;
+import static com.tsevaj.musicapp.services.NotificationClass.ACTION_PREV;
+
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
+import android.media.MediaMetadata;
+import android.media.session.MediaSession;
+import android.media.session.PlaybackState;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.media.session.MediaButtonReceiver;
 
 import com.tsevaj.musicapp.utils.MusicPlayer;
@@ -18,8 +25,7 @@ import com.tsevaj.musicapp.utils.MusicPlayer;
 public class MyController extends BroadcastReceiver {
     MusicPlayer player;
     Context c;
-    MediaSessionCompat ms;
-    long lastButtonPressTime;
+    MediaSession ms;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -28,35 +34,42 @@ public class MyController extends BroadcastReceiver {
     public MyController(MusicPlayer player, Context c) {
         this.c = c;
         this.player = player;
-        this.ms = new MediaSessionCompat(c, c.getPackageName());
+        this.ms = new MediaSession(c, c.getPackageName());
         this.player.sessionToken = ms.getSessionToken();
         Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         mediaButtonIntent.setClass(c, MediaButtonReceiver.class);
-        @SuppressLint("InlinedApi") PendingIntent mbrIntent = PendingIntent.getBroadcast(c, 0, mediaButtonIntent, PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent mbrIntent = PendingIntent.getBroadcast(c, 0, mediaButtonIntent, PendingIntent.FLAG_IMMUTABLE);
         ms.setMediaButtonReceiver(mbrIntent);
-        ms.setCallback(new MediaSessionCompat.Callback() {
+        ms.setCallback(new MediaSession.Callback() {
             @Override
             public boolean onMediaButtonEvent(@NonNull Intent mediaButtonIntent) {
-                //if (player.songDone) return true;
-                if (System.currentTimeMillis() - lastButtonPressTime < 500) return true;
-                lastButtonPressTime = System.currentTimeMillis();
                 KeyEvent event = mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                if (event.getAction() == KeyEvent.ACTION_UP) return true; //Make so only ACTION_DOWN event passes
+
                 Intent intent1 = new Intent(c, NotificationService.class);
                 switch (event.getKeyCode()) {
                     case KeyEvent.KEYCODE_MEDIA_PLAY:
                     case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                        intent1.setAction("PAUSE");
+                        intent1.setAction(ACTION_PAUSE);
                         break;
                     case KeyEvent.KEYCODE_MEDIA_NEXT:
-                        intent1.setAction("NEXT");
+                        intent1.setAction(ACTION_NEXT);
                         break;
                     case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-                        intent1.setAction("PREVIOUS");
+                        intent1.setAction(ACTION_PREV);
                         break;
                 }
                 c.startService(intent1);
                 return true;
             }
         });
+    }
+
+    public void updateTrackInformation(String title, String author) {
+        MediaMetadata.Builder metadata = new MediaMetadata.Builder();
+        metadata.putString(MediaMetadata.METADATA_KEY_ARTIST, author);
+        metadata.putString(MediaMetadata.METADATA_KEY_TITLE, title);
+        ms.setMetadata(metadata.build());
+        ms.setPlaybackState(new PlaybackState.Builder().setState(PlaybackState.STATE_PLAYING, 0, 1f).build());
     }
 }

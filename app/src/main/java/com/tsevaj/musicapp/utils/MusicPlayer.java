@@ -15,11 +15,10 @@ import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
+import android.media.session.MediaSession;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
@@ -37,12 +36,11 @@ import com.tsevaj.musicapp.services.NotificationController;
 import com.tsevaj.musicapp.services.NotificationService;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class MusicPlayer implements NotificationController, ServiceConnection {
     private MediaPlayer player;
-    public MediaSessionCompat.Token sessionToken;
+    public MediaSession.Token sessionToken;
     public static MusicItem currentPlayingSong;
     public CustomAdapter adapter = null;
     public ArrayList<MusicItem> visibleSongs;
@@ -50,7 +48,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     public View relativeLayout;
     public FragmentManager manager;
     public MainActivity main;
-    NotificationService notificationService;
+    public NotificationService notificationService;
     public Context c;
 
     AudioManager audioManager;
@@ -84,7 +82,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         relativeLayout = ((Activity) c).findViewById(R.id.music_bar);
 
         currentPlayingSong = mylist;
-        main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
+        main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getTitle());
         player.reset();
         try {
             player.setDataSource(mylist.getLocation());
@@ -94,8 +92,9 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             e.printStackTrace();
         }
         currentPlayingSong = mylist;
-        main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
+        main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getTitle());
 
+        main.mediaController.updateTrackInformation(mylist.getTitle(), mylist.getArtist());
         prepareButtons();
     }
 
@@ -180,14 +179,14 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
 
     public void playPause() {
         if (player.isPlaying()) {
-            main.showNotification(R.drawable.ic_baseline_play_arrow_24, currentPlayingSong.getHead());
+            main.showNotification(R.drawable.ic_baseline_play_arrow_24, currentPlayingSong.getTitle());
             pause();
             try {
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
             } catch (Exception ignored) {
             }
         } else {
-            main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getHead());
+            main.showNotification(R.drawable.ic_baseline_pause_24, currentPlayingSong.getTitle());
             resume();
             try {
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
@@ -227,7 +226,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         BtnNext = relativeLayout.findViewById(R.id.BtnNext);
         BtnPause = relativeLayout.findViewById(R.id.BtnPause);
         SeekBar progressBar = relativeLayout.findViewById(R.id.progress_bar);
-        songNameView.setText(currentPlayingSong.getHead());
+        songNameView.setText(currentPlayingSong.getTitle());
         songDescView.setText(currentPlayingSong.getDesc());
         if (!player.isPlaying()) {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
@@ -294,7 +293,10 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     @Override
-    public void onServiceDisconnected(ComponentName componentName) { notificationService = null; }
+    public void onServiceDisconnected(ComponentName componentName) {
+        main.utils.deleteNotification(main);
+        notificationService = null;
+    }
 
     public void destroy() {
         if (this.player != null) {

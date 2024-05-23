@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.util.Log;
 
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -58,10 +57,10 @@ public class FunctionClass {
             li.removeIf(item -> !item.getFavorited());
         } else if (filter.startsWith("PLAYLIST")) {
             List<String> songs = Arrays.asList(settings.getString(filter, "").split("\n"));
-            li.removeIf(item -> !songs.contains(item.getHead()));
+            li.removeIf(item -> !songs.contains(item.getTitle()));
         }
 
-        li.removeIf(item -> !(item.getHead().toLowerCase().contains(nameFilter.toLowerCase()) || item.getArtist().toLowerCase().contains(nameFilter.toLowerCase())));
+        li.removeIf(item -> !(item.getTitle().toLowerCase().contains(nameFilter.toLowerCase()) || item.getArtist().toLowerCase().contains(nameFilter.toLowerCase())));
 
         int FILTER_LENGTH = FILTER_SECONDS * 1000;
         li.removeIf(item -> !(item.getLocation().contains(musicFolder)) && item.getDuration() > FILTER_LENGTH);
@@ -74,7 +73,7 @@ public class FunctionClass {
 
     public static ArrayList<MusicItem> nameFilterMusicList(ArrayList<MusicItem> list, String nameFilter) {
         return (ArrayList<MusicItem>) list.stream().filter(musicItem ->
-                musicItem.getHead().toLowerCase().contains(nameFilter.toLowerCase()) || musicItem.getArtist().toLowerCase().contains(nameFilter.toLowerCase()))
+                musicItem.getTitle().toLowerCase().contains(nameFilter.toLowerCase()) || musicItem.getArtist().toLowerCase().contains(nameFilter.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
@@ -83,13 +82,13 @@ public class FunctionClass {
             if (order.equals("LENGTH")) {
                 list.sort(Comparator.comparingInt(MusicItem::getDuration));
             } else if (order.equals("TITLE")) {
-                list.sort((o2, o1) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
+                list.sort((o2, o1) -> o1.getTitle().compareToIgnoreCase(o2.getTitle()));
             }
         } else {
             if (order.equals("LENGTH")) {
                 list.sort((o1, o2) -> Integer.compare(o2.getDuration(), o1.getDuration()));
             } else if (order.equals("TITLE")) {
-                list.sort((o1, o2) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
+                list.sort((o1, o2) -> o1.getTitle().compareToIgnoreCase(o2.getTitle()));
             } else {
                 Collections.reverse(list);
             }

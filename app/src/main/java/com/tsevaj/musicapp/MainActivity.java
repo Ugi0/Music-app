@@ -28,6 +28,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.MediaController;
 import android.widget.SearchView;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -74,6 +75,8 @@ public class MainActivity extends AppCompatActivity
 
     public File BackgroundDestinationPath;
 
+    public MyController mediaController;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,7 +95,8 @@ public class MainActivity extends AppCompatActivity
         this.player.c = this;
         this.player.main = this;
         this.player.manager = getSupportFragmentManager();
-        registerReceiver(new MyController(player, this), new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
+        this.mediaController = new MyController(player, this);
+        registerReceiver(mediaController, new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
 
         BackgroundDestinationPath = getExternalFilesDir("");
         boolean result = Objects.requireNonNull(BackgroundDestinationPath.getParentFile()).mkdirs();

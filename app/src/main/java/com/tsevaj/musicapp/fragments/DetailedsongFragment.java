@@ -95,9 +95,9 @@ public class DetailedsongFragment extends Fragment {
         songDescView.setCompoundDrawableTintList(ColorStateList.valueOf(textColor));
         songLocView.setCompoundDrawableTintList(ColorStateList.valueOf(textColor));
 
-        favoriteButton.setActivated(favorite.contains(MusicPlayer.currentPlayingSong.getHead()));
+        favoriteButton.setActivated(favorite.contains(MusicPlayer.currentPlayingSong.getTitle()));
 
-        songNameView.setText(MusicPlayer.currentPlayingSong.getHead());
+        songNameView.setText(MusicPlayer.currentPlayingSong.getTitle());
         songDescView.setText(MusicPlayer.currentPlayingSong.getDesc());
         songLocView.setText(MusicPlayer.currentPlayingSong.getLocationFolder());
         if (!playing) {
@@ -155,11 +155,11 @@ public class DetailedsongFragment extends Fragment {
                         menu.setOnMenuItemClickListener(item1 -> {
                             SharedPreferences.Editor editor2 = requireContext().getSharedPreferences("SAVEDATA", 0).edit();
                             String currentPlaylist = requireContext().getSharedPreferences("SAVEDATA", 0).getString("PLAYLIST_" + item1.getTitle(), "");
-                            if (Arrays.asList(currentPlaylist.split("\n")).contains(MusicPlayer.currentPlayingSong.getHead())) return true;
+                            if (Arrays.asList(currentPlaylist.split("\n")).contains(MusicPlayer.currentPlayingSong.getTitle())) return true;
                             if (currentPlaylist.isEmpty())
-                                editor2.putString("PLAYLIST_" + item1.getTitle(), MusicPlayer.currentPlayingSong.getHead());
+                                editor2.putString("PLAYLIST_" + item1.getTitle(), MusicPlayer.currentPlayingSong.getTitle());
                             else {
-                                editor2.putString("PLAYLIST_" + item1.getTitle(), currentPlaylist + "\n" + MusicPlayer.currentPlayingSong.getHead());
+                                editor2.putString("PLAYLIST_" + item1.getTitle(), currentPlaylist + "\n" + MusicPlayer.currentPlayingSong.getTitle());
                             }
                             editor2.apply();
                             return true;
@@ -188,11 +188,11 @@ public class DetailedsongFragment extends Fragment {
         });
         favoriteButton.setOnClickListener(view -> {
             if (favoriteButton.isActivated()) {
-                main.removeFromFavorites(MusicPlayer.currentPlayingSong.getHead());
+                main.removeFromFavorites(MusicPlayer.currentPlayingSong.getTitle());
                 favoriteButton.setActivated(false);
             }
             else {
-                main.addToFavorites(MusicPlayer.currentPlayingSong.getHead());
+                main.addToFavorites(MusicPlayer.currentPlayingSong.getTitle());
                 MusicPlayer.currentPlayingSong.setFavorited(true);
                 favoriteButton.setActivated(true);
             }

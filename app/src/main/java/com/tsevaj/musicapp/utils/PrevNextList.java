@@ -127,9 +127,9 @@ public class PrevNextList {
                 break;
             case "TITLE":
                 if (reverse) {
-                    currentlyPlayingSongs.sort((o1, o2) -> o2.getHead().compareToIgnoreCase(o1.getHead()));
+                    currentlyPlayingSongs.sort((o1, o2) -> o2.getTitle().compareToIgnoreCase(o1.getTitle()));
                 } else {
-                    currentlyPlayingSongs.sort((o1, o2) -> o1.getHead().compareToIgnoreCase(o2.getHead()));
+                    currentlyPlayingSongs.sort((o1, o2) -> o1.getTitle().compareToIgnoreCase(o2.getTitle()));
                 }
                 break;
             case "LENGTH":

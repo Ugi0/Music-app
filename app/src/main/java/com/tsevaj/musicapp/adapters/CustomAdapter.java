@@ -68,7 +68,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
             chosenColor = "#2A0B35";
         } else {
             chosenColor = "#DC143C"; }
-        holder.textViewHead.setText(myList.getHead());
+        holder.textViewHead.setText(myList.getTitle());
         holder.textViewDesc.setText(myList.getDesc());
         if (myList.equals(MusicPlayer.currentPlayingSong)) {
             holder.textViewHead.setTextColor(Color.parseColor(chosenColor));
@@ -110,22 +110,22 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
             PopupMenu popup = new PopupMenu(mCtx, holder.buttonViewOption);
             popup.inflate(R.menu.popup_menu);
             if (playlist.contains("PLAYLIST")) popup.getMenu().getItem(2).setTitle("Remove from playlist");
-            if (player.main.getFavorites().contains(myList.getHead())) popup.getMenu().getItem(0).setTitle("Remove from favorites");
+            if (player.main.getFavorites().contains(myList.getTitle())) popup.getMenu().getItem(0).setTitle("Remove from favorites");
             popup.setOnMenuItemClickListener(item -> {
                 int itemId = item.getItemId();
                 if (itemId == R.id.addtofavorites) {
                     SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
                     SharedPreferences.Editor editor = settings.edit();
                     String favorites = settings.getString("FAVORITES", "");
-                    if (Arrays.asList(favorites.split("\n")).contains(myList.getHead()) && MainActivity.currentFragment.getClass().equals(FavoritesFragment.class)) {
+                    if (Arrays.asList(favorites.split("\n")).contains(myList.getTitle()) && MainActivity.currentFragment.getClass().equals(FavoritesFragment.class)) {
                         ArrayList<String> li = new ArrayList<>(Arrays.asList(favorites.split("\n")));
-                        li.remove(myList.getHead());
+                        li.remove(myList.getTitle());
                         int ind = 0;
                         editor.putString("FAVORITES", String.join("\n", li));
                         editor.apply();
                         for (int i = 0; i < getList().size(); i++) {
                             MusicItem listItem = getList().get(i);
-                            if (listItem.getHead().equals(myList.getHead())) {
+                            if (listItem.getTitle().equals(myList.getTitle())) {
                                 ind = i;
                                 break;
                             }
@@ -135,15 +135,15 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                         notifyItemRemoved(ind);
                         return false;
                     }
-                    else if (player.main.getFavorites().contains(myList.getHead())) {
+                    else if (player.main.getFavorites().contains(myList.getTitle())) {
                         ArrayList<String> li = new ArrayList<>(Arrays.asList(favorites.split("\n")));
-                        li.remove(myList.getHead());
+                        li.remove(myList.getTitle());
                         int ind = 0;
                         editor.putString("FAVORITES", String.join("\n", li));
                         editor.apply();
                         for (int i = 0; i < getList().size(); i++) {
                             MusicItem listItem = getList().get(i);
-                            if (listItem.getHead().equals(myList.getHead())) {
+                            if (listItem.getTitle().equals(myList.getTitle())) {
                                 ind = i;
                                 break;
                             }
@@ -152,7 +152,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                         return false;
                     }
                     else {
-                        editor.putString("FAVORITES", favorites + "\n" + myList.getHead());
+                        editor.putString("FAVORITES", favorites + "\n" + myList.getTitle());
                         editor.apply();
                     }
                 } else if (itemId == R.id.addtoqueue) {
@@ -163,7 +163,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                         String playlistItems = settings.getString(playlist,"");
                         ArrayList<String> li = new ArrayList<>();
                         for (String item2: playlistItems.split("\n")) {
-                            if (!item2.equals(myList.getHead())) {
+                            if (!item2.equals(myList.getTitle())) {
                                 li.add(item2);
                             }
                         }
@@ -181,11 +181,11 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                     menu.setOnMenuItemClickListener(item1 -> {
                         SharedPreferences.Editor editor2 = settings.edit();
                         String currentPlaylist = settings.getString("PLAYLIST_" + item1.getTitle(), "");
-                        if (Arrays.asList(currentPlaylist.split("\n")).contains(myList.getHead())) return true;
+                        if (Arrays.asList(currentPlaylist.split("\n")).contains(myList.getTitle())) return true;
                         if (currentPlaylist.isEmpty())
-                            editor2.putString("PLAYLIST_" + item1.getTitle(), myList.getHead());
+                            editor2.putString("PLAYLIST_" + item1.getTitle(), myList.getTitle());
                         else {
-                            editor2.putString("PLAYLIST_" + item1.getTitle(), currentPlaylist + "\n" + myList.getHead());
+                            editor2.putString("PLAYLIST_" + item1.getTitle(), currentPlaylist + "\n" + myList.getTitle());
                         }
                         editor2.apply();
                         return true;
@@ -208,7 +208,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                     AlertDialog.Builder builder = new AlertDialog.Builder(c);
                     builder.setTitle("Song properties")
                             .setMessage( "\n" +
-                                    "Song name: "+myList.getHead() + "\n" + "\n" +
+                                    "Song name: "+myList.getTitle() + "\n" + "\n" +
                                     "Artist name: "+myList.getArtist()  + "\n" + "\n" +
                                     "Song duration: "+ FunctionClass.milliSecondsToTime(myList.getDuration())  + "\n" + "\n" +
                                     "Song location: "+myList.getLocation()  + "\n" + "\n" +

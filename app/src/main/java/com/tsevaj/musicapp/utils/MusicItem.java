@@ -42,7 +42,7 @@ public class MusicItem implements Comparable<MusicItem> {
 
     }
 
-    public String getHead() {
+    public String getTitle() {
         return head;
     }
 
