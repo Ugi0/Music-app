@@ -1,5 +1,7 @@
 package com.tsevaj.musicapp;
 
+import static com.tsevaj.musicapp.services.NotificationClass.ACTION_NOTIFY;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -48,7 +50,6 @@ import com.tsevaj.musicapp.fragments.PlaylistsFragment;
 import com.tsevaj.musicapp.fragments.SettingsFragment;
 import com.tsevaj.musicapp.services.MyController;
 import com.tsevaj.musicapp.services.NotificationService;
-import com.tsevaj.musicapp.services.NotificationUtils;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.utils.MusicItem;
 import com.tsevaj.musicapp.utils.PrevNextList;
@@ -66,7 +67,6 @@ public class MainActivity extends AppCompatActivity
     public static Fragment currentFragment;
     NavigationView navigationView;
     public PrevNextList PrevAndNextSongs;
-    public NotificationUtils utils;
     public ProgressBarThread t;
     ActionBarDrawerToggle toggle;
     BroadcastReceiver receiver;
@@ -101,8 +101,6 @@ public class MainActivity extends AppCompatActivity
         BackgroundDestinationPath = getExternalFilesDir("");
         boolean result = Objects.requireNonNull(BackgroundDestinationPath.getParentFile()).mkdirs();
 
-        utils = new NotificationUtils();
-
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     new LibraryFragment(player,"")).commit();
@@ -129,10 +127,12 @@ public class MainActivity extends AppCompatActivity
         PrevAndNextSongs.setList(li);
     }
 
-    public void showNotification(int playPauseButton, String songName) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            utils.displayNotification(this, songName, playPauseButton);
-        }
+    public void showNotification(int pauseButton) {
+        Intent intent1 = new Intent(this, NotificationService.class);
+        intent1.setAction(ACTION_NOTIFY);
+        intent1.setType(String.valueOf(pauseButton));
+        startService(intent1);
+        //utils.displayNotification(this, songName, playPauseButton);
     }
 
     public void setBackground(View view, Resources resources) {

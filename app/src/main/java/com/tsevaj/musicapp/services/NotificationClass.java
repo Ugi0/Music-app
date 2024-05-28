@@ -6,10 +6,12 @@ import android.app.NotificationManager;
 
 public class NotificationClass extends Application {
     public static final String Channel = "Control Notification";
-    public static final String NOTIFICATION_TAG = "Notification";
     public static final String ACTION_PREV  = "PREVIOUS";
     public static final String ACTION_NEXT  = "NEXT";
     public static final String ACTION_PAUSE  = "PAUSE";
+
+    public static final String ACTION_NOTIFY = "NOTIFY";
+    public static final String ACTION_DELETE = "DELETE";
 
     public static final int NOTIFICATION_ID = 1;
 
@@ -22,7 +24,7 @@ public class NotificationClass extends Application {
     }
 
     private void CreateNotificationChannel() {
-        NotificationChannel notificationChannel = new NotificationChannel(Channel, "Notification controls", NotificationManager.IMPORTANCE_LOW);
+        NotificationChannel notificationChannel = new NotificationChannel(Channel, "Notification controls", NotificationManager.IMPORTANCE_DEFAULT);
         notificationChannel.setDescription("Will allow app to set a notification which allows you to control the music while app is in the background.");
         notificationChannel.enableVibration(false);
         NotificationManager notificationManager = getSystemService(NotificationManager.class);

@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaMetadata;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
@@ -35,7 +36,7 @@ public class MyController extends BroadcastReceiver {
         this.c = c;
         this.player = player;
         this.ms = new MediaSession(c, c.getPackageName());
-        this.player.sessionToken = ms.getSessionToken();
+        MusicPlayer.sessionToken = ms.getSessionToken();
         Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         mediaButtonIntent.setClass(c, MediaButtonReceiver.class);
         PendingIntent mbrIntent = PendingIntent.getBroadcast(c, 0, mediaButtonIntent, PendingIntent.FLAG_IMMUTABLE);
