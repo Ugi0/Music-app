@@ -46,6 +46,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.tsevaj.musicapp.fragments.DetailedsongFragment;
 import com.tsevaj.musicapp.fragments.FavoritesFragment;
 import com.tsevaj.musicapp.fragments.LibraryFragment;
+import com.tsevaj.musicapp.fragments.PagerFragment;
 import com.tsevaj.musicapp.fragments.PlaylistsFragment;
 import com.tsevaj.musicapp.fragments.SettingsFragment;
 import com.tsevaj.musicapp.services.MyController;
@@ -90,8 +91,8 @@ public class MainActivity extends AppCompatActivity
 
         setDrawer();
 
-        this.PrevAndNextSongs = new PrevNextList(getBaseContext());
-        this.player = new MusicPlayer(getBaseContext());
+        this.PrevAndNextSongs = new PrevNextList(getApplicationContext());
+        this.player = new MusicPlayer(getApplicationContext());
         this.player.c = this;
         this.player.main = this;
         this.player.manager = getSupportFragmentManager();
@@ -218,7 +219,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if (currentFragment.getClass().equals(DetailedsongFragment.class)) {
+        if (currentFragment.getClass().equals(PagerFragment.class)) {
             onBackPressed();
             currentFragment = new LibraryFragment(player,"");
             setDrawer();
@@ -251,7 +252,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        if (currentFragment.getClass().equals(DetailedsongFragment.class)) {
+        if (currentFragment.getClass().equals(PagerFragment.class)) {
             currentFragment = new LibraryFragment(player,"");
             setDrawer();
         }
@@ -284,6 +285,8 @@ public class MainActivity extends AppCompatActivity
             unregisterReceiver(receiver);
             receiver = null;
         }
+        t.stopThread();
+        finish();
         super.onDestroy();
     }
 
@@ -343,11 +346,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         getMenuInflater().inflate(R.menu.options_menu, menu);
-        menu.getItem(0).setVisible(!(currentFragment.getClass().equals(DetailedsongFragment.class) ||
+        menu.getItem(0).setVisible(!(currentFragment.getClass().equals(PagerFragment.class) ||
                             currentFragment.getClass().equals(PlaylistsFragment.class) ||
                             currentFragment.getClass().equals(SettingsFragment.class)
                 ));
-        menu.getItem(1).setVisible(!(currentFragment.getClass().equals(DetailedsongFragment.class) ||
+        menu.getItem(1).setVisible(!(currentFragment.getClass().equals(PagerFragment.class) ||
                             currentFragment.getClass().equals(PlaylistsFragment.class) ||
                             currentFragment.getClass().equals(SettingsFragment.class)
                     ));

@@ -49,4 +49,12 @@
     <string name="save_state_when_exiting">Save state when exiting</string>
     <string name="Regex_replace_filenameNumber">\\([0-9]\\)</string>
     <string name="create_a_new_playlist">Create a new playlist</string>
+    <string name="lyrics_of_the_song_line_1">Lyrics of the song line 1</string>
+    <string name="a_container_to_contain_lyrics_of_the_song_if_they_are_available">A container to contain lyrics of the song if they are available</string>
+    <string name="lyrics_of_the_song_line_3">Lyrics of the song line 3</string>
+    <string name="lyrics_of_the_song_line_2">Lyrics of the song line 2</string>
+    <string name="lyrics_of_the_song_line_4">Lyrics of the song line 4</string>
+    <string name="lyrics_of_the_song_line_5">Lyrics of the song line 5</string>
+    <string name="lyrics_of_the_song_line_6">Lyrics of the song line 6</string>
+    <string name="lyrics_of_the_song_line_7">Lyrics of the song line 7</string>
 </resources>

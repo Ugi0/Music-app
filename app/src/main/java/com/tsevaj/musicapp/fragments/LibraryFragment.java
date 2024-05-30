@@ -54,11 +54,11 @@ public class LibraryFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(() -> {
             MainActivity.wholeSongList = null;
             player.main.PrevAndNextSongs.setList(null);
-            player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), filter, nameFilter);
+            player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), filter, nameFilter);
             swipeRefreshLayout.setRefreshing(false);
         });
 
-        player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), filter, nameFilter);
+        player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), filter, nameFilter);
         MainActivity.currentFragment = this;
 
         if (player.isInitialized()) {

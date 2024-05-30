@@ -40,11 +40,11 @@ public class FavoritesFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(() -> {
             MainActivity.wholeSongList = null;
             player.main.PrevAndNextSongs.setList(null);
-            player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
+            player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), "FAVORITES", nameFilter);
             swipeRefreshLayout.setRefreshing(false);
         });
 
-        player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, requireActivity(), player, requireActivity(), "FAVORITES", nameFilter);
+        player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), "FAVORITES", nameFilter);
         MainActivity.currentFragment = this;
         player.main.setDrawer();
 

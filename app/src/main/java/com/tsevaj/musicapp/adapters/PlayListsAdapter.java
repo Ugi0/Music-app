@@ -49,13 +49,13 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_ITEM) {
-            View v = LayoutInflater.from(parent.getContext())
+            View v = LayoutInflater.from(context.getApplicationContext())
                     .inflate(R.layout.playlists_item, parent, false);
             listView = v;
             return new ViewHolder(v);
         }
         else {
-            View v = LayoutInflater.from(parent.getContext())
+            View v = LayoutInflater.from(context.getApplicationContext())
                     .inflate(R.layout.playlist_defaultitem, parent, false);
             listView = v;
             return new ViewHolder(v);

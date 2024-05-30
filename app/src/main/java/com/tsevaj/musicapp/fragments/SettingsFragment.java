@@ -221,7 +221,7 @@ public class SettingsFragment extends Fragment {
         try {
             fileUploadResultLauncher.launch(Intent.createChooser(intent, "Select a File to Upload"));
         } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(getContext(), "Please install a File Manager.",
+            Toast.makeText(main.getApplication(), "Please install a File Manager.",
                     Toast.LENGTH_SHORT).show();
         }
     }

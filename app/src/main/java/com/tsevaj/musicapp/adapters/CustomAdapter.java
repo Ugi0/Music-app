@@ -54,8 +54,8 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(mCtx)
                 .inflate(R.layout.songlist_item, parent, false);
         return new ViewHolder(v);
     }

@@ -22,6 +22,7 @@ import android.media.session.MediaSession;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
@@ -35,6 +36,7 @@ import com.tsevaj.musicapp.adapters.CustomAdapter;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.fragments.DetailedsongFragment;
+import com.tsevaj.musicapp.fragments.PagerFragment;
 import com.tsevaj.musicapp.services.NotificationController;
 import com.tsevaj.musicapp.services.NotificationService;
 
@@ -42,7 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class MusicPlayer implements NotificationController, ServiceConnection {
-    private MediaPlayer player;
+    private static MediaPlayer player;
     public static MediaSession.Token sessionToken;
     public static MusicItem currentPlayingSong;
     public CustomAdapter adapter = null;
@@ -62,7 +64,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     ImageButton BtnNext;
     ImageButton BtnPause;
 
-    DetailedsongFragment newFragment;
+    PagerFragment newFragment;
 
     public MusicPlayer(Context c) {
         this.c = c;
@@ -74,7 +76,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
 
     public void play(MusicItem mylist) {
         if (currentPlayingSong != null) {
-            if (currentPlayingSong.getHash() == (mylist.getHash()) && this.player.isPlaying()) return;
+            if (currentPlayingSong.getHash() == (mylist.getHash()) && player.isPlaying()) return;
         } else {
             Intent intent = new Intent(c, NotificationService.class);
             c.bindService(intent, this, 0);
@@ -158,8 +160,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
 
         adapter.reset();
         adapter.notifyDataSetChanged();
-        if (MainActivity.currentFragment.getClass().equals(DetailedsongFragment.class))
-            newFragment.initWindowElements();
+        if (MainActivity.currentFragment.getClass().equals(PagerFragment.class)) newFragment.setPause(false);
         else {
             showBar();
         }
@@ -171,14 +172,18 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         } catch (Exception ignored) {
         }
-        play(main.PrevAndNextSongs.Prev());
+        MusicItem song = main.PrevAndNextSongs.Prev();
+        play(song);
         adapter.reset();
         adapter.notifyDataSetChanged();
-        if (MainActivity.currentFragment.getClass().equals(DetailedsongFragment.class))
-            newFragment.initWindowElements();
+        if (MainActivity.currentFragment.getClass().equals(PagerFragment.class)) newFragment.changeSong(song);
         else {
             showBar();
         }
+    }
+
+    public boolean isPlaying() {
+        return player.isPlaying();
     }
 
     public void playPause() {
@@ -195,8 +200,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
             } catch (Exception ignored) {}
         }
-        if (MainActivity.currentFragment.getClass().equals(DetailedsongFragment.class))
-            newFragment.initWindowElements();
+        if (MainActivity.currentFragment.getClass().equals(PagerFragment.class)) newFragment.setPause(player.isPlaying());
     }
 
     public void pause() {
@@ -210,13 +214,15 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         try {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         } catch (Exception ignored) {}
-        if (MainActivity.currentFragment.getClass().equals(DetailedsongFragment.class))
-            newFragment.initWindowElements();
+        if (MainActivity.currentFragment.getClass().equals(PagerFragment.class)) newFragment.setPause(false);
         player.start();
         main.t.resumeThread();
     }
 
     public void showBar() {
+        if (relativeLayout == null) {
+            return;
+        }
         try {
             this.relativeLayout.setVisibility(View.VISIBLE);
         } catch (Exception ignored) {}
@@ -260,7 +266,8 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         });
         main.t = new ProgressBarThread(progressBar, main);
         this.relativeLayout.setOnClickListener(view -> {
-            newFragment = new DetailedsongFragment(main.player, main);
+            //newFragment = new DetailedsongFragment(main.player, main);
+            newFragment = new PagerFragment(main.player, main);
             MainActivity.currentFragment = newFragment;
             FragmentTransaction transaction = manager.beginTransaction();
             transaction.replace(R.id.fragment_container, newFragment);
@@ -274,12 +281,12 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     public void seekTo(int i) {
-        this.player.seekTo(i);
+        player.seekTo(i);
     }
 
     public int getCurrentPosition() {
         try {
-            return this.player.getCurrentPosition();
+            return player.getCurrentPosition();
         } catch (Exception e) {
             return 0;
         }
@@ -304,10 +311,10 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
     }
 
     public void destroy() {
-        if (this.player != null) {
+        if (player != null) {
             if (main.t != null) main.t.stopThread();
-            this.player.release();
-            this.player = null;
+            player.release();
+            player = null;
         }
     }
 
@@ -331,7 +338,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         );
     }
 
-    private final class OnFocusChangeListener implements AudioManager.OnAudioFocusChangeListener {
+    private static final class OnFocusChangeListener implements AudioManager.OnAudioFocusChangeListener {
         boolean pausedByAudioFocus = false;
 
         private OnFocusChangeListener instance;
