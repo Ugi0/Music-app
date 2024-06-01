@@ -1,11 +1,16 @@
 package com.tsevaj.musicapp.fragments;
 
+import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -69,6 +74,33 @@ public class DetailedLyricsFragment extends Fragment {
         }
     }
 
+    @SuppressLint("SetTextI18n")
+    public void showNoLyrics() {
+        LinearLayout linearLayout = ll.findViewById(R.id.lyrics_container);
+        linearLayout.removeAllViewsInLayout();
+        TextView textView = new TextView(getContext());
+        textView.setId(0);
+        textView.setGravity(Gravity.CENTER);
+        textView.setLines(2);
+        textView.setTextSize(23);
+        textView.setText("No lyrics found");
+        textView.setTextColor(Color.parseColor("#FFFFFF"));
+        linearLayout.addView(textView);
+    }
+
+    public void showLyricLines() {
+        LinearLayout linearLayout = ll.findViewById(R.id.lyrics_container);
+        linearLayout.removeAllViewsInLayout();
+        for (int i = 0; i < 7; i++) {
+            TextView textView = new TextView(getContext());
+            textView.setId(i);
+            textView.setGravity(Gravity.CENTER);
+            textView.setLines(2);
+            textView.setTextSize(23);
+            linearLayout.addView(textView);
+        }
+    }
+
     public static class LyricsThread extends Thread {
         Thread t;
         MusicPlayer player;
@@ -116,16 +148,17 @@ public class DetailedLyricsFragment extends Fragment {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             List<LyricItem> finalLyrics = lyrics;
             if (finalLyrics != null) {
+                player.main.runOnUiThread(() -> parent.parent.showLyricLines());
                 executor.scheduleAtFixedRate(() -> {
-                            try {
-                                player.main.runOnUiThread(() -> parent.parent.setLyrics(getDisplayLyrics(finalLyrics, player.getCurrentPosition() / 1000.0)));
-                            } catch (Exception e) {
-                                Log.d("test", String.valueOf(e));
-                            }
-                            // player.getCurrentPosition() / 1000.0;
-                            //Update and change the lyrics
-                        }
-                        , 0, 100, TimeUnit.MILLISECONDS);
+                        try {
+                            player.main.runOnUiThread(() -> parent.parent.setLyrics(getDisplayLyrics(finalLyrics, player.getCurrentPosition() / 1000.0)));
+                        } catch (Exception ignored) {}
+                        // player.getCurrentPosition() / 1000.0;
+                        //Update and change the lyrics
+                    }
+                    , 0, 100, TimeUnit.MILLISECONDS);
+            } else {
+                player.main.runOnUiThread(() -> parent.parent.showNoLyrics());
             }
         }
     }
