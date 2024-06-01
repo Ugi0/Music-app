@@ -43,6 +43,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.navigation.NavigationView;
+import com.tsevaj.musicapp.fragments.DetailedLyricsFragment;
 import com.tsevaj.musicapp.fragments.DetailedsongFragment;
 import com.tsevaj.musicapp.fragments.FavoritesFragment;
 import com.tsevaj.musicapp.fragments.LibraryFragment;
@@ -106,9 +107,9 @@ public class MainActivity extends AppCompatActivity
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     new LibraryFragment(player,"")).commit();
             navigationView.setCheckedItem(R.id.menu_library);
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                SharedPreferences settings = player.main.getSharedPreferences("SAVEDATA", 0);
-                if (settings.getBoolean("SAVE_STATE", false)) {
+            SharedPreferences settings = player.main.getSharedPreferences("SAVEDATA", 0);
+            if (settings.getBoolean("SAVE_STATE", false)) {
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     int hash = Integer.parseInt(settings.getString("SAVED_SONG_HASH", "0"));
                     int time = Integer.parseInt(settings.getString("SAVED_SONG_TIME", "0"));
                     if (hash != 0) {
@@ -120,8 +121,8 @@ public class MainActivity extends AppCompatActivity
                             player.showBar();
                         }
                     }
-                }
-            }, 250);
+                }, 250);
+            }
         }
     }
     public void changePlayingList(ArrayList<MusicItem> li) {
@@ -281,6 +282,8 @@ public class MainActivity extends AppCompatActivity
         editor.putString("SAVED_SONG_TIME", String.valueOf(player.getCurrentPosition()));
         editor.apply();
         player.destroy();
+        DetailedLyricsFragment.t.stop();
+        MusicPlayer.currentPlayingSong = null;
         if (receiver != null) {
             unregisterReceiver(receiver);
             receiver = null;

@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class PagerAdapter extends FragmentStateAdapter {
     MusicPlayer player;
@@ -81,6 +82,34 @@ public class PagerAdapter extends FragmentStateAdapter {
             songNameView.setText(song.getTitle());
             songDescView.setText(song.getDesc());
             songLocView.setText(song.getLocationFolder());
+        }
+    }
+
+    public void setLyrics(List<DetailedLyricsFragment.LyricItem> lyrics) {
+        if (fragment2 != null) {
+            View parentView = fragment2.getView();
+            assert parentView != null;
+            TextView lyrics1 = parentView.findViewById(R.id.lyrics1);
+            TextView lyrics2 = parentView.findViewById(R.id.lyrics2);
+            TextView lyrics3 = parentView.findViewById(R.id.lyrics3);
+            TextView lyrics4 = parentView.findViewById(R.id.lyrics4);
+            TextView lyrics5 = parentView.findViewById(R.id.lyrics5);
+            TextView lyrics6 = parentView.findViewById(R.id.lyrics6);
+            TextView lyrics7 = parentView.findViewById(R.id.lyrics7);
+            lyrics1.setText(lyrics.get(0).lyric);
+            lyrics1.setTextColor(lyrics.get(0).current ? Color.parseColor("#FF0000") : Color.parseColor("#FFFFFF"));
+            lyrics2.setText(lyrics.get(1).lyric);
+            lyrics2.setTextColor(lyrics.get(1).current ? Color.parseColor("#FF0000") : Color.parseColor("#FFFFFF"));
+            lyrics3.setText(lyrics.get(2).lyric);
+            lyrics3.setTextColor(lyrics.get(2).current ? Color.parseColor("#FF0000") : Color.parseColor("#FFFFFF"));
+            lyrics4.setText(lyrics.get(3).lyric);
+            lyrics4.setTextColor(lyrics.get(3).current ? Color.parseColor("#FF0000") : Color.parseColor("#FFFFFF"));
+            lyrics5.setText(lyrics.get(4).lyric);
+            lyrics5.setTextColor(lyrics.get(4).current ? Color.parseColor("#FF0000") : Color.parseColor("#FFFFFF"));
+            lyrics6.setText(lyrics.get(5).lyric);
+            lyrics6.setTextColor(lyrics.get(5).current ? Color.parseColor("#FF0000") : Color.parseColor("#FFFFFF"));
+            lyrics7.setText(lyrics.get(6).lyric);
+            lyrics7.setTextColor(lyrics.get(6).current ? Color.parseColor("#FF0000") : Color.parseColor("#FFFFFF"));
         }
     }
 

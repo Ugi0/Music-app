@@ -36,52 +36,66 @@
 
         <TextView
             android:id="@+id/lyrics1"
+            android:lines="2"
+            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/lyrics_of_the_song_line_1"
-            android:textSize="25sp" />
+            android:textSize="23sp" />
 
         <TextView
             android:id="@+id/lyrics2"
+            android:lines="2"
+            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/lyrics_of_the_song_line_2"
-            android:textSize="25sp" />
+            android:textSize="23sp" />
 
         <TextView
             android:id="@+id/lyrics3"
+            android:lines="2"
+            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/lyrics_of_the_song_line_3"
-            android:textSize="25sp" />
+            android:textSize="23sp" />
 
         <TextView
             android:id="@+id/lyrics4"
+            android:lines="2"
+            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/lyrics_of_the_song_line_4"
-            android:textSize="25sp" />
+            android:textSize="23sp" />
 
         <TextView
             android:id="@+id/lyrics5"
+            android:lines="2"
+            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/lyrics_of_the_song_line_5"
-            android:textSize="25sp" />
+            android:textSize="23sp" />
 
         <TextView
             android:id="@+id/lyrics6"
+            android:lines="2"
+            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/lyrics_of_the_song_line_6"
-            android:textSize="25sp" />
+            android:textSize="23sp" />
 
         <TextView
             android:id="@+id/lyrics7"
+            android:lines="2"
+            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/lyrics_of_the_song_line_7"
-            android:textSize="25sp" />
+            android:textSize="23sp" />
     </LinearLayout>
 
     <LinearLayout

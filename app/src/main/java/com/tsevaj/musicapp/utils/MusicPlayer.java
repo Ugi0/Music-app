@@ -72,6 +72,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         player.setOnErrorListener((mediaPlayer, i, i1) -> true);
         player.setWakeMode(c, PowerManager.PARTIAL_WAKE_LOCK);
         player.setOnCompletionListener(mediaPlayer -> donePlayNext());
+        player.setOnPreparedListener(MediaPlayer::start);
     }
 
     public void play(MusicItem mylist) {
@@ -88,12 +89,10 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         relativeLayout = ((Activity) c).findViewById(R.id.music_bar);
 
         currentPlayingSong = mylist;
-        main.showNotification(R.drawable.ic_baseline_pause_24);
         player.reset();
         try {
             player.setDataSource(mylist.getLocation());
-            player.prepare();
-            player.start();
+            player.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -234,11 +233,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         SeekBar progressBar = relativeLayout.findViewById(R.id.progress_bar);
         songNameView.setText(currentPlayingSong.getTitle());
         songDescView.setText(currentPlayingSong.getDesc());
-        if (!player.isPlaying()) {
-            BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
-        } else {
-            BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
-        }
+        BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
 
         progressBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -315,6 +310,7 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
             if (main.t != null) main.t.stopThread();
             player.release();
             player = null;
+            main.player = null;
         }
     }
 
