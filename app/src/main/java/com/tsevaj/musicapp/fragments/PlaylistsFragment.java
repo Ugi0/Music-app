@@ -15,7 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.tsevaj.musicapp.utils.FunctionClass;
+import com.tsevaj.musicapp.fragments.interfaces.RefreshableFragment;
+import com.tsevaj.musicapp.utils.files.MusicGetter;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.R;
@@ -34,16 +35,13 @@ public class PlaylistsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View ll = inflater.inflate(R.layout.songlist_recyclerview, container, false);
         RecyclerView recyclerView = ll.findViewById(R.id.recyclerView);
-        player.main.setBackground(ll, getResources());
+        main.setBackground(ll, getResources());
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
 
-        SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
-        swipeRefreshLayout.setOnRefreshListener(() -> swipeRefreshLayout.setRefreshing(false));
-
         main.setDrawer();
 
-        FunctionClass.playlistView(recyclerView, getActivity(), player, requireActivity(), this);
+        MusicGetter.playlistView(recyclerView, getActivity(), player, requireActivity(), this);
         MainActivity.currentFragment = this;
         return ll;
     }

@@ -19,7 +19,7 @@ import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.fragments.FavoritesFragment;
 import com.tsevaj.musicapp.utils.AlertPopup;
-import com.tsevaj.musicapp.utils.FunctionClass;
+import com.tsevaj.musicapp.utils.files.MusicGetter;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.utils.MusicItem;
 
@@ -210,7 +210,7 @@ public abstract class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.V
                             .setMessage( "\n" +
                                     "Song name: "+myList.getTitle() + "\n" + "\n" +
                                     "Artist name: "+myList.getArtist()  + "\n" + "\n" +
-                                    "Song duration: "+ FunctionClass.milliSecondsToTime(myList.getDuration())  + "\n" + "\n" +
+                                    "Song duration: "+ MusicGetter.milliSecondsToTime(myList.getDuration())  + "\n" + "\n" +
                                     "Song location: "+myList.getLocation()  + "\n" + "\n" +
                                     "File size: "+ myList.getCurrentSize() + "\n" + "\n" +
                                     "File type: "+ myList.getType() + "\n" + "\n" +

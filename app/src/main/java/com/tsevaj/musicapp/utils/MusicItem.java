@@ -1,6 +1,6 @@
 package com.tsevaj.musicapp.utils;
 
-import static com.tsevaj.musicapp.utils.FunctionClass.milliSecondsToTime;
+import static com.tsevaj.musicapp.utils.files.MusicGetter.milliSecondsToTime;
 
 import android.annotation.SuppressLint;
 import android.text.format.DateFormat;

@@ -1,6 +1,6 @@
 package com.tsevaj.musicapp;
 
-import static com.tsevaj.musicapp.services.NotificationClass.ACTION_NOTIFY;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_NOTIFY;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -18,7 +18,6 @@ import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -30,7 +29,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.MediaController;
 import android.widget.SearchView;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -44,18 +42,20 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.navigation.NavigationView;
 import com.tsevaj.musicapp.fragments.DetailedLyricsFragment;
-import com.tsevaj.musicapp.fragments.DetailedsongFragment;
 import com.tsevaj.musicapp.fragments.FavoritesFragment;
 import com.tsevaj.musicapp.fragments.LibraryFragment;
 import com.tsevaj.musicapp.fragments.PagerFragment;
 import com.tsevaj.musicapp.fragments.PlaylistsFragment;
 import com.tsevaj.musicapp.fragments.SettingsFragment;
-import com.tsevaj.musicapp.services.MyController;
-import com.tsevaj.musicapp.services.NotificationService;
+import com.tsevaj.musicapp.fragments.interfaces.RefreshableFragment;
+import com.tsevaj.musicapp.services.bluetooth.MyController;
+import com.tsevaj.musicapp.services.notification.NotificationService;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.utils.MusicItem;
 import com.tsevaj.musicapp.utils.PrevNextList;
 import com.tsevaj.musicapp.utils.ProgressBarThread;
+import com.tsevaj.musicapp.utils.enums.SortOptions;
+import com.tsevaj.musicapp.utils.files.MusicGetter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -84,42 +84,39 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (!Environment.isExternalStorageManager()) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-            Uri uri = Uri.fromParts("package",getPackageName(),null);
-            intent.setData(uri);
-            startActivity(intent); }
-
         setDrawer();
 
         this.PrevAndNextSongs = new PrevNextList(getApplicationContext());
-        this.player = new MusicPlayer(getApplicationContext());
-        this.player.c = this;
-        this.player.main = this;
-        this.player.manager = getSupportFragmentManager();
+        this.player = new MusicPlayer(getApplicationContext(), main, getSupportFragmentManager());
+        //this.player.c = this;
+        //this.player.main = this;
+        //this.player.manager = getSupportFragmentManager();
         this.mediaController = new MyController(player, this);
         registerReceiver(mediaController, new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
 
         BackgroundDestinationPath = getExternalFilesDir("");
         boolean result = Objects.requireNonNull(BackgroundDestinationPath.getParentFile()).mkdirs();
 
+        if (!Environment.isExternalStorageManager()) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+            Uri uri = Uri.fromParts("package",getPackageName(),null);
+            intent.setData(uri);
+            startActivity(intent);
+        } else {
+            wholeSongList = MusicGetter.getMusic(this, "", "");
+        }
+
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                     new LibraryFragment(player,"")).commit();
             navigationView.setCheckedItem(R.id.menu_library);
-            SharedPreferences settings = player.main.getSharedPreferences("SAVEDATA", 0);
+            SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
             if (settings.getBoolean("SAVE_STATE", false)) {
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     int hash = Integer.parseInt(settings.getString("SAVED_SONG_HASH", "0"));
                     int time = Integer.parseInt(settings.getString("SAVED_SONG_TIME", "0"));
                     if (hash != 0) {
-                        MusicItem song = MainActivity.wholeSongList.stream().filter(e -> e.getHash() == hash).findFirst().orElse(null);
-                        if (song != null) {
-                            player.visibleSongs = MainActivity.wholeSongList;
-                            player.recreateList(song);
-                            player.resumeState(song, time);
-                            player.showBar();
-                        }
+                        MainActivity.wholeSongList.stream().filter(e -> e.getHash() == hash).findFirst().ifPresent(song -> player.resumeState(song, time));
                     }
                 }, 250);
             }
@@ -138,8 +135,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void setBackground(View view, Resources resources) {
-        if (new File(this.player.main.BackgroundDestinationPath+"/background").exists()) {
-            view.setBackground(new BitmapDrawable(resources, BitmapFactory.decodeFile(this.player.main.BackgroundDestinationPath+"/background")));
+        if (new File(BackgroundDestinationPath+"/background").exists()) {
+            view.setBackground(new BitmapDrawable(resources, BitmapFactory.decodeFile(BackgroundDestinationPath+"/background")));
         }
         else {
             view.setBackground(ResourcesCompat.getDrawable(resources, R.drawable.background, null));
@@ -266,6 +263,7 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == 2909) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.e("Permission", "Granted");
+                wholeSongList = MusicGetter.getMusic(this, "", "");
             } else {
                 Log.e("Permission", "Denied");
             }
@@ -303,16 +301,16 @@ public class MainActivity extends AppCompatActivity
         popup.getMenu().getItem(4).setChecked(settings.getBoolean("ASCENDING", true));
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.sort_date) {
-                editor.putString("REPLAY", "DATE");
+                editor.putString(SortOptions.NAME, SortOptions.DATE.toString());
                 editor.apply();
             } else if (item.getItemId() == R.id.sort_length) {
-                editor.putString("REPLAY", "LENGTH");
+                editor.putString(SortOptions.NAME, SortOptions.LENGTH.toString());
                 editor.apply();
             } else if (item.getItemId() == R.id.sort_title) {
-                editor.putString("REPLAY", "TITLE");
+                editor.putString(SortOptions.NAME, SortOptions.TITLE.toString());
                 editor.apply();
             } else if (item.getItemId() == R.id.sort_random) {
-                editor.putString("REPLAY", "RANDOM");
+                editor.putString(SortOptions.NAME, SortOptions.RANDOM.toString());
                 editor.apply();
             } else if (item.getItemId() == R.id.sort_reverse) {
                 if (settings.getBoolean("ASCENDING", true)) {
@@ -325,7 +323,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 editor.apply();
             }
-            player.main.PrevAndNextSongs.sortFilterList(settings.getString("REPLAY", "DATE"), settings.getBoolean("ASCENDING", true));
+            PrevAndNextSongs.sortFilterList(settings.getString(SortOptions.NAME, SortOptions.DATE.toString()), settings.getBoolean("ASCENDING", true));
 
 
             Fragment newFragment = null;
@@ -366,48 +364,25 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public boolean onQueryTextChange(String s) {
-                if (currentFragment.getClass().equals(LibraryFragment.class)) {
-                    player.main.PrevAndNextSongs.getMusicAndSet(player.recyclerview, player.main, player, player.main, "", s);
-                } else if (currentFragment.getClass().equals(FavoritesFragment.class)) {
-                    player.main.PrevAndNextSongs.getMusicAndSet(player.recyclerview, player.main, player, player.main, "FAVORITES", s);
+                //TODO find a smarter way to change the ordering of items here
+                //The full list of items can be found in wholeSongList
+                if (currentFragment instanceof RefreshableFragment) {
+                    ((RefreshableFragment) currentFragment).getRecyclerView().setAdapter();
                 }
+                //TODO Handle changing the list is UI
+                /*if (currentFragment.getClass().equals(LibraryFragment.class)) {
+                    PrevAndNextSongs.getMusicAndSet(player.recyclerview, this, player, this, "", s);
+                } else if (currentFragment.getClass().equals(FavoritesFragment.class)) {
+                    PrevAndNextSongs.getMusicAndSet(player.recyclerview, this, player, this, "FAVORITES", s);
+                }*/
                 return false;
             }});
+        searchView.setOnCloseListener(() -> {
+            //TODO Clear search params
+            return false;
+        });
         SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         return true;
-    }
-
-    public ArrayList<String> getFavorites() {
-        SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
-        String favorites = settings.getString("FAVORITES", "");
-        return new ArrayList<>(Arrays.asList(favorites.split("\n")));
-    }
-
-    public void addToFavorites(String s) {
-        SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
-        SharedPreferences.Editor editor = settings.edit();
-        String favorites = settings.getString("FAVORITES", "");
-        editor.putString("FAVORITES", favorites + "\n" + s);
-        editor.apply();
-    }
-
-    public void setFavorites(ArrayList<String> li) {
-        SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putString("FAVORITES", String.join("\n",li));
-        editor.apply();
-    }
-
-    public void removeFromFavorites(String s) {
-        SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
-        String favorites = settings.getString("FAVORITES", "");
-        ArrayList<String> li = new ArrayList<>();
-        for (String i: favorites.split("\n")) {
-            if (!i.equals(s)) {
-                li.add(i);
-            }
-        }
-        setFavorites(li);
     }
 }

@@ -27,7 +27,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
-import com.tsevaj.musicapp.utils.FileUtils;
+import com.tsevaj.musicapp.utils.files.FileUtils;
 
 import java.io.File;
 import java.io.FileInputStream;

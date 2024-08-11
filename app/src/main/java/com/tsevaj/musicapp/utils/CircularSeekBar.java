@@ -42,10 +42,11 @@ import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.SeekBar;
 
 import com.tsevaj.musicapp.R;
 
-public class CircularSeekBar extends View {
+public class CircularSeekBar extends androidx.appcompat.widget.AppCompatSeekBar {
 
 	/**
 	 * Used to scale the dp units to pixels
@@ -812,7 +813,7 @@ public class CircularSeekBar extends View {
 	}
 
 	@Override
-	protected Parcelable onSaveInstanceState() {
+	public Parcelable onSaveInstanceState() {
 		Parcelable superState = super.onSaveInstanceState();
 
 		Bundle state = new Bundle();
@@ -833,7 +834,7 @@ public class CircularSeekBar extends View {
 	}
 
 	@Override
-	protected void onRestoreInstanceState(Parcelable state) {
+	public void onRestoreInstanceState(Parcelable state) {
 		Bundle savedState = (Bundle) state;
 
 		Parcelable superState = savedState.getParcelable("PARENT");

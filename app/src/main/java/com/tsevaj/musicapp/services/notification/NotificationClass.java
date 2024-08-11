@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp.services;
+package com.tsevaj.musicapp.services.notification;
 
 import android.app.Application;
 import android.app.NotificationChannel;

@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp.utils;
+package com.tsevaj.musicapp.utils.files;
 
 import android.annotation.SuppressLint;
 import android.content.ContentUris;

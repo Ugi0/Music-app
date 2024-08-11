@@ -61,7 +61,7 @@ public class DetailedsongFragment extends Fragment {
         @Override
         public void onProgressChanged(CircularSeekBar circularSeekBar, int progress, boolean fromUser) {
             if (fromUser) {
-                player.seekTo((int) (MusicPlayer.currentPlayingSong.getDuration()*(1.0*progress/10000)));
+                player.seekTo(progress);
                 progressBar.setProgress(progress);
                 if (!player.isPlaying()) {
                     BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);

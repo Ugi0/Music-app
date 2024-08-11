@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp.utils;
+package com.tsevaj.musicapp.utils.files;
 
 import static org.jaudiotagger.audio.AudioFileIO.read;
 
@@ -19,6 +19,9 @@ import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.adapters.PlayListsAdapter;
 import com.tsevaj.musicapp.fragments.PlaylistsFragment;
+import com.tsevaj.musicapp.utils.MusicItem;
+import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.utils.PlaylistItem;
 
 import org.jaudiotagger.tag.FieldKey;
 
@@ -30,22 +33,27 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FunctionClass {
-    public static ArrayList<MusicItem> getMusic(Context activity, MusicPlayer player, FragmentActivity c, String filter, String nameFilter) {
-        boolean REVERSE_ORDER = c.getSharedPreferences("SAVEDATA", 0).getBoolean("ASCENDING", true);
+public class MusicGetter {
+    public static ArrayList<MusicItem> getMusic(Context context, String filter, String nameFilter) {
+        boolean REVERSE_ORDER = context.getSharedPreferences("SAVEDATA", 0).getBoolean("ASCENDING", true);
 
-        if (MainActivity.wholeSongList == null) loadList(player.main, (Activity) activity);
+        //if (MainActivity.wholeSongList == null) {
+        //    MainActivity.wholeSongList = loadList(context);
+        //    getAuthors(player, context);
+        //6}
 
-        SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
+        SharedPreferences settings = context.getSharedPreferences("SAVEDATA", 0);
 
-        ArrayList<MusicItem> li = filterMusicList(c, filter, nameFilter);
+        ArrayList<MusicItem> li = filterMusicList(context, filter, nameFilter);
 
         String order = settings.getString("REPLAY", "");
 
         return sortMusicList(li, order, REVERSE_ORDER);
     }
 
-    public static ArrayList<MusicItem> filterMusicList(FragmentActivity c, String filter, String nameFilter) {
+    //TODO Remove side effects from all methods
+
+    public static ArrayList<MusicItem> filterMusicList(Context c, String filter, String nameFilter) {
         SharedPreferences settings = c.getSharedPreferences("SAVEDATA", 0);
         final int FILTER_SECONDS = settings.getInt("MIN_SIZE",120);
         boolean REVERSE_ORDER = settings.getBoolean("ASCENDING", true);
@@ -71,13 +79,13 @@ public class FunctionClass {
         return li;
     }
 
-    public static ArrayList<MusicItem> nameFilterMusicList(ArrayList<MusicItem> list, String nameFilter) {
+    private static ArrayList<MusicItem> nameFilterMusicList(ArrayList<MusicItem> list, String nameFilter) {
         return (ArrayList<MusicItem>) list.stream().filter(musicItem ->
                 musicItem.getTitle().toLowerCase().contains(nameFilter.toLowerCase()) || musicItem.getArtist().toLowerCase().contains(nameFilter.toLowerCase()))
                 .collect(Collectors.toList());
     }
 
-    public static ArrayList<MusicItem> sortMusicList(ArrayList<MusicItem> list, String order, boolean reverse) {
+    private static ArrayList<MusicItem> sortMusicList(ArrayList<MusicItem> list, String order, boolean reverse) {
         if (reverse) {
             if (order.equals("LENGTH")) {
                 list.sort(Comparator.comparingInt(MusicItem::getDuration));
@@ -121,13 +129,18 @@ public class FunctionClass {
         recyclerView.setAdapter(adapter);
         recyclerView.addItemDecoration(new DividerItemDecoration(activity, layoutManager.getOrientation()));
     }
-    public static void loadList(MainActivity main, Activity activity) {
-        final int FILTER_SECONDS = activity.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",60);
+
+    /**
+     * Load music list. This method should only be called once on start. If user refreshes the view, call this method to fetch songs again
+     * @param context
+     */
+    public static ArrayList<MusicItem> loadList(Context context) {
+        final int FILTER_SECONDS = context.getSharedPreferences("SAVEDATA", 0).getInt("MIN_SIZE",60);
         int FILTER_LENGTH = FILTER_SECONDS * 1000;
         ArrayList<MusicItem> list = new ArrayList<>();
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor songCursor = main.getContentResolver().query(songUri, null, null, null, null);
-        ArrayList<String> favorites = main.getFavorites();
+        Cursor songCursor = context.getContentResolver().query(songUri, null, null, null, null);
+        ArrayList<String> favorites = getFavorites(context);
         if (songCursor != null && songCursor.moveToFirst()) {
             int songTitle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songLength = songCursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
@@ -144,7 +157,7 @@ public class FunctionClass {
                 long currentModified = songCursor.getLong(songModified);
                 String currentArtist = "<unknown>";
                 MusicItem myList = new MusicItem(
-                        currentTitle.replaceAll(main.getString(R.string.Regex_replace_filenameNumber), ""), //Replace SongName(1) with just SongName
+                        currentTitle.replaceAll(context.getString(R.string.Regex_replace_filenameNumber), ""), //Replace SongName(1) with just SongName
                         milliSecondsToTime(currentLength),
                         currentArtist,
                         currentSize,
@@ -159,10 +172,17 @@ public class FunctionClass {
         assert songCursor != null;
         songCursor.close();
         list.removeIf(n -> (n.getDuration() < FILTER_LENGTH));
-        MainActivity.wholeSongList = list;
-        getAuthors(main.player, activity);
+        //MainActivity.wholeSongList = list;
+
+        return list;
     }
-    public static void getAuthors(MusicPlayer player, Activity activity) {
+
+    /**
+     * Runs a separate thread to get the authors for the songs
+     * @param adapter adapter that will be refreshed after getting authors is done
+     * @param context context of the action
+     */
+    public static void getAuthors(RecyclerView.Adapter<?> adapter, Context context) {
         @SuppressLint("NotifyDataSetChanged") Thread t = new Thread(() -> {
             for (MusicItem item: MainActivity.wholeSongList) {
                 try {
@@ -172,8 +192,41 @@ public class FunctionClass {
                     e.printStackTrace();
                 }
             }
-            activity.runOnUiThread(() -> player.adapter.notifyDataSetChanged());
+            ((Activity) context).runOnUiThread(adapter::notifyDataSetChanged);
         });
         t.start();
+    }
+
+    public static ArrayList<String> getFavorites(Context context) {
+        SharedPreferences settings = context.getSharedPreferences("SAVEDATA", 0);
+        String favorites = settings.getString("FAVORITES", "");
+        return new ArrayList<>(Arrays.asList(favorites.split("\n")));
+    }
+
+    public static void addToFavorites(Context context, String s) {
+        SharedPreferences settings = context.getSharedPreferences("SAVEDATA", 0);
+        SharedPreferences.Editor editor = settings.edit();
+        String favorites = settings.getString("FAVORITES", "");
+        editor.putString("FAVORITES", favorites + "\n" + s);
+        editor.apply();
+    }
+
+    public static void setFavorites(Context context, ArrayList<String> li) {
+        SharedPreferences settings = context.getSharedPreferences("SAVEDATA", 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("FAVORITES", String.join("\n",li));
+        editor.apply();
+    }
+
+    public static void removeFromFavorites(Context context, String s) {
+        SharedPreferences settings = context.getSharedPreferences("SAVEDATA", 0);
+        String favorites = settings.getString("FAVORITES", "");
+        ArrayList<String> li = new ArrayList<>();
+        for (String i: favorites.split("\n")) {
+            if (!i.equals(s)) {
+                li.add(i);
+            }
+        }
+        setFavorites(context, li);
     }
 }

@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp.services;
+package com.tsevaj.musicapp.services.notification;
 
 public interface NotificationController {
     void playNext(Boolean force);

@@ -1,26 +1,22 @@
-package com.tsevaj.musicapp.services;
+package com.tsevaj.musicapp.services.bluetooth;
 
-import static com.tsevaj.musicapp.services.NotificationClass.ACTION_NEXT;
-import static com.tsevaj.musicapp.services.NotificationClass.ACTION_PAUSE;
-import static com.tsevaj.musicapp.services.NotificationClass.ACTION_PREV;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_NEXT;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_PAUSE;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_PREV;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.media.MediaMetadata;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
-import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaSessionCompat;
-import android.support.v4.media.session.PlaybackStateCompat;
-import android.util.Log;
 import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
 import androidx.media.session.MediaButtonReceiver;
 
+import com.tsevaj.musicapp.services.notification.NotificationService;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 
 public class MyController extends BroadcastReceiver {

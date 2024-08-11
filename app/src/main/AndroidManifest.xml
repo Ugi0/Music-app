@@ -20,7 +20,7 @@
         android:icon="@mipmap/app_icon"
         android:requestLegacyExternalStorage="true"
         android:label="@string/app_name"
-        android:name=".services.NotificationClass"
+        android:name=".services.notification.NotificationClass"
         tools:replace="android:icon"
         android:roundIcon="@mipmap/app_icon_round"
         android:supportsRtl="true"
@@ -38,9 +38,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".services.NotificationService"
+        <service android:name=".services.notification.NotificationService"
             android:foregroundServiceType="mediaPlayback"/>
-        <receiver android:name=".services.NotificationReceiver"
+        <receiver android:name=".services.notification.NotificationReceiver"
             android:exported="false"
             android:enabled="true">
             <intent-filter>

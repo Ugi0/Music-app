@@ -18,10 +18,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.fragments.interfaces.RefreshableFragment;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.R;
 
-public class LibraryFragment extends Fragment {
+public class LibraryFragment extends RefreshableFragment {
     private RecyclerView recyclerView;
     private final MusicPlayer player;
     private final String nameFilter;
@@ -50,13 +51,7 @@ public class LibraryFragment extends Fragment {
         player.main.setBackground(ll, getResources());
         player.main.setDrawer();
 
-        SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) recyclerView.getParent();
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            MainActivity.wholeSongList = null;
-            player.main.PrevAndNextSongs.setList(null);
-            player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), filter, nameFilter);
-            swipeRefreshLayout.setRefreshing(false);
-        });
+        makeRefreshable(recyclerView);
 
         player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), filter, nameFilter);
         MainActivity.currentFragment = this;
@@ -76,5 +71,12 @@ public class LibraryFragment extends Fragment {
         inflater.inflate(R.menu.popup_menu, menu);
     }
 
+    @Override
+    protected void handleRefresh() {
+        MainActivity.wholeSongList = null;
+        player.main.PrevAndNextSongs.setList(null);
+        player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), filter, nameFilter);
+        swipeRefreshLayout.setRefreshing(false);
+    }
 }
 

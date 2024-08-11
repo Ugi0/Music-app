@@ -1,13 +1,12 @@
-package com.tsevaj.musicapp.services;
+package com.tsevaj.musicapp.services.notification;
 
-import static com.tsevaj.musicapp.services.NotificationClass.ACTION_NEXT;
-import static com.tsevaj.musicapp.services.NotificationClass.ACTION_PAUSE;
-import static com.tsevaj.musicapp.services.NotificationClass.ACTION_PREV;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_NEXT;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_PAUSE;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_PREV;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 public class NotificationReceiver extends BroadcastReceiver {
 

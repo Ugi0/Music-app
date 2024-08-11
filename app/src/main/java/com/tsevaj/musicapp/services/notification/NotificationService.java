@@ -1,18 +1,16 @@
-package com.tsevaj.musicapp.services;
+package com.tsevaj.musicapp.services.notification;
 
-import static com.tsevaj.musicapp.services.NotificationClass.ACTION_DELETE;
-import static com.tsevaj.musicapp.services.NotificationClass.ACTION_NEXT;
-import static com.tsevaj.musicapp.services.NotificationClass.ACTION_NOTIFY;
-import static com.tsevaj.musicapp.services.NotificationClass.ACTION_PAUSE;
-import static com.tsevaj.musicapp.services.NotificationClass.ACTION_PREV;
-import static com.tsevaj.musicapp.services.NotificationClass.Channel;
-import static com.tsevaj.musicapp.services.NotificationClass.NOTIFICATION_ID;
-import static com.tsevaj.musicapp.services.NotificationClass.OPEN_NOTIFICATION;
-import static com.tsevaj.musicapp.utils.MusicPlayer.currentPlayingSong;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_DELETE;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_NEXT;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_NOTIFY;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_PAUSE;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_PREV;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.Channel;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.NOTIFICATION_ID;
+import static com.tsevaj.musicapp.services.notification.NotificationClass.OPEN_NOTIFICATION;
 import static com.tsevaj.musicapp.utils.MusicPlayer.sessionToken;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
@@ -20,7 +18,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
 import android.os.Binder;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
