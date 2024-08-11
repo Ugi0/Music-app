@@ -27,6 +27,8 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
+import com.tsevaj.musicapp.utils.ApplicationConfig;
 import com.tsevaj.musicapp.utils.files.FileUtils;
 
 import java.io.File;
@@ -39,7 +41,7 @@ import java.util.Objects;
 
 import top.defaults.colorpicker.ColorWheelView;
 
-public class SettingsFragment extends Fragment {
+public class SettingsFragment extends MusicFragment {
 
     ColorWheelView colorWheel;
     EditText colorWheelText;
@@ -60,8 +62,11 @@ public class SettingsFragment extends Fragment {
 
     MainActivity main;
 
+    public static ApplicationConfig config;
+
     public SettingsFragment(MainActivity main) {
-        this.main = main;
+        super(main);
+        config = main.getConfig();
     }
 
     @Nullable

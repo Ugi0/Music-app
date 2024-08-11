@@ -13,19 +13,21 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.adapters.PagerAdapter;
+import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
 import com.tsevaj.musicapp.utils.MusicItem;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 
 
-public class PagerFragment extends Fragment {
+public class PagerFragment extends MusicFragment {
     MusicPlayer player;
     MainActivity main;
 
     PagerAdapter pagerAdapter;
     ViewPager2 viewPager;
 
-    public PagerFragment(MusicPlayer player, MainActivity main) {
-        this.player = player;
+    public PagerFragment(MainActivity main) {
+        super(main);
+        //this.player = player;
         this.main = main;
     }
 

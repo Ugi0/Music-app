@@ -30,7 +30,7 @@ public class PrevNextList {
     private Fragment createdFragment;
     //private Context c;
 
-    public boolean wholeList;
+    private boolean wholeList;
 
     //private String lastFilter = "";
     //private String lastNameFilter = "";
@@ -48,6 +48,14 @@ public class PrevNextList {
     //public PrevNextList(Context c) {
     //    this.c = c;
     //}
+
+    public boolean getWholeListValue() {
+        return this.wholeList;
+    }
+
+    public void setWholeListValue(boolean value) {
+        this.wholeList = value;
+    }
 
     public void setList(ArrayList<MusicItem> li) {
         this.songList = li;

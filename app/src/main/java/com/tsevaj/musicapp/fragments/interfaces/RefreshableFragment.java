@@ -9,8 +9,13 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.tsevaj.musicapp.MainActivity;
 
-public abstract class RefreshableFragment extends Fragment {
+public abstract class RefreshableFragment extends MusicFragment {
     private RecyclerView recyclerView;
+
+    public RefreshableFragment(MainActivity main) {
+        super(main);
+    }
+
     protected abstract void handleRefresh();
     protected void makeRefreshable(RecyclerView recyclerView) {
         this.recyclerView = recyclerView;

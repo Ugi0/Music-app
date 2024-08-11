@@ -15,19 +15,21 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
 import com.tsevaj.musicapp.fragments.interfaces.RefreshableFragment;
 import com.tsevaj.musicapp.utils.files.MusicGetter;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.R;
 
-public class PlaylistsFragment extends Fragment {
-    private final MusicPlayer player;
-    public MainActivity main;
+public class PlaylistsFragment extends MusicFragment {
+    //private final MusicPlayer player;
+    //public MainActivity main;
 
-    public PlaylistsFragment(MusicPlayer player, MainActivity main) {
-        this.main = main;
-        this.player = player;
+    public PlaylistsFragment(MainActivity main) {
+        super(main);
+        //this.main = main;
+        //this.player = player;
     }
 
     @Nullable
@@ -41,7 +43,7 @@ public class PlaylistsFragment extends Fragment {
 
         main.setDrawer();
 
-        MusicGetter.playlistView(recyclerView, getActivity(), player, requireActivity(), this);
+        //MusicGetter.playlistView(recyclerView, getActivity(), player, requireActivity(), this);
         MainActivity.currentFragment = this;
         return ll;
     }

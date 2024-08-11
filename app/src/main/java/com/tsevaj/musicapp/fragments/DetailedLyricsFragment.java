@@ -16,8 +16,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.adapters.PagerAdapter;
+import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
+import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
+import com.tsevaj.musicapp.utils.MusicItem;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 
 import java.io.File;
@@ -35,14 +39,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class DetailedLyricsFragment extends Fragment {
+public class DetailedLyricsFragment extends MusicFragment implements HasControlBar {
     View ll;
     PagerAdapter parent;
 
     public static LyricsThread t;
 
-    public DetailedLyricsFragment(PagerAdapter parent) {
-        this.parent = parent;
+    public DetailedLyricsFragment(MainActivity main) {
+        super(main);
     }
 
     @Nullable
@@ -56,6 +60,21 @@ public class DetailedLyricsFragment extends Fragment {
 
         parent.initWindowElements(ll);
         return ll;
+    }
+
+    @Override
+    public void handlePause() {
+
+    }
+
+    @Override
+    public void handleResume() {
+
+    }
+
+    @Override
+    public void handleSongChange(MusicItem song) {
+
     }
 
     public static class LyricItem {
@@ -74,7 +93,6 @@ public class DetailedLyricsFragment extends Fragment {
         }
     }
 
-    @SuppressLint("SetTextI18n")
     public void showNoLyrics() {
         LinearLayout linearLayout = ll.findViewById(R.id.lyrics_container);
         linearLayout.removeAllViewsInLayout();
@@ -149,7 +167,7 @@ public class DetailedLyricsFragment extends Fragment {
             List<LyricItem> finalLyrics = lyrics;
             if (finalLyrics != null) {
                 player.main.runOnUiThread(() -> parent.parent.showLyricLines());
-                executor.scheduleAtFixedRate(() -> {
+                executor.scheduleWithFixedDelay(() -> {
                         try {
                             player.main.runOnUiThread(() -> parent.parent.setLyrics(getDisplayLyrics(finalLyrics, player.getCurrentPosition() / 1000.0)));
                         } catch (Exception ignored) {}

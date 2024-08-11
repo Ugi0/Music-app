@@ -31,7 +31,7 @@ public class ProgressBarThread extends Thread {
         //if (seekBar != null) {
         t = new Thread(() -> {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-            executor.scheduleAtFixedRate(() -> {
+            executor.scheduleWithFixedDelay(() -> {
                 if (!stopped) {
                     menuBar.updateProgress();
                     /*try {

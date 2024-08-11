@@ -50,10 +50,10 @@ public class PagerAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         if (position == 0) {
-            fragment1 = new DetailedsongFragment(this);
+            fragment1 = new DetailedsongFragment(main);
             return fragment1;
         } else {
-            fragment2 = new DetailedLyricsFragment(this);
+            fragment2 = new DetailedLyricsFragment(main);
             return fragment2;
         }
     }
@@ -312,7 +312,7 @@ public class PagerAdapter extends FragmentStateAdapter {
         });
         if (progressBar != null) {
             progressBar.setOnSeekBarChangeListener(new DetailedsongFragment.CircleSeekBarListener(player, progressBar, BtnPause));
-            main.t = new ProgressBarThread(progressBar, main);
+            main.t = new ProgressBarThread(progressBar);
         }
     }
     public void detailed_next(View ll) {

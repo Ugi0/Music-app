@@ -98,6 +98,14 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         }
     }*/
 
+    public static int getCurrentSongHash() {
+        return currentPlayingSong.getHash();
+    }
+
+    public static MusicItem getCurrentPlayingSong() {
+        return currentPlayingSong;
+    }
+
     public void resumeState(MusicItem song, int SecDuration) {
         play(song);
         player.seekTo(SecDuration);

@@ -47,17 +47,23 @@ import com.tsevaj.musicapp.fragments.LibraryFragment;
 import com.tsevaj.musicapp.fragments.PagerFragment;
 import com.tsevaj.musicapp.fragments.PlaylistsFragment;
 import com.tsevaj.musicapp.fragments.SettingsFragment;
+import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
+import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
 import com.tsevaj.musicapp.fragments.interfaces.RefreshableFragment;
 import com.tsevaj.musicapp.services.bluetooth.MyController;
 import com.tsevaj.musicapp.services.notification.NotificationService;
+import com.tsevaj.musicapp.utils.ApplicationConfig;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.utils.MusicItem;
 import com.tsevaj.musicapp.utils.PrevNextList;
 import com.tsevaj.musicapp.utils.ProgressBarThread;
+import com.tsevaj.musicapp.utils.SharedPreferencesHandler;
 import com.tsevaj.musicapp.utils.enums.SortOptions;
 import com.tsevaj.musicapp.utils.files.MusicGetter;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -79,6 +85,10 @@ public class MainActivity extends AppCompatActivity
 
     public MyController mediaController;
 
+    private ApplicationConfig config;
+
+    private SharedPreferencesHandler preferencesHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,13 +96,7 @@ public class MainActivity extends AppCompatActivity
 
         setDrawer();
 
-        this.PrevAndNextSongs = new PrevNextList(getApplicationContext());
-        this.player = new MusicPlayer(getApplicationContext(), main, getSupportFragmentManager());
-        //this.player.c = this;
-        //this.player.main = this;
-        //this.player.manager = getSupportFragmentManager();
-        this.mediaController = new MyController(player, this);
-        registerReceiver(mediaController, new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
+        preferencesHandler = new SharedPreferencesHandler(this);
 
         BackgroundDestinationPath = getExternalFilesDir("");
         boolean result = Objects.requireNonNull(BackgroundDestinationPath.getParentFile()).mkdirs();
@@ -107,10 +111,21 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new LibraryFragment(player,"")).commit();
-            navigationView.setCheckedItem(R.id.menu_library);
             SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
+            Fragment newFragment = new LibraryFragment(this);
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                    newFragment).commit();
+            navigationView.setCheckedItem(R.id.menu_library);
+
+            this.PrevAndNextSongs = new PrevNextList(wholeSongList, newFragment, getApplicationContext());
+            this.player = new MusicPlayer(getApplicationContext());
+            this.config = new ApplicationConfig(settings.getString("CONFIG", ""));
+            //this.player.c = this;
+            //this.player.main = this;
+            //this.player.manager = getSupportFragmentManager();
+            this.mediaController = new MyController(player, this);
+            registerReceiver(mediaController, new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
+
             if (settings.getBoolean("SAVE_STATE", false)) {
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     int hash = Integer.parseInt(settings.getString("SAVED_SONG_HASH", "0"));
@@ -122,8 +137,35 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
+
+    public SharedPreferencesHandler getPreferencesHandler() {
+        return this.preferencesHandler;
+    }
+
+    public ApplicationConfig getConfig() {
+        return this.config;
+    }
+
     public void changePlayingList(ArrayList<MusicItem> li) {
         PrevAndNextSongs.setList(li);
+    }
+
+    public void handleSongChange(MusicItem song) {
+        if (currentFragment instanceof HasControlBar) {
+            ((HasControlBar) currentFragment).handleSongChange(song);
+        }
+    }
+
+    public void handleSongPause() {
+        if (currentFragment instanceof HasControlBar) {
+            ((HasControlBar) currentFragment).handlePause();
+        }
+    }
+
+    public void handleSongResume() {
+        if (currentFragment instanceof HasControlBar) {
+            ((HasControlBar) currentFragment).handleResume();
+        }
     }
 
     public void showNotification(int pauseButton) {
@@ -181,7 +223,7 @@ public class MainActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case (android.R.id.home): {
                 onBackPressed();
-                currentFragment = new LibraryFragment(player,"");
+                currentFragment = new LibraryFragment(this);
                 setDrawer();
                 break;
             }
@@ -215,46 +257,44 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if (currentFragment.getClass().equals(PagerFragment.class)) {
-            onBackPressed();
-            currentFragment = new LibraryFragment(player,"");
-            setDrawer();
-            return true;
+    private Class<? extends MusicFragment> getDrawerMenuOptionClass(int id) {
+        switch (id) {
+            case (R.id.menu_library):
+                return LibraryFragment.class;
+            case (R.id.menu_favorites):
+                return FavoritesFragment.class;
+            case (R.id.menu_settings):
+                return SettingsFragment.class;
+            case (R.id.menu_playlists):
+                return PlaylistsFragment.class;
+            default:
+                throw new RuntimeException("Option that does not exist selected");
         }
-        int itemId = item.getItemId();
-        FragmentTransaction createdFragment = null;
-        if (itemId == R.id.menu_library) {
-            createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new LibraryFragment(player, ""));
-        } else if (itemId == R.id.menu_favorites) {
-            createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new FavoritesFragment(player,""));
-        } else if (itemId == R.id.menu_settings) {
-            createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new SettingsFragment(this));
-        } else if (itemId == R.id.menu_playlists) {
-            createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    new PlaylistsFragment(player, this));
-        }
-        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-            assert createdFragment != null;
-            createdFragment.addToBackStack(null);
-        }
-        assert createdFragment != null;
-        createdFragment.commit();
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
     }
 
     @Override
-    public void onBackPressed() {
-        if (currentFragment.getClass().equals(PagerFragment.class)) {
-            currentFragment = new LibraryFragment(player,"");
-            setDrawer();
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        Constructor<? extends MusicFragment> constructor;
+        try {
+            constructor = getDrawerMenuOptionClass(itemId).getConstructor(MainActivity.class);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
-        super.onBackPressed();
+        MusicFragment newFragment;
+        try {
+             newFragment = constructor.newInstance(this);
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+        FragmentTransaction createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                newFragment);
+        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+            createdFragment.addToBackStack(null);
+        }
+        createdFragment.commit();
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 
     @Override
@@ -276,12 +316,12 @@ public class MainActivity extends AppCompatActivity
         stopService(intent1);
         SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putString("SAVED_SONG_HASH", String.valueOf(MusicPlayer.currentPlayingSong.getHash()));
+        editor.putString("SAVED_SONG_HASH", String.valueOf(MusicPlayer.getCurrentSongHash()));
         editor.putString("SAVED_SONG_TIME", String.valueOf(player.getCurrentPosition()));
         editor.apply();
         player.destroy();
         DetailedLyricsFragment.t.stop();
-        MusicPlayer.currentPlayingSong = null;
+        config.saveConfig();
         if (receiver != null) {
             unregisterReceiver(receiver);
             receiver = null;
@@ -325,20 +365,20 @@ public class MainActivity extends AppCompatActivity
             }
             PrevAndNextSongs.sortFilterList(settings.getString(SortOptions.NAME, SortOptions.DATE.toString()), settings.getBoolean("ASCENDING", true));
 
-
-            Fragment newFragment = null;
+            //TODO Handle sort change
+            /*Fragment newFragment = null;
             if (currentFragment.getClass().equals(LibraryFragment.class)) {
                 newFragment = new LibraryFragment(player,"", PrevAndNextSongs.getLastFilter());
             }
             else if (currentFragment.getClass().equals(FavoritesFragment.class)) {
                 newFragment = new FavoritesFragment(player,"");
-            }
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            }*/
+            /*FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             assert newFragment != null;
             transaction.replace(R.id.fragment_container, newFragment);
             transaction.addToBackStack(null);
             transaction.commit();
-
+            */
             return true;
         });
         popup.show();

@@ -15,17 +15,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
 import com.tsevaj.musicapp.fragments.interfaces.RefreshableFragment;
+import com.tsevaj.musicapp.utils.MusicItem;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.R;
 
-public class FavoritesFragment extends RefreshableFragment {
-    private final MusicPlayer player;
-    private final String nameFilter;
+public class FavoritesFragment extends RefreshableFragment implements HasControlBar {
+    //private final MusicPlayer player;
+    //private final String nameFilter;
 
-    public FavoritesFragment(MusicPlayer player, String nameFilter) {
-        this.nameFilter = nameFilter;
-        this.player = player;
+    public FavoritesFragment(MainActivity main) {
+        super(main);
+        //this.nameFilter = nameFilter;
+        //this.player = player;
     }
 
     @Nullable
@@ -34,19 +37,14 @@ public class FavoritesFragment extends RefreshableFragment {
         View ll = inflater.inflate(R.layout.songlist_recyclerview, container, false);
         RecyclerView recyclerView = ll.findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
-        player.main.setBackground(ll, getResources());
+        main.setBackground(ll, getResources());
         recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
 
         makeRefreshable(recyclerView);
 
-        player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), "FAVORITES", nameFilter);
+        //main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), "FAVORITES", nameFilter);
         MainActivity.currentFragment = this;
-        player.main.setDrawer();
-
-        if (player.isInitialized()) {
-            player.relativeLayout = ll.findViewById(R.id.music_bar);
-            player.showBar();
-        }
+        main.setDrawer();
 
         return ll;
     }
@@ -61,8 +59,23 @@ public class FavoritesFragment extends RefreshableFragment {
     @Override
     protected void handleRefresh() {
         MainActivity.wholeSongList = null;
-        player.main.PrevAndNextSongs.setList(null);
-        player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), "FAVORITES", nameFilter);
-        swipeRefreshLayout.setRefreshing(false);
+        main.PrevAndNextSongs.setList(null);
+        ///.main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), "FAVORITES", nameFilter);
+        //swipeRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void handlePause() {
+
+    }
+
+    @Override
+    public void handleResume() {
+
+    }
+
+    @Override
+    public void handleSongChange(MusicItem song) {
+
     }
 }

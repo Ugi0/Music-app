@@ -8,7 +8,6 @@ import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION
 import static com.tsevaj.musicapp.services.notification.NotificationClass.Channel;
 import static com.tsevaj.musicapp.services.notification.NotificationClass.NOTIFICATION_ID;
 import static com.tsevaj.musicapp.services.notification.NotificationClass.OPEN_NOTIFICATION;
-import static com.tsevaj.musicapp.utils.MusicPlayer.sessionToken;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -116,8 +115,8 @@ public class NotificationService extends Service {
                     Intent pauseIntent = new Intent(this, NotificationReceiver.class).setAction(ACTION_PAUSE);
                     PendingIntent pausePendingIntent = PendingIntent.getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_MUTABLE);
                     actions[1] = new Notification.Action.Builder(pauseIcon, ACTION_PAUSE, pausePendingIntent).build();
-                    builder.setContentTitle(MusicPlayer.currentPlayingSong.getTitle());
-                    builder.setContentText(MusicPlayer.currentPlayingSong.getArtist());
+                    builder.setContentTitle(MusicPlayer.getCurrentPlayingSong().getTitle());
+                    builder.setContentText(MusicPlayer.getCurrentPlayingSong().getArtist());
                     builder.setDeleteIntent(pausePendingIntent);
                     builder.setActions(actions);
                     Notification notification = builder.build();

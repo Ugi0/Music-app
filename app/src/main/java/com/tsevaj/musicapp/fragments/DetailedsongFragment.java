@@ -16,15 +16,18 @@ import androidx.fragment.app.Fragment;
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.adapters.PagerAdapter;
 import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
+import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
 import com.tsevaj.musicapp.utils.CircularSeekBar;
+import com.tsevaj.musicapp.utils.MusicItem;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 
-public class DetailedsongFragment extends Fragment {
+public class DetailedsongFragment extends MusicFragment implements HasControlBar {
     View ll;
-    PagerAdapter parent;
+    //PagerAdapter parent;
 
-    public DetailedsongFragment(PagerAdapter parent) {
-        this.parent = parent;
+    public DetailedsongFragment(MainActivity main) {
+        super(main);
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -33,7 +36,7 @@ public class DetailedsongFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         ll = inflater.inflate(R.layout.song_detailed_view, container, false);
 
-        parent.main.setBackground(ll, getResources());
+        main.setBackground(ll, getResources());
         MainActivity.currentFragment = this;
 
         parent.initWindowElements(ll);
@@ -46,6 +49,21 @@ public class DetailedsongFragment extends Fragment {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.popup_menu, menu);
+    }
+
+    @Override
+    public void handlePause() {
+
+    }
+
+    @Override
+    public void handleResume() {
+
+    }
+
+    @Override
+    public void handleSongChange(MusicItem song) {
+
     }
 
     public static class CircleSeekBarListener implements CircularSeekBar.OnCircularSeekBarChangeListener {
@@ -78,7 +96,7 @@ public class DetailedsongFragment extends Fragment {
         @Override
         public void onStopTrackingTouch(CircularSeekBar seekBar) {
             player.resume();
-            player.main.t.resumeThread();
+            main.t.resumeThread();
         }
     }
 
