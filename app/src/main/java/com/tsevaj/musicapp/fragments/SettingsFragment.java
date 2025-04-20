@@ -1,5 +1,7 @@
 package com.tsevaj.musicapp.fragments;
 
+import static com.tsevaj.musicapp.utils.ApplicationConfig.BackgroundDestinationPath;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -29,6 +31,7 @@ import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
 import com.tsevaj.musicapp.utils.ApplicationConfig;
+import com.tsevaj.musicapp.utils.SharedPreferencesHandler;
 import com.tsevaj.musicapp.utils.files.FileUtils;
 
 import java.io.File;
@@ -60,8 +63,6 @@ public class SettingsFragment extends MusicFragment {
     TextView darkModeText;
     CheckBox darkModeButton;
 
-    MainActivity main;
-
     public static ApplicationConfig config;
 
     public SettingsFragment(MainActivity main) {
@@ -72,53 +73,48 @@ public class SettingsFragment extends MusicFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View ll = inflater.inflate(R.layout.settings_fragment, container, false);
+        super.onCreateView(inflater, container, R.layout.settings_fragment);
 
-        main.setBackground(ll, getResources());
+        colorWheel = view.findViewById(R.id.color_wheel);
+        colorWheelText = view.findViewById(R.id.settings_color_text);
+        backgroundSetter = view.findViewById(R.id.settings_background);
+        songsFolder = view.findViewById(R.id.settings_songs_folder_text);
+        songLengthMin = view.findViewById(R.id.numpicker_minutes);
+        songLengthSec = view.findViewById(R.id.numpicker_seconds);
 
-        SharedPreferences settings = requireActivity().getSharedPreferences("SAVEDATA", 0);
+        saveStateText = view.findViewById(R.id.state_text);
+        saveStateButton = view.findViewById(R.id.save_state_button);
 
-        colorWheel = ll.findViewById(R.id.color_wheel);
-        colorWheelText = ll.findViewById(R.id.settings_color_text);
-        backgroundSetter = ll.findViewById(R.id.settings_background);
-        songsFolder = ll.findViewById(R.id.settings_songs_folder_text);
-        songLengthMin = ll.findViewById(R.id.numpicker_minutes);
-        songLengthSec = ll.findViewById(R.id.numpicker_seconds);
+        darkModeText = view.findViewById(R.id.dark_mode_text);
+        darkModeButton = view.findViewById(R.id.dark_mode_button);
 
-        saveStateText = ll.findViewById(R.id.state_text);
-        saveStateButton = ll.findViewById(R.id.save_state_button);
+        themeText = view.findViewById(R.id.Theme_text);
+        lengthText = view.findViewById(R.id.min_length_text);
+        folderText = view.findViewById(R.id.folder_text);
+        backgroundText = view.findViewById(R.id.background_text);
 
-        darkModeText = ll.findViewById(R.id.dark_mode_text);
-        darkModeButton = ll.findViewById(R.id.dark_mode_button);
-
-        themeText = ll.findViewById(R.id.Theme_text);
-        lengthText = ll.findViewById(R.id.min_length_text);
-        folderText = ll.findViewById(R.id.folder_text);
-        backgroundText = ll.findViewById(R.id.background_text);
-
-        boolean saveState = requireContext().getSharedPreferences("SAVEDATA", 0).getBoolean("SAVE_STATE", false);
+        boolean saveState = SharedPreferencesHandler.sharedPreferences.getBoolean("SAVE_STATE", false);
         saveStateButton.setChecked(saveState);
 
-        boolean darkMode = requireContext().getSharedPreferences("SAVEDATA", 0).getBoolean("DARK_MODE", false);
+        boolean darkMode = SharedPreferencesHandler.sharedPreferences.getBoolean("DARK_MODE", false);
         darkModeButton.setChecked(darkMode);
 
-        setTextColors(requireContext().getSharedPreferences("SAVEDATA", 0).getString("THEME_COLOR", "#FFFFFF"));
-        main.setClickable();
+        setTextColors(SharedPreferencesHandler.sharedPreferences.getString("THEME_COLOR", "#FFFFFF"));
 
         songLengthMin.setMinValue(0);
         songLengthMin.setMaxValue(60);
         songLengthSec.setMinValue(0);
         songLengthSec.setMaxValue(60);
-        songLengthSec.setValue(settings.getInt("MIN_SIZE",0) % 60);
-        songLengthMin.setValue(settings.getInt("MIN_SIZE",60) / 60);
+        songLengthSec.setValue(SharedPreferencesHandler.sharedPreferences.getInt("MIN_SIZE",0) % 60);
+        songLengthMin.setValue(SharedPreferencesHandler.sharedPreferences.getInt("MIN_SIZE",60) / 60);
 
-        colorWheel.setColor(Color.parseColor(settings.getString("THEME_COLOR","#FFFFFF")), false);
-        colorWheelText.setText(settings.getString("THEME_COLOR","#FFFFFF"));
+        colorWheel.setColor(Color.parseColor(SharedPreferencesHandler.sharedPreferences.getString("THEME_COLOR","#FFFFFF")), false);
+        colorWheelText.setText(SharedPreferencesHandler.sharedPreferences.getString("THEME_COLOR","#FFFFFF"));
 
         colorWheel.subscribe((color, fromUser, shouldPropagate) -> {
             if (fromUser) {
                 colorWheelText.setText(String.format("#%06X", (0xFFFFFF & color)));
-                SharedPreferences.Editor editor = settings.edit();
+                SharedPreferences.Editor editor = SharedPreferencesHandler.sharedPreferences.edit();
                 editor.putString("THEME_COLOR", String.format("#%06X", (0xFFFFFF & color)));
                 editor.apply();
                 setTextColors(String.format("#%06X", (0xFFFFFF & color)));
@@ -126,15 +122,15 @@ public class SettingsFragment extends MusicFragment {
         });
 
         saveStateButton.setOnClickListener(view -> {
-            boolean saveState1 = requireContext().getSharedPreferences("SAVEDATA", 0).getBoolean("SAVE_STATE", false);
-            SharedPreferences.Editor editor = settings.edit();
+            boolean saveState1 = SharedPreferencesHandler.sharedPreferences.getBoolean("SAVE_STATE", false);
+            SharedPreferences.Editor editor = SharedPreferencesHandler.sharedPreferences.edit();
             editor.putBoolean("SAVE_STATE", !saveState1);
             editor.apply();
         });
 
         darkModeButton.setOnClickListener(view -> {
-            boolean darkMode1 = requireContext().getSharedPreferences("SAVEDATA", 0).getBoolean("DARK_MODE", false);
-            SharedPreferences.Editor editor = settings.edit();
+            boolean darkMode1 = SharedPreferencesHandler.sharedPreferences.getBoolean("DARK_MODE", false);
+            SharedPreferences.Editor editor = SharedPreferencesHandler.sharedPreferences.edit();
             editor.putBoolean("DARK_MODE", !darkMode1);
             editor.apply();
         });
@@ -149,7 +145,7 @@ public class SettingsFragment extends MusicFragment {
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 try {
                     colorWheel.setColor(Color.parseColor(String.valueOf(charSequence)), false);
-                    SharedPreferences.Editor editor = settings.edit();
+                    SharedPreferences.Editor editor = SharedPreferencesHandler.sharedPreferences.edit();
                     editor.putString("THEME_COLOR", String.valueOf(charSequence));
                     editor.apply();
                     setTextColors(String.valueOf(charSequence));
@@ -164,20 +160,20 @@ public class SettingsFragment extends MusicFragment {
         });
 
         songLengthMin.setOnValueChangedListener((numberPicker12, i, i1) -> {
-            SharedPreferences.Editor editor = settings.edit();
+            SharedPreferences.Editor editor = SharedPreferencesHandler.sharedPreferences.edit();
             editor.putInt("MIN_SIZE", i1*60+songLengthSec.getValue());
             editor.apply();
         });
 
         songLengthSec.setOnValueChangedListener((numberPicker1, i, i1) -> {
-            SharedPreferences.Editor editor = settings.edit();
+            SharedPreferences.Editor editor = SharedPreferencesHandler.sharedPreferences.edit();
             editor.putInt("MIN_SIZE", songLengthMin.getValue()*60+i1);
             editor.apply();
         });
 
         backgroundSetter.setOnClickListener(view -> showFileChooser());
 
-        songsFolder.setText(settings.getString("SONG_FOLDER",""));
+        songsFolder.setText(SharedPreferencesHandler.sharedPreferences.getString("SONG_FOLDER",""));
 
         songsFolder.addTextChangedListener(new TextWatcher() {
             @Override
@@ -187,7 +183,7 @@ public class SettingsFragment extends MusicFragment {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                SharedPreferences.Editor editor = settings.edit();
+                SharedPreferences.Editor editor = SharedPreferencesHandler.sharedPreferences.edit();
                 editor.putString("SONG_FOLDER", String.valueOf(charSequence));
                 editor.apply();
             }
@@ -198,8 +194,7 @@ public class SettingsFragment extends MusicFragment {
             }
         });
 
-        MainActivity.currentFragment = this;
-        return ll;
+        return view;
     }
 
     public void setTextColors(String color) {
@@ -241,7 +236,7 @@ public class SettingsFragment extends MusicFragment {
                     try {
                         String sourcePath = Objects.requireNonNull(FileUtils.getPath(requireContext(), uri));
                         File source = new File(sourcePath);
-                        copy(source,new File(main.BackgroundDestinationPath.getPath()+"/background"));
+                        copy(source,new File(BackgroundDestinationPath.getPath()+"/background"));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

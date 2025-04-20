@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp.utils;
+package com.tsevaj.musicapp.utils.data;
 
 import static com.tsevaj.musicapp.utils.files.MusicGetter.milliSecondsToTime;
 
@@ -10,30 +10,35 @@ import androidx.annotation.NonNull;
 import java.sql.Date;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.Objects;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
 public class MusicItem implements Comparable<MusicItem> {
-    private final String head;
-    private String desc;
+    private final String title;
     private final String location;
     private final int duration;
+    @Setter
     private String artist;
     private final String currentSize;
     private final String type;
-    private final int hash;
+    private final String hash;
     private final long dateModified;
     private final String dateModifiedString;
+    @Setter
     private boolean favorited;
     private String locationFolder;
 
     public MusicItem(String currentTitle, String length, String currentArtist, int currentSize, String currentType, long currentModified, String currentLocation, int currentLength, boolean favorited) {
-        this.head = currentTitle;
-        this.desc = length+"   "+currentArtist;
+        this.title = currentTitle;
         this.location = currentLocation;
         this.duration = currentLength;
         this.artist = currentArtist;
         this.currentSize = humanReadableByteCountSI(currentSize);
         this.type = currentType;
-        this.hash = head.hashCode()+duration+location.hashCode()+artist.hashCode();
+        this.hash = String.valueOf(title.hashCode()+duration+location.hashCode()+artist.hashCode());
         this.dateModified = currentModified;
         this.dateModifiedString = DateFormat.format("MM/dd/yyyy", new Date(currentModified*1000)).toString();
         this.favorited = favorited;
@@ -42,47 +47,17 @@ public class MusicItem implements Comparable<MusicItem> {
 
     }
 
-    public String getTitle() {
-        return head;
-    }
-
     public String getDesc() {
-        return desc;
+        return String.format("%s %s", milliSecondsToTime(this.duration), getArtist());
     }
-
-    public String getLocation() { return location; }
-
-    public String getLocationFolder() { return locationFolder; }
-
-    public int getDuration() { return duration; }
-
-    public int getHash() { return hash; }
 
     public String getArtist() {
-        if (artist.equals("")) return "<unknown>";
+        if (artist.isEmpty()) return "<unknown>";
         return artist; }
-
-    public String getCurrentSize() { return currentSize; }
-
-    public String getType() { return type; }
-
-    public String getDateModifiedString() { return dateModifiedString; }
-
-    public boolean getFavorited() { return favorited; }
-
-    public void setFavorited(boolean value) { this.favorited = value; }
-
-    public Long getDateModified() { return dateModified; }
 
     @NonNull
     public String toString(){
-        return this.head;
-    }
-
-    public void setArtist(String a) {
-        this.artist = a;
-        if (this.artist.equals("")) this.desc = milliSecondsToTime(this.duration)+"   "+"<unknown>";
-        else { this.desc = milliSecondsToTime(this.duration)+"   "+this.artist; }
+        return this.title;
     }
 
     @SuppressLint("DefaultLocale")
@@ -116,6 +91,6 @@ public class MusicItem implements Comparable<MusicItem> {
         if (o == null) return false;
         if (!(o instanceof MusicItem)) return false;
         MusicItem item = (MusicItem) o;
-        return this.hash == item.getHash();
+        return Objects.equals(this.hash, item.getHash());
     }
 }

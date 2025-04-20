@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -20,20 +19,20 @@ import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.fragments.DetailedLyricsFragment;
 import com.tsevaj.musicapp.fragments.DetailedsongFragment;
-import com.tsevaj.musicapp.utils.AlertPopup;
-import com.tsevaj.musicapp.utils.CircularSeekBar;
-import com.tsevaj.musicapp.utils.MusicItem;
+import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
+import com.tsevaj.musicapp.fragments.interfaces.HasProgressBar;
+import com.tsevaj.musicapp.uielements.ConfirmPopup;
+import com.tsevaj.musicapp.utils.SharedPreferencesHandler;
+import com.tsevaj.musicapp.utils.data.MusicItem;
 import com.tsevaj.musicapp.utils.MusicPlayer;
-import com.tsevaj.musicapp.utils.ProgressBarThread;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class PagerAdapter extends FragmentStateAdapter {
+public class PagerAdapter extends FragmentStateAdapter implements HasControlBar, HasProgressBar {
     MusicPlayer player;
     public MainActivity main;
 
@@ -50,10 +49,10 @@ public class PagerAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         if (position == 0) {
-            fragment1 = new DetailedsongFragment(main);
+            fragment1 = new DetailedsongFragment(main, this);
             return fragment1;
         } else {
-            fragment2 = new DetailedLyricsFragment(main);
+            fragment2 = new DetailedLyricsFragment(main, this);
             return fragment2;
         }
     }
@@ -159,23 +158,13 @@ public class PagerAdapter extends FragmentStateAdapter {
         }
     }
 
-    public void initWindowElements() {
-        try {
-            initWindowElements(fragment1.getView());
-        } catch (NullPointerException ignored){}
-        try {
-            initWindowElements(fragment2.getView());
-        } catch (NullPointerException ignored){}
-    }
-
+    //TODO reduce overhead by making this method only change the necessary things
     @SuppressLint({"UseCompatTextViewDrawableApis", "NonConstantResourceId"})
     public void initWindowElements(View parentView) {
         if (parentView == null) return;
         int textColor = Color.parseColor(main.getApplicationContext().getSharedPreferences("SAVEDATA", 0).getString("THEME_COLOR", "#FFFFFF"));
 
-        SharedPreferences settings = main.getApplicationContext().getSharedPreferences("SAVEDATA", 0);
-
-        ArrayList<String> favorite = main.getFavorites();
+        List<MusicItem> favorite = main.getPreferencesHandler().getFavorites();
 
         TextView songNameView = parentView.findViewById(R.id.song_information_name);
         TextView songDescView = parentView.findViewById(R.id.song_information_author);
@@ -183,7 +172,6 @@ public class PagerAdapter extends FragmentStateAdapter {
         ImageButton BtnPrev = parentView.findViewById(R.id.BtnPrev);
         ImageButton BtnNext = parentView.findViewById(R.id.BtnNext);
         ImageButton BtnPause = parentView.findViewById(R.id.BtnPause);
-        CircularSeekBar progressBar = parentView.findViewById(R.id.progress_bar);
         ImageButton shuffle = parentView.findViewById(R.id.detailed_shuffle);
         ImageButton replay = parentView.findViewById(R.id.detailed_replay);
         ImageButton favoriteButton = parentView.findViewById(R.id.detailed_add_to_favorites);
@@ -195,19 +183,19 @@ public class PagerAdapter extends FragmentStateAdapter {
         songDescView.setCompoundDrawableTintList(ColorStateList.valueOf(textColor));
         songLocView.setCompoundDrawableTintList(ColorStateList.valueOf(textColor));
 
-        favoriteButton.setActivated(favorite.contains(MusicPlayer.currentPlayingSong.getTitle()));
+        favoriteButton.setActivated(favorite.contains(MusicPlayer.getCurrentPlayingSong()));
 
-        songNameView.setText(MusicPlayer.currentPlayingSong.getTitle());
-        songDescView.setText(MusicPlayer.currentPlayingSong.getDesc());
-        songLocView.setText(MusicPlayer.currentPlayingSong.getLocationFolder());
+        songNameView.setText(MusicPlayer.getCurrentPlayingSong().getTitle());
+        songDescView.setText(MusicPlayer.getCurrentPlayingSong().getDesc());
+        songLocView.setText(MusicPlayer.getCurrentPlayingSong().getLocationFolder());
         if (!player.isPlaying()) {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
         } else {
             BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
         }
-        main.t.resumeThread();
-        SharedPreferences.Editor editor = settings.edit();
-        switch (settings.getInt("REPLAY_MODE", 0)) {
+        //main.t.resumeThread();
+        SharedPreferences.Editor editor = SharedPreferencesHandler.sharedPreferences.edit();
+        switch (SharedPreferencesHandler.sharedPreferences.getInt("REPLAY_MODE", 0)) {
             case -1: {
                 replay.setActivated(true);
                 break;
@@ -218,12 +206,12 @@ public class PagerAdapter extends FragmentStateAdapter {
                 break;
             }
         }
-        if (settings.getBoolean("SHUFFLE", false)) shuffle.setActivated(true);
+        if (SharedPreferencesHandler.sharedPreferences.getBoolean("SHUFFLE", false)) shuffle.setActivated(true);
         shuffle.setOnClickListener(view -> {
             shuffle.setActivated(!shuffle.isActivated());
             editor.putBoolean("SHUFFLE", shuffle.isActivated());
             editor.apply();
-            player.prepareButtons();
+            //player.prepareButtons();
             setShuffle(shuffle.isActivated());
         });
         replay.setOnClickListener(view -> {
@@ -249,18 +237,18 @@ public class PagerAdapter extends FragmentStateAdapter {
                 switch (itemId) {
                     case R.id.addtoplaylist: {
                         PopupMenu menu = new PopupMenu(main.getApplicationContext(), view);
-                        for (String menuItem : main.getApplicationContext().getSharedPreferences("SAVEDATA", 0).getString("PLAYLISTS", "").split("\n")) {
+                        for (String menuItem : SharedPreferencesHandler.sharedPreferences.getString("PLAYLISTS", "").split("\n")) {
                             menu.getMenu().add(menuItem);
                         }
                         menu.setOnMenuItemClickListener(item1 -> {
-                            SharedPreferences.Editor editor2 = main.getApplicationContext().getSharedPreferences("SAVEDATA", 0).edit();
-                            String currentPlaylist = main.getApplicationContext().getSharedPreferences("SAVEDATA", 0).getString("PLAYLIST_" + item1.getTitle(), "");
-                            if (Arrays.asList(currentPlaylist.split("\n")).contains(MusicPlayer.currentPlayingSong.getTitle()))
+                            SharedPreferences.Editor editor2 = SharedPreferencesHandler.sharedPreferences.edit();
+                            String currentPlaylist = SharedPreferencesHandler.sharedPreferences.getString("PLAYLIST_" + item1.getTitle(), "");
+                            if (Arrays.asList(currentPlaylist.split("\n")).contains(MusicPlayer.getCurrentPlayingSong().getTitle()))
                                 return true;
                             if (currentPlaylist.isEmpty())
-                                editor2.putString("PLAYLIST_" + item1.getTitle(), MusicPlayer.currentPlayingSong.getTitle());
+                                editor2.putString("PLAYLIST_" + item1.getTitle(), MusicPlayer.getCurrentPlayingSong().getTitle());
                             else {
-                                editor2.putString("PLAYLIST_" + item1.getTitle(), currentPlaylist + "\n" + MusicPlayer.currentPlayingSong.getTitle());
+                                editor2.putString("PLAYLIST_" + item1.getTitle(), currentPlaylist + "\n" + MusicPlayer.getCurrentPlayingSong().getTitle());
                             }
                             editor2.apply();
                             return true;
@@ -271,15 +259,15 @@ public class PagerAdapter extends FragmentStateAdapter {
                     case R.id.song_delete: {
                         Runnable callback = () -> {
                             try {
-                                Files.delete(Paths.get(MusicPlayer.currentPlayingSong.getLocation()));
-                                MainActivity.wholeSongList.remove(MusicPlayer.currentPlayingSong);
-                                main.PrevAndNextSongs.removeFromPrev(MusicPlayer.currentPlayingSong);
-                                player.playNext(true);
+                                Files.delete(Paths.get(MusicPlayer.getCurrentPlayingSong().getLocation()));
+                                MainActivity.wholeSongList.remove(MusicPlayer.getCurrentPlayingSong());
+                                main.getMusicList().handleSongDeletion(MusicPlayer.getCurrentPlayingSong());
+                                main.handleNextSong(true);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
                         };
-                        new AlertPopup(main.getApplicationContext(), "Delete", "Are you sure you want to delete?", callback).show();
+                        new ConfirmPopup(main.getApplicationContext(), "Delete", "Are you sure you want to delete?", callback).show();
                         break;
                     }
                 }
@@ -289,11 +277,11 @@ public class PagerAdapter extends FragmentStateAdapter {
         });
         favoriteButton.setOnClickListener(view -> {
             if (favoriteButton.isActivated()) {
-                main.removeFromFavorites(MusicPlayer.currentPlayingSong.getTitle());
+                main.getPreferencesHandler().removeFromFavorites(MusicPlayer.getCurrentPlayingSong().getTitle());
                 favoriteButton.setActivated(false);
             } else {
-                main.addToFavorites(MusicPlayer.currentPlayingSong.getTitle());
-                MusicPlayer.currentPlayingSong.setFavorited(true);
+                main.getPreferencesHandler().addToFavorites(MusicPlayer.getCurrentPlayingSong().getTitle());
+                MusicPlayer.getCurrentPlayingSong().setFavorited(true);
                 favoriteButton.setActivated(true);
             }
             setFavorite(favoriteButton.isActivated());
@@ -302,25 +290,21 @@ public class PagerAdapter extends FragmentStateAdapter {
         BtnPrev.setOnClickListener(view -> detailed_prev(parentView));
         BtnPause.setOnClickListener(view -> {
             if (player.isPlaying()) {
-                player.playPause();
+                main.handlePause();
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
             } else {
-                player.playPause();
+                main.handlePause();
                 BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
             }
             setPauseButton(player.isPlaying());
         });
-        if (progressBar != null) {
-            progressBar.setOnSeekBarChangeListener(new DetailedsongFragment.CircleSeekBarListener(player, progressBar, BtnPause));
-            main.t = new ProgressBarThread(progressBar);
-        }
     }
     public void detailed_next(View ll) {
-        player.playNext(true);
+        main.handleNextSong(true);
         initWindowElements(ll);
     }
     public void detailed_prev(View ll) {
-        player.playPrev(true);
+        main.handlePrevSong(true);
         initWindowElements(ll);
     }
 
@@ -330,5 +314,45 @@ public class PagerAdapter extends FragmentStateAdapter {
 
     public void showNoLyrics() {
         fragment2.showNoLyrics();
+    }
+
+    @Override
+    public void handlePause() {
+        if (fragment1 != null) {
+            fragment1.handlePause();
+        }
+        if (fragment2 != null) {
+            fragment2.handlePause();
+        }
+    }
+
+    @Override
+    public void handleResume() {
+        if (fragment1 != null) {
+            fragment1.handleResume();
+        }
+        if (fragment2 != null) {
+            fragment2.handleResume();
+        }
+    }
+
+    @Override
+    public void handleSongChange(MusicItem song) {
+        if (fragment1 != null) {
+            fragment1.handleSongChange(song);
+        }
+        if (fragment2 != null) {
+            fragment2.handleSongChange(song);
+        }
+    }
+
+    @Override
+    public void updateProgress() {
+        if (fragment1 != null) {
+            fragment1.updateProgress();
+        }
+        if (fragment2 != null) {
+            fragment2.updateProgress();
+        }
     }
 }

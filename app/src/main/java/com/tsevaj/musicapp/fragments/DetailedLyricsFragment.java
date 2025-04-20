@@ -1,10 +1,8 @@
 package com.tsevaj.musicapp.fragments;
 
-import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,18 +12,17 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.adapters.PagerAdapter;
 import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
+import com.tsevaj.musicapp.fragments.interfaces.HasProgressBar;
 import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
-import com.tsevaj.musicapp.utils.MusicItem;
+import com.tsevaj.musicapp.utils.data.MusicItem;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -39,27 +36,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class DetailedLyricsFragment extends MusicFragment implements HasControlBar {
-    View ll;
-    PagerAdapter parent;
+public class DetailedLyricsFragment extends MusicFragment implements HasControlBar, HasProgressBar {
+    PagerAdapter adapter;
 
     public static LyricsThread t;
 
-    public DetailedLyricsFragment(MainActivity main) {
+    public DetailedLyricsFragment(MainActivity main, PagerAdapter adapter) {
         super(main);
+        this.adapter = adapter;
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        ll = inflater.inflate(R.layout.song_detailed_view_lyrics, container, false);
-        parent.main.setBackground(ll, getResources());
+        super.onCreateView(inflater, container, R.layout.song_detailed_view_lyrics);
 
-        t = new LyricsThread(parent.main.player, this);
+        t = new LyricsThread(main.getPlayer(), this);
         t.start();
 
-        parent.initWindowElements(ll);
-        return ll;
+        adapter.initWindowElements(view);
+        return view;
     }
 
     @Override
@@ -74,6 +70,11 @@ public class DetailedLyricsFragment extends MusicFragment implements HasControlB
 
     @Override
     public void handleSongChange(MusicItem song) {
+
+    }
+
+    @Override
+    public void updateProgress() {
 
     }
 
@@ -94,7 +95,7 @@ public class DetailedLyricsFragment extends MusicFragment implements HasControlB
     }
 
     public void showNoLyrics() {
-        LinearLayout linearLayout = ll.findViewById(R.id.lyrics_container);
+        LinearLayout linearLayout = view.findViewById(R.id.lyrics_container);
         linearLayout.removeAllViewsInLayout();
         TextView textView = new TextView(getContext());
         textView.setId(0);
@@ -107,7 +108,7 @@ public class DetailedLyricsFragment extends MusicFragment implements HasControlB
     }
 
     public void showLyricLines() {
-        LinearLayout linearLayout = ll.findViewById(R.id.lyrics_container);
+        LinearLayout linearLayout = view.findViewById(R.id.lyrics_container);
         linearLayout.removeAllViewsInLayout();
         for (int i = 0; i < 7; i++) {
             TextView textView = new TextView(getContext());
@@ -119,8 +120,7 @@ public class DetailedLyricsFragment extends MusicFragment implements HasControlB
         }
     }
 
-    public static class LyricsThread extends Thread {
-        Thread t;
+    public class LyricsThread extends Thread {
         MusicPlayer player;
         DetailedLyricsFragment parent;
 
@@ -140,7 +140,7 @@ public class DetailedLyricsFragment extends MusicFragment implements HasControlB
 
             Optional<File> currentSongLyricsOptional = Arrays.stream(files)
                     .parallel()
-                    .filter(file -> file.getAbsolutePath().contains(String.format("%s - %s.lrc",MusicPlayer.currentPlayingSong.getArtist(), MusicPlayer.currentPlayingSong.getTitle())))
+                    .filter(file -> file.getAbsolutePath().contains(String.format("%s - %s.lrc",MusicPlayer.getCurrentPlayingSong().getArtist(), MusicPlayer.getCurrentPlayingSong().getTitle())))
                     .findAny();
             if (currentSongLyricsOptional.isPresent()) {
                 File currentSongLyrics = currentSongLyricsOptional.get();
@@ -166,17 +166,17 @@ public class DetailedLyricsFragment extends MusicFragment implements HasControlB
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             List<LyricItem> finalLyrics = lyrics;
             if (finalLyrics != null) {
-                player.main.runOnUiThread(() -> parent.parent.showLyricLines());
+                main.runOnUiThread(() -> adapter.showLyricLines());
                 executor.scheduleWithFixedDelay(() -> {
                         try {
-                            player.main.runOnUiThread(() -> parent.parent.setLyrics(getDisplayLyrics(finalLyrics, player.getCurrentPosition() / 1000.0)));
+                            main.runOnUiThread(() -> adapter.setLyrics(getDisplayLyrics(finalLyrics, player.getCurrentPosition() / 1000.0)));
                         } catch (Exception ignored) {}
                         // player.getCurrentPosition() / 1000.0;
                         //Update and change the lyrics
                     }
                     , 0, 100, TimeUnit.MILLISECONDS);
             } else {
-                player.main.runOnUiThread(() -> parent.parent.showNoLyrics());
+                main.runOnUiThread(() -> adapter.showNoLyrics());
             }
         }
     }

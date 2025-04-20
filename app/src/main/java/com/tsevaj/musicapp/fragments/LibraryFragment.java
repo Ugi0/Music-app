@@ -1,8 +1,6 @@
 package com.tsevaj.musicapp.fragments;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -13,58 +11,40 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.tsevaj.musicapp.MainActivity;
-import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
+import com.tsevaj.musicapp.adapters.CustomAdapter;
 import com.tsevaj.musicapp.fragments.interfaces.RefreshableFragment;
-import com.tsevaj.musicapp.utils.MusicItem;
-import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.utils.data.MusicItem;
 import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.utils.data.SortValue;
+import com.tsevaj.musicapp.utils.enums.MusicListType;
+import com.tsevaj.musicapp.utils.files.MusicGetter;
 
-public class LibraryFragment extends RefreshableFragment implements HasControlBar {
-    private RecyclerView recyclerView;
-    //private final MusicPlayer player;
-    //private final String nameFilter;
-    //private final String filter;
+import java.util.List;
 
-    public LibraryFragment(MainActivity main) {
+public class LibraryFragment extends RefreshableFragment {
+    List<MusicItem> songs;
+
+    public LibraryFragment(MainActivity main, List<MusicItem> songs) {
         super(main);
-        //this.player = player;
-        //this.nameFilter = nameFilter;
-        //this.filter = "";
+        this.songs = songs;
     }
 
-    /*public LibraryFragment(MusicPlayer player, String nameFilter, String filter) {
-        this.player = player;
-        this.nameFilter = nameFilter;
-        this.filter = filter;
-    }*/
-
-    @SuppressLint("UseCompatLoadingForDrawables")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View ll = inflater.inflate(R.layout.songlist_recyclerview, container, false);
-        recyclerView = ll.findViewById(R.id.recyclerView);
+        super.onCreateView(inflater, container, R.layout.songlist_recyclerview);
+
+        recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        //player.main.setBackground(ll, getResources());
-        //player.main.setDrawer();
+        recyclerView.setAdapter(new CustomAdapter(songs, main));
 
         makeRefreshable(recyclerView);
+        makeMenubar(view);
 
-        //player.main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), filter, nameFilter);
-        MainActivity.currentFragment = this;
-
-        /*if (player.isInitialized()) {
-            player.relativeLayout = ll.findViewById(R.id.music_bar);
-            player.showBar();
-        }*/
-
-        return ll;
+        return view;
     }
 
     @Override
@@ -76,25 +56,12 @@ public class LibraryFragment extends RefreshableFragment implements HasControlBa
 
     @Override
     protected void handleRefresh() {
-        MainActivity.wholeSongList = null;
-        main.PrevAndNextSongs.setList(null);
-        //.main.PrevAndNextSongs.getMusicAndSet(recyclerView, player.main, player, requireActivity(), filter, nameFilter);
-        //swipeRefreshLayout.setRefreshing(false);
+        //view.requestLayout();
     }
 
     @Override
-    public void handlePause() {
-
-    }
-
-    @Override
-    public void handleResume() {
-
-    }
-
-    @Override
-    public void handleSongChange(MusicItem song) {
-
+    public SortValue getListType() {
+        return new SortValue(MusicListType.ALL);
     }
 }
 

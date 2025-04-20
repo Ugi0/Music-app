@@ -62,7 +62,8 @@
             android:layout_marginEnd="5dp"
             android:background="@android:color/transparent"
             android:contentDescription="@string/make_the_song_a_favourite"
-            android:src="@drawable/favorites_selector" />
+            android:src="@drawable/favorites_selector"
+            tools:ignore="TouchTargetSizeCheck" />
 
         <ImageButton
             android:id="@+id/detailed_menu_button"
@@ -71,7 +72,8 @@
             android:layout_marginStart="5dp"
             android:background="@android:color/transparent"
             android:contentDescription="@string/show_additional_options"
-            android:src="@drawable/menu_icon" />
+            android:src="@drawable/menu_icon"
+            tools:ignore="TouchTargetSizeCheck" />
     </LinearLayout>
 
     <LinearLayout
@@ -118,13 +120,15 @@
             android:gravity="center"
             android:layout_gravity="center"
             tools:ignore="UselessParent">
+
             <ImageButton
                 android:id="@+id/detailed_shuffle"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_marginEnd="45dp"
                 android:background="@drawable/shuffle_selector"
-                android:contentDescription="@string/play_songs_in_a_random_order" />
+                android:contentDescription="@string/play_songs_in_a_random_order"
+                tools:ignore="TouchTargetSizeCheck" />
             <ImageButton
                 android:id="@+id/BtnPrev"
                 android:background="@drawable/ic_baseline_skip_previous_24"
@@ -144,13 +148,15 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:contentDescription="@string/skip_to_next_song" />
+
             <ImageButton
                 android:id="@+id/detailed_replay"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_marginStart="45dp"
                 android:background="@drawable/replay_selector"
-                android:contentDescription="@string/play_same_or_different_songs" />
+                android:contentDescription="@string/play_same_or_different_songs"
+                tools:ignore="TouchTargetSizeCheck" />
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

@@ -1,9 +1,9 @@
 package com.tsevaj.musicapp.fragments.interfaces;
 
-import com.tsevaj.musicapp.utils.MusicItem;
+import com.tsevaj.musicapp.utils.data.MusicItem;
 
 public interface HasControlBar {
-    public abstract void handlePause();
-    public abstract void handleResume();
-    public abstract void handleSongChange(MusicItem song);
+    void handlePause();
+    void handleResume();
+    void handleSongChange(MusicItem song);
 }

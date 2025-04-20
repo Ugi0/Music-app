@@ -23,29 +23,21 @@ import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.R;
 
 public class PlaylistsFragment extends MusicFragment {
-    //private final MusicPlayer player;
-    //public MainActivity main;
 
     public PlaylistsFragment(MainActivity main) {
         super(main);
-        //this.main = main;
-        //this.player = player;
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View ll = inflater.inflate(R.layout.songlist_recyclerview, container, false);
-        RecyclerView recyclerView = ll.findViewById(R.id.recyclerView);
-        main.setBackground(ll, getResources());
+        super.onCreateView(inflater, container, R.layout.songlist_recyclerview);
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
 
-        main.setDrawer();
-
         //MusicGetter.playlistView(recyclerView, getActivity(), player, requireActivity(), this);
-        MainActivity.currentFragment = this;
-        return ll;
+        return view;
     }
 
     @Override
@@ -53,12 +45,5 @@ public class PlaylistsFragment extends MusicFragment {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = requireActivity().getMenuInflater();
         inflater.inflate(R.menu.popup_menu, menu);
-    }
-
-    public void changeFragments(Fragment newFragment, boolean addToStack) {
-        FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, newFragment);
-        if (addToStack) transaction.addToBackStack(null);
-        transaction.commit();
     }
 }

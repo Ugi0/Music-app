@@ -5,13 +5,9 @@ import static android.media.AudioManager.AUDIOFOCUS_LOSS;
 import static android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT;
 import static android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK;
 
-import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_DELETE;
-import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_NOTIFY;
-
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.content.ServiceConnection;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
@@ -21,57 +17,38 @@ import android.media.session.MediaSession;
 import android.os.IBinder;
 import android.os.PowerManager;
 
-import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.tsevaj.musicapp.adapters.CustomAdapter;
 import com.tsevaj.musicapp.MainActivity;
-import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.fragments.PagerFragment;
-import com.tsevaj.musicapp.services.notification.NotificationController;
-import com.tsevaj.musicapp.services.notification.NotificationService;
+import com.tsevaj.musicapp.utils.data.MusicItem;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
-public class MusicPlayer implements NotificationController, ServiceConnection {
+import lombok.Getter;
+
+public class MusicPlayer implements ServiceConnection {
     private static MediaPlayer player;
     private static MediaSession.Token sessionToken;
+    @Getter
     private static MusicItem currentPlayingSong;
-    //private CustomAdapter adapter = null;
-    //private ArrayList<MusicItem> visibleSongs;
-    //private RecyclerView recyclerview;
-    //private FragmentManager manager;
-    private PrevNextList musicList;
-    private MainActivity main;
-    //private NotificationService notificationService;
-    private Context c;
+    private final MusicList musicList;
 
     AudioManager audioManager;
 
     PagerFragment newFragment;
 
-    //TODO Change this class to only handle the playback, not any UI changes
-    public MusicPlayer(Context c) {
-        this.c = c;
+    public MusicPlayer(Context c, MusicList musicList) {
+        this.musicList = musicList;
         player = new MediaPlayer();
         player.setOnErrorListener((mediaPlayer, i, i1) -> true);
         player.setWakeMode(c, PowerManager.PARTIAL_WAKE_LOCK);
-        player.setOnCompletionListener(mediaPlayer -> donePlayNext());
+        player.setOnCompletionListener(mediaPlayer -> play(musicList.Next(false)));
         player.setOnPreparedListener(MediaPlayer::start);
     }
 
     public void play(MusicItem song) {
         if (currentPlayingSong != null) {
-            if (currentPlayingSong.getHash() == (song.getHash()) && player.isPlaying()) return;
+            if (currentPlayingSong.getHash().equals(song.getHash()) && player.isPlaying()) return;
         }
-            //Intent intent = new Intent(c, NotificationService.class);
-            //c.bindService(intent, this, 0);
-            //Intent intent1 = new Intent(c, NotificationService.class);
-            //intent1.setAction("NOTIFY");
-            //c.startService(intent1);
-            //requestFocus(c);
-        //relativeLayout = ((Activity) c).findViewById(R.id.music_bar);
 
         currentPlayingSong = song;
         player.reset();
@@ -81,76 +58,19 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //main.showNotification(R.drawable.ic_baseline_pause_24);
-
-        //main.mediaController.updateTrackInformation(song.getTitle(), song.getArtist());
-        //prepareButtons();
     }
 
-    /*public void recreateList(MusicItem song) {
-        if (main.PrevAndNextSongs.createdFragment == null) {
-            main.PrevAndNextSongs = new PrevNextList(new ArrayList<>(visibleSongs), song, MainActivity.currentFragment, c);
-        }
-        if (main.PrevAndNextSongs.wholeList) {
-            main.PrevAndNextSongs.setList(MainActivity.wholeSongList);
-        } else {
-            main.PrevAndNextSongs.setList(visibleSongs);
-        }
-    }*/
-
-    public static int getCurrentSongHash() {
-        return currentPlayingSong.getHash();
-    }
-
-    public static MusicItem getCurrentPlayingSong() {
-        return currentPlayingSong;
+    public static String getCurrentSongHash() {
+        return currentPlayingSong == null ? "" : currentPlayingSong.getHash();
     }
 
     public void resumeState(MusicItem song, int SecDuration) {
         play(song);
         player.seekTo(SecDuration);
         this.pause();
-        //adapter.notifyItemChanged(adapter.getList().indexOf(song));
-    }
-
-    public void setNext(MusicItem song) {
-        main.songQueue.add(song);
     }
 
     //TODO change it so the UI is not updated in these methods
-    @SuppressLint("NotifyDataSetChanged")
-    public void playNext(Boolean force) {
-        //if (!player.isPlaying()) try {
-        //    BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
-        //} catch (Exception ignored) {
-        //}
-        MusicItem song = main.PrevAndNextSongs.Next(force);
-
-        play(song);
-
-        //adapter.reset();
-        //adapter.notifyDataSetChanged();
-        //if (MainActivity.currentFragment.getClass().equals(PagerFragment.class)) newFragment.setPause(false);
-        //else {
-        //    showBar();
-        //}
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    public void playPrev(Boolean force) {
-        //if (!player.isPlaying()) try {
-        //    BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
-        //} catch (Exception ignored) {
-        //}
-        MusicItem song = main.PrevAndNextSongs.Prev();
-        play(song);
-        //adapter.reset();
-        //adapter.notifyDataSetChanged();
-        //if (MainActivity.currentFragment.getClass().equals(PagerFragment.class)) newFragment.changeSong(song);
-        //else {
-        //    showBar();
-        //}
-    }
 
     public boolean isPlaying() {
         return player.isPlaying();
@@ -158,35 +78,19 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
 
     public void playPause() {
         if (player.isPlaying()) {
-            //main.showNotification(R.drawable.ic_baseline_play_arrow_24);
-            pause();
-            //try {
-            //    BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
-            //} catch (Exception ignored) {}
+            player.pause();
         } else {
-            //main.showNotification(R.drawable.ic_baseline_pause_24);
             resume();
-            //try {
-            //    BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
-            //} catch (Exception ignored) {}
         }
-        //if (MainActivity.currentFragment.getClass().equals(PagerFragment.class)) newFragment.setPause(player.isPlaying());
     }
 
     public void pause() {
-        //if (main.t != null) {
-        //    main.t.stopThread();
-        //}
         player.pause();
     }
 
     public void resume() {
-        //try {
-        //    BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
-        //} catch (Exception ignored) {}
         if (MainActivity.currentFragment.getClass().equals(PagerFragment.class)) newFragment.setPause(false);
         player.start();
-        main.t.resumeThread();
     }
 
     public void seekTo(int i) {
@@ -200,6 +104,10 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
         } catch (Exception e) {
             return 0;
         }
+    }
+
+    public double getCurrentProgress() {
+        return ((double) getCurrentPosition()) / player.getDuration();
     }
 
     @Override
@@ -222,19 +130,14 @@ public class MusicPlayer implements NotificationController, ServiceConnection {
 
     public void destroy() {
         if (player != null) {
-            if (main.t != null) main.t.stopThread();
+            //if (main.t != null) main.t.stopThread();
             player.release();
             player = null;
-            main.player = null;
         }
     }
 
     public boolean isInitialized() {
         return currentPlayingSong != null;
-    }
-
-    private void donePlayNext() {
-        playNext(false);
     }
 
     public void requestFocus(final Context context) {

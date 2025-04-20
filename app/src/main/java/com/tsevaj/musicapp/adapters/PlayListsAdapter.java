@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.InputType;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,31 +21,25 @@ import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.fragments.LibraryFragment;
 import com.tsevaj.musicapp.fragments.PlaylistsFragment;
-import com.tsevaj.musicapp.utils.MusicPlayer;
-import com.tsevaj.musicapp.utils.MusicItem;
 import com.tsevaj.musicapp.utils.PlaylistItem;
+import com.tsevaj.musicapp.utils.SharedPreferencesHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.ViewHolder> {
 
     private ArrayList<PlaylistItem> list;
-    //private final Context context;
-    //private final MusicPlayer player;
-    //private final PlaylistsFragment parent;
     private View listView;
 
-    private MainActivity main;
+    private final MainActivity main;
 
     private final int VIEW_TYPE_ITEM = 1;
 
     public PlayListsAdapter(ArrayList<PlaylistItem> list, MainActivity main) {
         this.list = list;
         this.main = main;
-        //this.context = mCtx;
-        //this.player = player;
-        //this.parent = playlistsFragment;
     }
 
     @NonNull
@@ -91,32 +84,19 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                         .setTitle("Create playlist")
                         .setView(textInputLayout)
                         .setPositiveButton("Create", (dialog, whichButton) -> {
-                            if (input.getText().toString().equals("wipe")) {
-                                SharedPreferences settings = main.getSharedPreferences("SAVEDATA", 0);
-                                SharedPreferences.Editor editor = settings.edit();
-                                String playlists = settings.getString("PLAYLISTS", "");
-                                for (String key: playlists.split("\n")) {
-                                    editor.remove("PLAYLIST_"+key);
-                                }
-                                editor.putString("PLAYLISTS", "");
-                                editor.apply();
-                                list = new ArrayList<>();
-                                //list.add(new MusicItem("Create a new playlist","","",0, "", 0, "", 0, false));
-                                dialog.cancel();
-                                parent.changeFragments(new PlaylistsFragment(main), false);
-                            }
-                            else if (!input.getText().toString().isEmpty()) {
-                                SharedPreferences settings = main.getSharedPreferences("SAVEDATA", 0);
-                                SharedPreferences.Editor editor = settings.edit();
-                                String playlists = settings.getString("PLAYLISTS", "");
-                                if (playlists.isEmpty()) editor.putString("PLAYLISTS", input.getText().toString());
-                                else { editor.putString("PLAYLISTS", playlists + "\n" + input.getText().toString()); }
-                                editor.putString("PLAYLIST_"+ input.getText().toString(),"");
-                                editor.apply();
+                            if (!input.getText().toString().isEmpty()) {
+                                main.getPreferencesHandler().addPlaylist(input.getText().toString());
+                                //SharedPreferences settings = main.getSharedPreferences("SAVEDATA", 0);
+                                //SharedPreferences.Editor editor = settings.edit();
+                                //String playlists = settings.getString("PLAYLISTS", "");
+                                //if (playlists.isEmpty()) editor.putString("PLAYLISTS", input.getText().toString());
+                                //else { editor.putString("PLAYLISTS", playlists + "\n" + input.getText().toString()); }
+                                //editor.putString("PLAYLIST_"+ input.getText().toString(),"");
+                                //editor.apply();
                                 list.add(0, new PlaylistItem(input.getText().toString()));
                                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                                 dialog.cancel();
-                                parent.changeFragments(new PlaylistsFragment(main), false);
+                                main.changeFragment(PlaylistsFragment.class);
                             }
                         })
                         .setNegativeButton("Cancel", (dialog, whichButton) -> {
@@ -132,26 +112,24 @@ public class PlayListsAdapter extends RecyclerView.Adapter<PlayListsAdapter.View
                 popupMenu.inflate(R.menu.playlists_menu);
                 popupMenu.setOnMenuItemClickListener(menuItem -> {
                     if (menuItem.getItemId() == R.id.song_delete) {
-                        SharedPreferences settings = main.getSharedPreferences("SAVEDATA", 0);
-                        SharedPreferences.Editor editor = settings.edit();
-                        String playlists = settings.getString("PLAYLISTS", "");
-                        editor.remove("PLAYLIST_"+list.get(position).getTitle());
-                        ArrayList<String> li = new ArrayList<>(Arrays.asList(playlists.split("\n")));
-                        li.remove(position-1);
-                        editor.putString("PLAYLISTS",String.join("\n",li));
-                        editor.apply();
+                        main.getPreferencesHandler().removePlayList(list.get(position).getTitle());
+                        //SharedPreferences.Editor editor = SharedPreferencesHandler.sharedPreferences.edit();
+                        //String playlists = SharedPreferencesHandler.sharedPreferences.getString("PLAYLISTS", "");
+                        //editor.remove("PLAYLIST_"+list.get(position).getTitle());
+                        //li.remove(position-1);
+                        //editor.putString("PLAYLISTS",String.join("\n",li));
+                        //editor.apply();
                         list.remove(position);
-                        parent.changeFragments(new PlaylistsFragment(main), false);
+                        main.changeFragment(PlaylistsFragment.class);
                     }
                     return false;
                 });
                 popupMenu.show();
             });
             holder.itemView.setOnClickListener(view -> {
-                SharedPreferences settings = main.getSharedPreferences("SAVEDATA", 0);
-                String[] playlists = settings.getString("PLAYLISTS", "").split("\n");
+                String[] playlists = SharedPreferencesHandler.sharedPreferences.getString("PLAYLISTS", "").split("\n");
                 String clickedPlaylist = playlists[position-1];
-                parent.changeFragments(new LibraryFragment(main), true);
+                main.changeFragment(LibraryFragment.class);
             });
         }
     }

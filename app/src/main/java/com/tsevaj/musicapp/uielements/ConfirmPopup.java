@@ -1,12 +1,12 @@
-package com.tsevaj.musicapp.utils;
+package com.tsevaj.musicapp.uielements;
 
 import android.app.AlertDialog;
 import android.content.Context;
 
-public class AlertPopup {
+public class ConfirmPopup {
     private final AlertDialog.Builder alert;
 
-    public AlertPopup(Context c, String title, String message, Runnable callback) {
+    public ConfirmPopup(Context c, String title, String message, Runnable callback) {
         alert = new AlertDialog.Builder(c);
         alert.setTitle(title);
         alert.setMessage(message);

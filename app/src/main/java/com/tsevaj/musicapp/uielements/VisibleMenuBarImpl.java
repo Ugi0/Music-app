@@ -1,44 +1,50 @@
 package com.tsevaj.musicapp.uielements;
 
-import android.content.Context;
+import android.annotation.SuppressLint;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import androidx.fragment.app.FragmentTransaction;
-
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.fragments.PagerFragment;
+import com.tsevaj.musicapp.fragments.interfaces.HasProgressBar;
+import com.tsevaj.musicapp.fragments.interfaces.RefreshableFragment;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.utils.ProgressBarThread;
+import com.tsevaj.musicapp.utils.data.MusicItem;
 
-public class VisibleMenuBarImpl extends View {
-    private SeekBar progressbar;
-    private View menuBarLayout;
-    private MusicPlayer player;
+import java.util.Objects;
+
+public class VisibleMenuBarImpl implements HasProgressBar {
+    private SeekBar progressBar;
+    private final MusicPlayer player;
+    private final View layout;
     private ProgressBarThread thread;
 
-    public VisibleMenuBarImpl(Context context, MusicPlayer player) {
-        super(context);
-        this.player = player;
+    private final MainActivity main;
+    private RefreshableFragment parent;
+
+    public VisibleMenuBarImpl(View barLayout, MainActivity main, RefreshableFragment parent) {
+        layout = barLayout;
+        this.player = main.getPlayer();
+        this.main = main;
+        this.parent = parent;
 
         init();
     }
 
     public void updateProgress() {
-        //TODO Update seekbar progress here based on the value from player
-        //Called every 100 ms
+        //TODO Make this not throw error for attempting to call in wrong state
+        return;
+        //progressBar.setProgress((int) (player.getCurrentProgress() * 1000));
     }
 
     private void init() {
 
-        doLayout();
-    }
-
-    private void doLayout() {
-
+        doMenuBar();
     }
 
     TextView songNameView;
@@ -48,43 +54,71 @@ public class VisibleMenuBarImpl extends View {
     ImageButton BtnPause;
 
     public void showPauseButton() {
-
+        BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
     }
 
     public void showPlayButton() {
+        BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
+    }
 
+    public void stopThread() {
+        try {
+            thread.wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void resumeThread() {
+        thread.notify();
     }
 
     private void prepareButtons() {
-        if (BtnNext != null) {
-            BtnNext.setOnClickListener(view -> {
-                player.playNext(true);
-                doMenuBar();
-            });
-        }
-        if (BtnPrev != null) {
-            BtnPrev.setOnClickListener(view -> {
-                player.playPrev(true);
-                doMenuBar();
-            });
-        }
-        if (BtnPause != null) {
-            BtnPause.setOnClickListener(view -> player.playPause());
-        }
+        BtnNext.setOnClickListener(view -> {
+            main.handleNextSong(true);
+            handleSongChange(MusicPlayer.getCurrentPlayingSong());
+            doMenuBar();
+        });
+
+        BtnPrev.setOnClickListener(view -> {
+            main.handlePrevSong(true);
+            handleSongChange(MusicPlayer.getCurrentPlayingSong());
+            doMenuBar();
+        });
+
+        BtnPause.setOnClickListener(view -> {
+            main.handlePause();
+            if (player.isPlaying()) {
+                showPauseButton();
+            } else {
+                showPlayButton();
+            }
+        });
     }
 
-    public View doMenuBar() {
-        try {
-            setVisibility(View.VISIBLE);
-        } catch (Exception ignored) {}
-        songNameView = findViewById(R.id.Song_name);
-        songDescView = findViewById(R.id.Song_desc);
-        BtnPrev = findViewById(R.id.BtnPrev);
-        BtnNext = findViewById(R.id.BtnNext);
-        BtnPause = findViewById(R.id.BtnPause);
-        SeekBar progressBar = findViewById(R.id.progress_bar);
-        songNameView.setText(currentPlayingSong.getTitle());
-        songDescView.setText(currentPlayingSong.getDesc());
+    @SuppressLint("NotifyDataSetChanged")
+    public void handleSongChange(MusicItem song) {
+        layout.setVisibility(View.VISIBLE);
+        songNameView.setText(song.getTitle());
+        songDescView.setText(song.getDesc());
+        BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
+        Objects.requireNonNull(parent.getRecyclerView().getAdapter()).notifyDataSetChanged();
+    }
+
+    public void doMenuBar() {
+        songNameView = layout.findViewById(R.id.Song_name);
+        songDescView = layout.findViewById(R.id.Song_desc);
+        BtnPrev = layout.findViewById(R.id.BtnPrev);
+        BtnNext = layout.findViewById(R.id.BtnNext);
+        BtnPause = layout.findViewById(R.id.BtnPause);
+        progressBar = layout.findViewById(R.id.progress_bar);
+        if (MusicPlayer.getCurrentPlayingSong() != null) {
+            songNameView.setText(MusicPlayer.getCurrentPlayingSong().getTitle());
+            songDescView.setText(MusicPlayer.getCurrentPlayingSong().getDesc());
+            layout.setVisibility(View.VISIBLE);
+        } else {
+            layout.setVisibility(View.INVISIBLE);
+        }
         BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
 
         progressBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -101,28 +135,20 @@ public class VisibleMenuBarImpl extends View {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                thread.stopThread();
+                thread.pause();
                 player.pause();
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                thread.resumeThread();
-                player.start();
+                thread.resume();
+                player.resume();
             }
         });
-        thread = new ProgressBarThread(progressBar, main);
-        this.setOnClickListener(view -> {
-            //newFragment = new DetailedsongFragment(main.player, main);
-            newFragment = new PagerFragment(player, main);
-            MainActivity.currentFragment = newFragment;
-            FragmentTransaction transaction = manager.beginTransaction();
-            transaction.replace(R.id.fragment_container, newFragment);
-            transaction.addToBackStack(null);
-
-            transaction.commit();
-
-            main.setClickable();
+        thread = new ProgressBarThread(this);
+        thread.start();
+        this.layout.setOnClickListener(view -> {
+            main.changeFragment(PagerFragment.class);
         });
         prepareButtons();
     }

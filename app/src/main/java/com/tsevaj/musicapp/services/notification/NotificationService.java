@@ -16,21 +16,27 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.services.bluetooth.BluetoothService;
 import com.tsevaj.musicapp.utils.MusicPlayer;
+
+import lombok.Setter;
 
 public class NotificationService extends Service {
     private final IBinder mBinder = new myBinder();
-    private NotificationController notificationController;
-
+    @Setter
+    private static NotificationController notificationController;
     private Notification.Builder builder;
     private Notification.Action[] actions;
 
+    @RequiresApi(api = Build.VERSION_CODES.S)
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -69,7 +75,7 @@ public class NotificationService extends Service {
                 .setSmallIcon(R.mipmap.app_icon)
                 .setLargeIcon(BitmapFactory.decodeResource(this.getResources(), R.drawable.background))
                 .setColor(0xae27ff)
-                .setStyle(new Notification.MediaStyle().setMediaSession(sessionToken).setShowActionsInCompactView(0, 1, 2))
+                .setStyle(new Notification.MediaStyle().setMediaSession(BluetoothService.sessionToken).setShowActionsInCompactView(0, 1, 2))
                 .setActions(actions)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setChannelId(Channel)
@@ -88,19 +94,19 @@ public class NotificationService extends Service {
             switch (intent.getAction()) {
                 case ACTION_PREV: {
                     if (notificationController != null) {
-                        notificationController.playPrev(true);
+                        notificationController.handlePrevSong(true);
                     }
                     break;
                 }
                 case ACTION_PAUSE: {
                     if (notificationController != null) {
-                        notificationController.playPause();
+                        notificationController.handlePause();
                     }
                     break;
                 }
                 case ACTION_NEXT: {
                     if (notificationController != null) {
-                        notificationController.playNext(true);
+                        notificationController.handleNextSong(true);
                     }
                     break;
                 }
@@ -121,7 +127,7 @@ public class NotificationService extends Service {
                     builder.setActions(actions);
                     Notification notification = builder.build();
                     //NotificationManager notificationManager = getSystemService(NotificationManager.class);
-                    //notificationManager.notify(NOTIFICATION_ID, notification);
+                    // notificationManager.notify(NOTIFICATION_ID, notification);
                     startForeground(NOTIFICATION_ID, notification);
                     break;
                 }
@@ -136,7 +142,4 @@ public class NotificationService extends Service {
         return START_STICKY;
     }
 
-    public void setCallBack(NotificationController notificationController) {
-        this.notificationController = notificationController;
-    }
 }

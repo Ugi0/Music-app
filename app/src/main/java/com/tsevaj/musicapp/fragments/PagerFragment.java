@@ -7,35 +7,34 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.adapters.PagerAdapter;
+import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
 import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
-import com.tsevaj.musicapp.utils.MusicItem;
+import com.tsevaj.musicapp.utils.data.MusicItem;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 
 
-public class PagerFragment extends MusicFragment {
+public class PagerFragment extends MusicFragment implements HasControlBar {
     MusicPlayer player;
-    MainActivity main;
 
     PagerAdapter pagerAdapter;
     ViewPager2 viewPager;
 
     public PagerFragment(MainActivity main) {
         super(main);
-        //this.player = player;
-        this.main = main;
+        this.player = main.getPlayer();
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        MainActivity.currentFragment = this;
-        return inflater.inflate(R.layout.fragment_pager, container, false);
+        super.onCreateView(inflater, container, R.layout.fragment_pager);
+
+        return view;
     }
 
     @Override
@@ -48,4 +47,19 @@ public class PagerFragment extends MusicFragment {
     public void changeSong(MusicItem song) {pagerAdapter.changeSong(song);}
 
     public void setPause(boolean value) {pagerAdapter.setPauseButton(value);}
+
+    @Override
+    public void handlePause() {
+        pagerAdapter.handlePause();
+    }
+
+    @Override
+    public void handleResume() {
+        pagerAdapter.handleResume();
+    }
+
+    @Override
+    public void handleSongChange(MusicItem song) {
+        pagerAdapter.handleSongChange(song);
+    }
 }

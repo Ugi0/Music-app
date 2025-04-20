@@ -3,21 +3,18 @@ package com.tsevaj.musicapp;
 import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION_NOTIFY;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.app.SearchManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -33,16 +30,14 @@ import android.widget.SearchView;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.navigation.NavigationView;
+import com.tsevaj.musicapp.adapters.CustomAdapter;
 import com.tsevaj.musicapp.fragments.DetailedLyricsFragment;
-import com.tsevaj.musicapp.fragments.FavoritesFragment;
 import com.tsevaj.musicapp.fragments.LibraryFragment;
 import com.tsevaj.musicapp.fragments.PagerFragment;
 import com.tsevaj.musicapp.fragments.PlaylistsFragment;
@@ -50,56 +45,53 @@ import com.tsevaj.musicapp.fragments.SettingsFragment;
 import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
 import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
 import com.tsevaj.musicapp.fragments.interfaces.RefreshableFragment;
-import com.tsevaj.musicapp.services.bluetooth.MyController;
+import com.tsevaj.musicapp.services.bluetooth.BluetoothService;
+import com.tsevaj.musicapp.services.notification.NotificationController;
 import com.tsevaj.musicapp.services.notification.NotificationService;
 import com.tsevaj.musicapp.utils.ApplicationConfig;
 import com.tsevaj.musicapp.utils.MusicPlayer;
-import com.tsevaj.musicapp.utils.MusicItem;
-import com.tsevaj.musicapp.utils.PrevNextList;
-import com.tsevaj.musicapp.utils.ProgressBarThread;
+import com.tsevaj.musicapp.utils.data.MusicItem;
+import com.tsevaj.musicapp.utils.MusicList;
 import com.tsevaj.musicapp.utils.SharedPreferencesHandler;
-import com.tsevaj.musicapp.utils.enums.SortOptions;
+import com.tsevaj.musicapp.utils.data.SortValue;
+import com.tsevaj.musicapp.utils.enums.MusicListType;
+import com.tsevaj.musicapp.utils.enums.SortOption;
 import com.tsevaj.musicapp.utils.files.MusicGetter;
 
-import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.List;
+
+import lombok.Getter;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
-    public MusicPlayer player;
+        implements NavigationView.OnNavigationItemSelectedListener, NotificationController {
+    @Getter
+    private MusicPlayer player;
     private DrawerLayout drawer;
-    public static Fragment currentFragment;
     NavigationView navigationView;
-    public PrevNextList PrevAndNextSongs;
-    public ProgressBarThread t;
-    ActionBarDrawerToggle toggle;
-    BroadcastReceiver receiver;
-    public ArrayList<MusicItem> songQueue = new ArrayList<>();
-    public static ArrayList<MusicItem> wholeSongList = null;
+    @Getter
+    private MusicList musicList;
 
-    public File BackgroundDestinationPath;
+    @Getter
+    public static Fragment currentFragment;
+    public static List<MusicItem> wholeSongList = null;
+    public BluetoothService mediaController;
 
-    public MyController mediaController;
-
+    private ActionBarDrawerToggle toggle;
+    @Getter
     private ApplicationConfig config;
-
+    @Getter
     private SharedPreferencesHandler preferencesHandler;
 
+    @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        setDrawer();
-
         preferencesHandler = new SharedPreferencesHandler(this);
-
-        BackgroundDestinationPath = getExternalFilesDir("");
-        boolean result = Objects.requireNonNull(BackgroundDestinationPath.getParentFile()).mkdirs();
 
         if (!Environment.isExternalStorageManager()) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
@@ -107,97 +99,65 @@ public class MainActivity extends AppCompatActivity
             intent.setData(uri);
             startActivity(intent);
         } else {
-            wholeSongList = MusicGetter.getMusic(this, "", "");
+            wholeSongList = MusicGetter.loadList(this);
         }
 
         if (savedInstanceState == null) {
-            SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
-            Fragment newFragment = new LibraryFragment(this);
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                    newFragment).commit();
-            navigationView.setCheckedItem(R.id.menu_library);
+            changeFragment(LibraryFragment.class, wholeSongList);
 
-            this.PrevAndNextSongs = new PrevNextList(wholeSongList, newFragment, getApplicationContext());
-            this.player = new MusicPlayer(getApplicationContext());
-            this.config = new ApplicationConfig(settings.getString("CONFIG", ""));
-            //this.player.c = this;
-            //this.player.main = this;
-            //this.player.manager = getSupportFragmentManager();
-            this.mediaController = new MyController(player, this);
+            this.musicList = new MusicList(this, wholeSongList);
+
+            this.player = new MusicPlayer(getApplicationContext(), musicList);
+            this.config = new ApplicationConfig(this, preferencesHandler.getConfig());
+            this.mediaController = new BluetoothService(player, this);
             registerReceiver(mediaController, new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
 
-            if (settings.getBoolean("SAVE_STATE", false)) {
+            NotificationService.setNotificationController(this);
+
+            if (SharedPreferencesHandler.sharedPreferences.getBoolean("SAVE_STATE", false)) {
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    int hash = Integer.parseInt(settings.getString("SAVED_SONG_HASH", "0"));
-                    int time = Integer.parseInt(settings.getString("SAVED_SONG_TIME", "0"));
-                    if (hash != 0) {
-                        MainActivity.wholeSongList.stream().filter(e -> e.getHash() == hash).findFirst().ifPresent(song -> player.resumeState(song, time));
+                    String hash = SharedPreferencesHandler.sharedPreferences.getString("SAVED_SONG_HASH", "0");
+                    int time = Integer.parseInt(SharedPreferencesHandler.sharedPreferences.getString("SAVED_SONG_TIME", "0"));
+                    if (!hash.equals("0")) {
+                        MainActivity.wholeSongList.stream().filter(e -> e.getHash().equals(hash)).findFirst().ifPresent(song -> player.resumeState(song, time));
                     }
                 }, 250);
             }
         }
     }
 
-    public SharedPreferencesHandler getPreferencesHandler() {
-        return this.preferencesHandler;
-    }
-
-    public ApplicationConfig getConfig() {
-        return this.config;
-    }
-
     public void changePlayingList(ArrayList<MusicItem> li) {
-        PrevAndNextSongs.setList(li);
+        musicList.setList(li);
     }
 
     public void handleSongChange(MusicItem song) {
+        //Handle musicPlayer
+        player.play(song);
+        //Change UI
         if (currentFragment instanceof HasControlBar) {
             ((HasControlBar) currentFragment).handleSongChange(song);
         }
+        //TODO Handle notification
+        Intent intent = new Intent(this, NotificationService.class);
+        bindService(intent, player, 0);
+        Intent intent1 = new Intent(this, NotificationService.class);
+        intent1.setAction("NOTIFY");
+        startService(intent1);
+        showNotification(true);
+        //Handle data
+        //TODO Change PrevNextPlayList?
     }
-
-    public void handleSongPause() {
-        if (currentFragment instanceof HasControlBar) {
-            ((HasControlBar) currentFragment).handlePause();
-        }
+    private void showNotification(boolean playing) {
+        showNotification(playing ? R.drawable.ic_baseline_pause_24 : R.drawable.ic_baseline_play_arrow_24);
     }
-
-    public void handleSongResume() {
-        if (currentFragment instanceof HasControlBar) {
-            ((HasControlBar) currentFragment).handleResume();
-        }
-    }
-
-    public void showNotification(int pauseButton) {
+    private void showNotification(int button) {
         Intent intent1 = new Intent(this, NotificationService.class);
         intent1.setAction(ACTION_NOTIFY);
-        intent1.setType(String.valueOf(pauseButton));
+        intent1.setType(String.valueOf(button));
         startService(intent1);
-        //utils.displayNotification(this, songName, playPauseButton);
     }
 
-    public void setBackground(View view, Resources resources) {
-        if (new File(BackgroundDestinationPath+"/background").exists()) {
-            view.setBackground(new BitmapDrawable(resources, BitmapFactory.decodeFile(BackgroundDestinationPath+"/background")));
-        }
-        else {
-            view.setBackground(ResourcesCompat.getDrawable(resources, R.drawable.background, null));
-        }
-    }
-
-    public void setClickable() {
-        toggle.setDrawerIndicatorEnabled(false);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        ActionBar actionBar = getSupportActionBar();
-
-        assert actionBar != null;
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setDisplayShowHomeEnabled(true);
-    }
-
-    public void setDrawer() {
+    /*public void setDrawer() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         setTitle("");
@@ -216,15 +176,15 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.setDrawerIndicatorEnabled(true);
         toggle.syncState();
-    }
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case (android.R.id.home): {
                 onBackPressed();
-                currentFragment = new LibraryFragment(this);
-                setDrawer();
+                currentFragment = new LibraryFragment(this, wholeSongList);
+                //setDrawer();
                 break;
             }
             case (R.id.action_search): {
@@ -257,42 +217,25 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private Class<? extends MusicFragment> getDrawerMenuOptionClass(int id) {
-        switch (id) {
-            case (R.id.menu_library):
-                return LibraryFragment.class;
-            case (R.id.menu_favorites):
-                return FavoritesFragment.class;
-            case (R.id.menu_settings):
-                return SettingsFragment.class;
-            case (R.id.menu_playlists):
-                return PlaylistsFragment.class;
-            default:
-                throw new RuntimeException("Option that does not exist selected");
-        }
-    }
-
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
-        Constructor<? extends MusicFragment> constructor;
-        try {
-            constructor = getDrawerMenuOptionClass(itemId).getConstructor(MainActivity.class);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+        switch (itemId) {
+            case (R.id.menu_library):
+                changeFragment(LibraryFragment.class, wholeSongList);
+                break;
+            case (R.id.menu_favorites):
+                changeFragment(LibraryFragment.class, MusicGetter.getMusic(this, new SortValue(MusicListType.FAVORITES), ""));
+                break;
+            case (R.id.menu_settings):
+                changeFragment(SettingsFragment.class);
+                break;
+            case (R.id.menu_playlists):
+                changeFragment(PlaylistsFragment.class);
+                break;
+            default:
+                throw new RuntimeException("Option that does not exist selected");
         }
-        MusicFragment newFragment;
-        try {
-             newFragment = constructor.newInstance(this);
-        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-        FragmentTransaction createdFragment = getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                newFragment);
-        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-            createdFragment.addToBackStack(null);
-        }
-        createdFragment.commit();
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -303,7 +246,6 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == 2909) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.e("Permission", "Granted");
-                wholeSongList = MusicGetter.getMusic(this, "", "");
             } else {
                 Log.e("Permission", "Denied");
             }
@@ -314,19 +256,14 @@ public class MainActivity extends AppCompatActivity
     protected void onDestroy() {
         Intent intent1 = new Intent(getApplicationContext(), NotificationService.class);
         stopService(intent1);
-        SharedPreferences settings = getSharedPreferences("SAVEDATA", 0);
-        SharedPreferences.Editor editor = settings.edit();
+        SharedPreferences.Editor editor = SharedPreferencesHandler.sharedPreferences.edit();
         editor.putString("SAVED_SONG_HASH", String.valueOf(MusicPlayer.getCurrentSongHash()));
         editor.putString("SAVED_SONG_TIME", String.valueOf(player.getCurrentPosition()));
         editor.apply();
         player.destroy();
         DetailedLyricsFragment.t.stop();
         config.saveConfig();
-        if (receiver != null) {
-            unregisterReceiver(receiver);
-            receiver = null;
-        }
-        t.stopThread();
+        //t.stopThread();
         finish();
         super.onDestroy();
     }
@@ -341,16 +278,16 @@ public class MainActivity extends AppCompatActivity
         popup.getMenu().getItem(4).setChecked(settings.getBoolean("ASCENDING", true));
         popup.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.sort_date) {
-                editor.putString(SortOptions.NAME, SortOptions.DATE.toString());
+                editor.putString(SortOption.NAME, SortOption.DATE.toString());
                 editor.apply();
             } else if (item.getItemId() == R.id.sort_length) {
-                editor.putString(SortOptions.NAME, SortOptions.LENGTH.toString());
+                editor.putString(SortOption.NAME, SortOption.LENGTH.toString());
                 editor.apply();
             } else if (item.getItemId() == R.id.sort_title) {
-                editor.putString(SortOptions.NAME, SortOptions.TITLE.toString());
+                editor.putString(SortOption.NAME, SortOption.TITLE.toString());
                 editor.apply();
             } else if (item.getItemId() == R.id.sort_random) {
-                editor.putString(SortOptions.NAME, SortOptions.RANDOM.toString());
+                editor.putString(SortOption.NAME, SortOption.RANDOM.toString());
                 editor.apply();
             } else if (item.getItemId() == R.id.sort_reverse) {
                 if (settings.getBoolean("ASCENDING", true)) {
@@ -363,7 +300,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 editor.apply();
             }
-            PrevAndNextSongs.sortFilterList(settings.getString(SortOptions.NAME, SortOptions.DATE.toString()), settings.getBoolean("ASCENDING", true));
+            musicList.sortFilterList(SortOption.valueOf(settings.getString(SortOption.NAME, SortOption.DATE.toString())), settings.getBoolean("ASCENDING", true));
 
             //TODO Handle sort change
             /*Fragment newFragment = null;
@@ -384,6 +321,30 @@ public class MainActivity extends AppCompatActivity
         popup.show();
     }
 
+    public void changeFragment(Class<? extends MusicFragment> fragmentClass) { changeFragment(fragmentClass, null);}
+    public void changeFragment(Class<? extends MusicFragment> fragmentClass, List<MusicItem> songList) {
+        try {
+            Constructor<? extends MusicFragment> constructor;
+            MusicFragment newFragment;
+            if (songList != null) {
+                constructor = fragmentClass.getConstructor(MainActivity.class, List.class);
+                newFragment = constructor.newInstance(this, songList);
+            } else {
+                constructor = fragmentClass.getConstructor(MainActivity.class);
+                newFragment = constructor.newInstance(this);
+            }
+            MainActivity.currentFragment = newFragment;
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragment_container, newFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+
+            //setClickable();
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         getMenuInflater().inflate(R.menu.options_menu, menu);
@@ -396,6 +357,11 @@ public class MainActivity extends AppCompatActivity
                             currentFragment.getClass().equals(SettingsFragment.class)
                     ));
         final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setOnCloseListener(() -> {
+
+            return false;
+        });
+        final Handler handler = new Handler(Looper.getMainLooper());
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
@@ -404,18 +370,18 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public boolean onQueryTextChange(String s) {
-                //TODO find a smarter way to change the ordering of items here
-                //The full list of items can be found in wholeSongList
-                if (currentFragment instanceof RefreshableFragment) {
-                    ((RefreshableFragment) currentFragment).getRecyclerView().setAdapter();
-                }
-                //TODO Handle changing the list is UI
-                /*if (currentFragment.getClass().equals(LibraryFragment.class)) {
-                    PrevAndNextSongs.getMusicAndSet(player.recyclerview, this, player, this, "", s);
-                } else if (currentFragment.getClass().equals(FavoritesFragment.class)) {
-                    PrevAndNextSongs.getMusicAndSet(player.recyclerview, this, player, this, "FAVORITES", s);
-                }*/
-                return false;
+                handler.removeCallbacksAndMessages(null);
+                handler.postDelayed(() -> {
+                    if (currentFragment instanceof RefreshableFragment) {
+                        RefreshableFragment fragment = (RefreshableFragment) currentFragment;
+                        List<MusicItem> songList = MusicGetter.getMusic(MainActivity.this, fragment.getListType(), s);
+                        fragment.getRecyclerView().setAdapter(
+                                new CustomAdapter(songList, MainActivity.this)
+                        );
+                    }
+                }, 500);
+
+                return true;
             }});
         searchView.setOnCloseListener(() -> {
             //TODO Clear search params
@@ -425,4 +391,24 @@ public class MainActivity extends AppCompatActivity
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         return true;
     }
+
+    @Override
+    public void handleNextSong(Boolean force) {
+        handleSongChange(musicList.Next(force));
+    }
+
+    @Override
+    public void handlePrevSong(Boolean force) {
+        handleSongChange(musicList.Prev());
+    }
+
+    @Override
+    public void handlePause() {
+        player.playPause();
+        showNotification(player.isPlaying());
+        if (currentFragment instanceof HasControlBar) {
+            ((HasControlBar) currentFragment).handlePause();
+        }
+    }
+
 }

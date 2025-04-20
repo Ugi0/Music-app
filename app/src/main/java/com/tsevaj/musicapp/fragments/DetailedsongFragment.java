@@ -7,41 +7,35 @@ import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 
 import com.tsevaj.musicapp.MainActivity;
-import com.tsevaj.musicapp.adapters.PagerAdapter;
 import com.tsevaj.musicapp.R;
+import com.tsevaj.musicapp.adapters.PagerAdapter;
 import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
+import com.tsevaj.musicapp.fragments.interfaces.HasProgressBar;
 import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
-import com.tsevaj.musicapp.utils.CircularSeekBar;
-import com.tsevaj.musicapp.utils.MusicItem;
-import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.utils.data.MusicItem;
 
-public class DetailedsongFragment extends MusicFragment implements HasControlBar {
-    View ll;
-    //PagerAdapter parent;
+public class DetailedsongFragment extends MusicFragment implements HasControlBar, HasProgressBar {
+    private PagerAdapter adapter;
 
-    public DetailedsongFragment(MainActivity main) {
+    public DetailedsongFragment(MainActivity main, PagerAdapter adapter) {
         super(main);
+        this.adapter = adapter;
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        ll = inflater.inflate(R.layout.song_detailed_view, container, false);
+        super.onCreateView(inflater, container, R.layout.song_detailed_view);
 
-        main.setBackground(ll, getResources());
-        MainActivity.currentFragment = this;
+        adapter.initWindowElements(view);
 
-        parent.initWindowElements(ll);
-
-        return ll;
+        return view;
     }
 
     @Override
@@ -66,38 +60,9 @@ public class DetailedsongFragment extends MusicFragment implements HasControlBar
 
     }
 
-    public static class CircleSeekBarListener implements CircularSeekBar.OnCircularSeekBarChangeListener {
-        private final CircularSeekBar progressBar;
-        private final ImageButton BtnPause;
-        private final MusicPlayer player;
+    @Override
+    public void updateProgress() {
 
-        public CircleSeekBarListener(MusicPlayer player, CircularSeekBar progressbar, ImageButton BtnPause) {
-            this.player = player;
-            this.progressBar = progressbar;
-            this.BtnPause = BtnPause;
-        }
-        @Override
-        public void onProgressChanged(CircularSeekBar circularSeekBar, int progress, boolean fromUser) {
-            if (fromUser) {
-                player.seekTo(progress);
-                progressBar.setProgress(progress);
-                if (!player.isPlaying()) {
-                    BtnPause.setBackgroundResource(R.drawable.ic_baseline_pause_24);
-                }
-            }
-        }
-
-        @Override
-        public void onStartTrackingTouch(CircularSeekBar seekBar) {
-            player.pause();
-            player.main.t.stopThread();
-        }
-
-        @Override
-        public void onStopTrackingTouch(CircularSeekBar seekBar) {
-            player.resume();
-            main.t.resumeThread();
-        }
     }
 
 }

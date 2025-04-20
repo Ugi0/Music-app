@@ -19,20 +19,22 @@ import androidx.media.session.MediaButtonReceiver;
 import com.tsevaj.musicapp.services.notification.NotificationService;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 
-public class MyController extends BroadcastReceiver {
+public class BluetoothService extends BroadcastReceiver {
     MusicPlayer player;
     Context c;
     MediaSession ms;
+
+    public static MediaSession.Token sessionToken;
 
     @Override
     public void onReceive(Context context, Intent intent) {
     }
 
-    public MyController(MusicPlayer player, Context c) {
+    public BluetoothService(MusicPlayer player, Context c) {
         this.c = c;
         this.player = player;
         this.ms = new MediaSession(c, c.getPackageName());
-        MusicPlayer.sessionToken = ms.getSessionToken();
+        sessionToken = ms.getSessionToken();
         Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
         mediaButtonIntent.setClass(c, MediaButtonReceiver.class);
         PendingIntent mbrIntent = PendingIntent.getBroadcast(c, 0, mediaButtonIntent, PendingIntent.FLAG_IMMUTABLE);

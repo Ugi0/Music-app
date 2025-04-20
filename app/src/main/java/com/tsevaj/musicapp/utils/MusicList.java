@@ -1,11 +1,15 @@
 package com.tsevaj.musicapp.utils;
 
+import static com.tsevaj.musicapp.utils.enums.SortOption.*;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 
 import androidx.fragment.app.Fragment;
 
 import com.tsevaj.musicapp.MainActivity;
+import com.tsevaj.musicapp.utils.data.MusicItem;
+import com.tsevaj.musicapp.utils.enums.SortOption;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -16,18 +20,17 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class PrevNextList {
+public class MusicList {
     //Prev list is static so every instance we make of this class will have the same Prev values
     //Although realistically we only want to have one instance of this class at a time
     private static ArrayList<MusicItem> previousSongs = new ArrayList<>();
 
+    private MainActivity main;
     private ArrayList<MusicItem> songList;
     private MusicItem current;
 
     private final Random randomizer;
-    private final SharedPreferences settings;
 
-    private Fragment createdFragment;
     //private Context c;
 
     private boolean wholeList;
@@ -35,13 +38,9 @@ public class PrevNextList {
     //private String lastFilter = "";
     //private String lastNameFilter = "";
 
-    public PrevNextList(ArrayList<MusicItem> list, Fragment currentFragment, Context c) {
+    public MusicList(MainActivity main, List<MusicItem> list) {
+        this.main = main;
         this.songList = new ArrayList<>(list);
-        //this.Prev = new ArrayList<>();
-        //this.current = current;
-        //this.c = c;
-        this.createdFragment = currentFragment;
-        this.settings = c.getSharedPreferences("SAVEDATA", 0);
         randomizer = new Random(Instant.now().toEpochMilli());
     }
 
@@ -73,11 +72,9 @@ public class PrevNextList {
         this.current = item;
     }
 
-    /*public void removeFromPrev(MusicItem item) {
-        try {
-            this.previousSongs.remove(item);
-        } catch (Exception ignored) {}
-    }*/
+    public void handleSongDeletion(MusicItem song) {
+        //TODO handle removing references here
+    }
 
     private void addToPrevList(MusicItem item) {
         if (!previousSongs.remove(item) && previousSongs.size() >= 40) {
@@ -87,12 +84,12 @@ public class PrevNextList {
     }
 
     public MusicItem Next(Boolean force) {
-        ArrayList<MusicItem> li;
+        List<MusicItem> li;
         int index;
-        if (settings.getInt("REPLAY_MODE",1) == 1 && !force) { //Play one song
+        if (SharedPreferencesHandler.sharedPreferences.getInt("REPLAY_MODE",1) == 1 && !force) { //Play one song
             return current;
         }
-        if (!settings.getBoolean("SHUFFLE", false)) { //Play songs in list order
+        if (!SharedPreferencesHandler.sharedPreferences.getBoolean("SHUFFLE", false)) { //Play songs in list order
             if (wholeList) li = MainActivity.wholeSongList;
             else { li = songList; }
 
@@ -121,30 +118,30 @@ public class PrevNextList {
         return item;
     }
 
-    public void sortFilterList(String sort, boolean reverse) {
+    public void sortFilterList(SortOption sort, boolean reverse) {
         switch (sort) {
-            case "DATE":
+            case DATE:
                 if (reverse) {
-                    songList.sort((o1, o2) -> o2.getDateModified().compareTo(o1.getDateModified()));
+                    songList.sort(Comparator.comparingLong(MusicItem::getDateModified).reversed());
                 } else {
                     songList.sort(Comparator.comparing(MusicItem::getDateModified));
                 }
                 break;
-            case "TITLE":
+            case TITLE:
                 if (reverse) {
                     songList.sort((o1, o2) -> o2.getTitle().compareToIgnoreCase(o1.getTitle()));
                 } else {
                     songList.sort((o1, o2) -> o1.getTitle().compareToIgnoreCase(o2.getTitle()));
                 }
                 break;
-            case "LENGTH":
+            case LENGTH:
                 if (reverse) {
                     songList.sort(Comparator.comparingInt(MusicItem::getDuration));
                 } else {
-                    songList.sort((o1, o2) -> Integer.compare(o2.getDuration(), o1.getDuration()));
+                    songList.sort(Comparator.comparing(MusicItem::getDuration));
                 }
                 break;
-            case "RANDOM":
+            case RANDOM:
                 Collections.shuffle(songList);
                 break;
             default:
