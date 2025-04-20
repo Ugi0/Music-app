@@ -9,7 +9,7 @@
 
 This app is created just for my own use and to learn android development.
 
-The music app will be able to play songs downloaded on a android device with a lot of options.\
+The music app is be able to play locally downloaded song on an android device.\
 
 ### Built With
 
