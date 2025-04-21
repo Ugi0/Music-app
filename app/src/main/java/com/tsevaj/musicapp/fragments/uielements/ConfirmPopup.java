@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp.uielements;
+package com.tsevaj.musicapp.fragments.uielements;
 
 import android.app.AlertDialog;
 import android.content.Context;

@@ -1,22 +1,21 @@
 package com.tsevaj.musicapp.utils;
 
-import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
 import com.tsevaj.musicapp.fragments.interfaces.HasProgressBar;
-import com.tsevaj.musicapp.uielements.VisibleMenuBarImpl;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class ProgressBarThread {
-    private final HasProgressBar menuBar;
-    ScheduledExecutorService executor;
-    public ProgressBarThread(HasProgressBar menuBar) {
-        this.menuBar = menuBar;
-    }
+import lombok.Setter;
 
-    public void start() {
-        if (executor != null) return;
+public class ProgressBarThread {
+    private HasProgressBar menuBar;
+    ScheduledExecutorService executor;
+
+    public void start(HasProgressBar menuBar) {
+        if (executor != null) {
+            executor.shutdownNow();
+        }
         executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleWithFixedDelay(menuBar::updateProgress
                 , 0, 100, TimeUnit.MILLISECONDS);

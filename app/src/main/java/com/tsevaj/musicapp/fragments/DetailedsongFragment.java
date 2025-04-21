@@ -1,5 +1,7 @@
 package com.tsevaj.musicapp.fragments;
 
+import static com.tsevaj.musicapp.fragments.uielements.MusicFragment.setBackground;
+
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -13,28 +15,27 @@ import androidx.annotation.Nullable;
 
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
-import com.tsevaj.musicapp.adapters.PagerAdapter;
-import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
-import com.tsevaj.musicapp.fragments.interfaces.HasProgressBar;
-import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
-import com.tsevaj.musicapp.utils.data.MusicItem;
+import com.tsevaj.musicapp.fragments.uielements.DetailedFragment;
 
-public class DetailedsongFragment extends MusicFragment implements HasControlBar, HasProgressBar {
-    private PagerAdapter adapter;
-
-    public DetailedsongFragment(MainActivity main, PagerAdapter adapter) {
-        super(main);
-        this.adapter = adapter;
-    }
+public class DetailedsongFragment extends DetailedFragment {
+    private MainActivity main;
 
     @SuppressLint("UseCompatLoadingForDrawables")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, R.layout.song_detailed_view);
+        view = inflater.inflate(R.layout.song_detailed_view, container, false);
+        main = (MainActivity) getActivity();
+        setBackground(view, getResources());
 
-        adapter.initWindowElements(view);
+        doLayout();
 
+        return view;
+    }
+
+    @Nullable
+    @Override
+    public View getView() {
         return view;
     }
 
@@ -45,23 +46,11 @@ public class DetailedsongFragment extends MusicFragment implements HasControlBar
         inflater.inflate(R.menu.popup_menu, menu);
     }
 
-    @Override
-    public void handlePause() {
+    public void showLyricLines() {
 
     }
 
-    @Override
-    public void handleResume() {
-
-    }
-
-    @Override
-    public void handleSongChange(MusicItem song) {
-
-    }
-
-    @Override
-    public void updateProgress() {
+    public void showNoLyrics() {
 
     }
 

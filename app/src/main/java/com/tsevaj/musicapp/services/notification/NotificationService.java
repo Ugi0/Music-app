@@ -90,6 +90,7 @@ public class NotificationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent == null) return START_STICKY;
         if (intent.getAction() != null) {
             switch (intent.getAction()) {
                 case ACTION_PREV: {

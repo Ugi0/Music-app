@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
-import com.tsevaj.musicapp.uielements.ConfirmPopup;
+import com.tsevaj.musicapp.fragments.uielements.ConfirmPopup;
 import com.tsevaj.musicapp.utils.ApplicationConfig;
 import com.tsevaj.musicapp.utils.SharedPreferencesHandler;
 import com.tsevaj.musicapp.utils.files.MusicGetter;

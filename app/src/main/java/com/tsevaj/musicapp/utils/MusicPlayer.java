@@ -89,7 +89,6 @@ public class MusicPlayer implements ServiceConnection {
     }
 
     public void resume() {
-        if (MainActivity.currentFragment.getClass().equals(PagerFragment.class)) newFragment.setPause(false);
         player.start();
     }
 

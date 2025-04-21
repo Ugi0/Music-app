@@ -14,43 +14,44 @@ import androidx.annotation.Nullable;
 
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.adapters.CustomAdapter;
-import com.tsevaj.musicapp.fragments.interfaces.RefreshableFragment;
+import com.tsevaj.musicapp.fragments.uielements.RefreshableFragment;
 import com.tsevaj.musicapp.utils.data.MusicItem;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.utils.data.SortValue;
 import com.tsevaj.musicapp.utils.enums.MusicListType;
-import com.tsevaj.musicapp.utils.files.MusicGetter;
 
 import java.util.List;
 
 public class LibraryFragment extends RefreshableFragment {
     List<MusicItem> songs;
 
-    public LibraryFragment(MainActivity main, List<MusicItem> songs) {
-        super(main);
-        this.songs = songs;
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, R.layout.songlist_recyclerview);
+        View baseView = super.onCreateView(inflater, container);
+        view = inflater.inflate(R.layout.library_fragment, contentContainer, false);
+        contentContainer.addView(view);
+
+        songs = getArguments().getParcelableArrayList("songs");
 
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setAdapter(new CustomAdapter(songs, main));
 
+        setBackground(view, getResources());
+        MainActivity.currentFragment = this;
+
         makeRefreshable(recyclerView);
         makeMenubar(view);
 
-        return view;
+        return baseView;
     }
 
     @Override
     public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = requireActivity().getMenuInflater();
+        MenuInflater inflater = main.getMenuInflater();
         inflater.inflate(R.menu.popup_menu, menu);
     }
 

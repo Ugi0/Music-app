@@ -1,4 +1,4 @@
-package com.tsevaj.musicapp.fragments.interfaces;
+package com.tsevaj.musicapp.fragments.uielements;
 
 import static com.tsevaj.musicapp.utils.files.MusicGetter.getAuthors;
 import static com.tsevaj.musicapp.utils.files.MusicGetter.loadList;
@@ -12,7 +12,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
-import com.tsevaj.musicapp.uielements.VisibleMenuBarImpl;
+import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
 import com.tsevaj.musicapp.utils.data.MusicItem;
 import com.tsevaj.musicapp.utils.data.SortValue;
 import com.tsevaj.musicapp.utils.files.MusicGetter;
@@ -23,10 +23,6 @@ public abstract class RefreshableFragment extends MusicFragment implements HasCo
     @Getter
     protected RecyclerView recyclerView;
     protected VisibleMenuBarImpl menuBar;
-
-    public RefreshableFragment(MainActivity main) {
-        super(main);
-    }
 
     protected abstract void handleRefresh();
     public abstract SortValue getListType();
@@ -55,15 +51,13 @@ public abstract class RefreshableFragment extends MusicFragment implements HasCo
     }
 
     @Override
-    public void handlePause() {
+    public void handlePause(boolean isPlaying) {
         ensureMenuBar();
-        menuBar.showPauseButton();
-    }
-
-    @Override
-    public void handleResume() {
-        ensureMenuBar();
-        menuBar.showPlayButton();
+        if (isPlaying) {
+            menuBar.showPlayButton();
+        } else {
+            menuBar.showPauseButton();
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")

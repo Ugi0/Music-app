@@ -22,7 +22,6 @@ public class ApplicationConfig {
         }
 
         BackgroundDestinationPath = main.getExternalFilesDir("");
-        //noinspection ResultOfMethodCallIgnored
         Objects.requireNonNull(BackgroundDestinationPath.getParentFile()).mkdirs();
     }
 

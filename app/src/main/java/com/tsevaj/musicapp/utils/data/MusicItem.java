@@ -3,6 +3,8 @@ package com.tsevaj.musicapp.utils.data;
 import static com.tsevaj.musicapp.utils.files.MusicGetter.milliSecondsToTime;
 
 import android.annotation.SuppressLint;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.format.DateFormat;
 
 import androidx.annotation.NonNull;
@@ -16,7 +18,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public class MusicItem implements Comparable<MusicItem> {
+public class MusicItem implements Comparable<MusicItem>, Parcelable {
     private final String title;
     private final String location;
     private final int duration;
@@ -92,5 +94,15 @@ public class MusicItem implements Comparable<MusicItem> {
         if (!(o instanceof MusicItem)) return false;
         MusicItem item = (MusicItem) o;
         return Objects.equals(this.hash, item.getHash());
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+
     }
 }

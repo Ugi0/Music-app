@@ -3,6 +3,9 @@ package com.tsevaj.musicapp.utils.data;
 import com.tsevaj.musicapp.utils.enums.MusicListType;
 import com.tsevaj.musicapp.utils.enums.SortOption;
 
+import lombok.Getter;
+
+@Getter
 public class SortValue {
     private final MusicListType sortOption;
     private final String data;
@@ -16,11 +19,4 @@ public class SortValue {
         this.data = data;
     }
 
-    public MusicListType getSortOption() {
-        return this.sortOption;
-    }
-
-    public String getData() {
-        return this.data;
-    }
 }

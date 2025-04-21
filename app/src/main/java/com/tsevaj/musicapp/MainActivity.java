@@ -5,6 +5,8 @@ import static com.tsevaj.musicapp.services.notification.NotificationClass.ACTION
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
 import android.app.SearchManager;
@@ -26,16 +28,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.PopupMenu;
 import android.widget.SearchView;
 
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-
-import com.google.android.material.navigation.NavigationView;
 import com.tsevaj.musicapp.adapters.CustomAdapter;
 import com.tsevaj.musicapp.fragments.DetailedLyricsFragment;
 import com.tsevaj.musicapp.fragments.LibraryFragment;
@@ -43,18 +38,17 @@ import com.tsevaj.musicapp.fragments.PagerFragment;
 import com.tsevaj.musicapp.fragments.PlaylistsFragment;
 import com.tsevaj.musicapp.fragments.SettingsFragment;
 import com.tsevaj.musicapp.fragments.interfaces.HasControlBar;
-import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
-import com.tsevaj.musicapp.fragments.interfaces.RefreshableFragment;
+import com.tsevaj.musicapp.fragments.uielements.MusicFragment;
+import com.tsevaj.musicapp.fragments.uielements.RefreshableFragment;
 import com.tsevaj.musicapp.services.bluetooth.BluetoothService;
 import com.tsevaj.musicapp.services.notification.NotificationController;
 import com.tsevaj.musicapp.services.notification.NotificationService;
 import com.tsevaj.musicapp.utils.ApplicationConfig;
 import com.tsevaj.musicapp.utils.MusicPlayer;
+import com.tsevaj.musicapp.utils.ProgressBarThread;
 import com.tsevaj.musicapp.utils.data.MusicItem;
 import com.tsevaj.musicapp.utils.MusicList;
 import com.tsevaj.musicapp.utils.SharedPreferencesHandler;
-import com.tsevaj.musicapp.utils.data.SortValue;
-import com.tsevaj.musicapp.utils.enums.MusicListType;
 import com.tsevaj.musicapp.utils.enums.SortOption;
 import com.tsevaj.musicapp.utils.files.MusicGetter;
 
@@ -66,11 +60,9 @@ import java.util.List;
 import lombok.Getter;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, NotificationController {
+        implements NotificationController {
     @Getter
     private MusicPlayer player;
-    private DrawerLayout drawer;
-    NavigationView navigationView;
     @Getter
     private MusicList musicList;
 
@@ -78,18 +70,20 @@ public class MainActivity extends AppCompatActivity
     public static Fragment currentFragment;
     public static List<MusicItem> wholeSongList = null;
     public BluetoothService mediaController;
-
-    private ActionBarDrawerToggle toggle;
     @Getter
     private ApplicationConfig config;
     @Getter
     private SharedPreferencesHandler preferencesHandler;
+    @Getter
+    private ProgressBarThread pThread;
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        pThread = new ProgressBarThread();
 
         preferencesHandler = new SharedPreferencesHandler(this);
 
@@ -103,7 +97,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (savedInstanceState == null) {
-            changeFragment(LibraryFragment.class, wholeSongList);
+            changeFragment(LibraryFragment.class);
 
             this.musicList = new MusicList(this, wholeSongList);
 
@@ -124,10 +118,6 @@ public class MainActivity extends AppCompatActivity
                 }, 250);
             }
         }
-    }
-
-    public void changePlayingList(ArrayList<MusicItem> li) {
-        musicList.setList(li);
     }
 
     public void handleSongChange(MusicItem song) {
@@ -157,33 +147,12 @@ public class MainActivity extends AppCompatActivity
         startService(intent1);
     }
 
-    /*public void setDrawer() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        setTitle("");
-
-        ActionBar actionBar = getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setDisplayHomeAsUpEnabled(false);
-        actionBar.setDisplayShowHomeEnabled(false);
-
-        drawer = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        toggle = new ActionBarDrawerToggle(this, drawer, toolbar,
-                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.setDrawerIndicatorEnabled(true);
-        toggle.syncState();
-    }*/
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case (android.R.id.home): {
                 onBackPressed();
-                currentFragment = new LibraryFragment(this, wholeSongList);
+                currentFragment = new LibraryFragment();
                 //setDrawer();
                 break;
             }
@@ -218,29 +187,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int itemId = item.getItemId();
-        switch (itemId) {
-            case (R.id.menu_library):
-                changeFragment(LibraryFragment.class, wholeSongList);
-                break;
-            case (R.id.menu_favorites):
-                changeFragment(LibraryFragment.class, MusicGetter.getMusic(this, new SortValue(MusicListType.FAVORITES), ""));
-                break;
-            case (R.id.menu_settings):
-                changeFragment(SettingsFragment.class);
-                break;
-            case (R.id.menu_playlists):
-                changeFragment(PlaylistsFragment.class);
-                break;
-            default:
-                throw new RuntimeException("Option that does not exist selected");
-        }
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 2909) {
@@ -263,7 +209,6 @@ public class MainActivity extends AppCompatActivity
         player.destroy();
         DetailedLyricsFragment.t.stop();
         config.saveConfig();
-        //t.stopThread();
         finish();
         super.onDestroy();
     }
@@ -321,18 +266,14 @@ public class MainActivity extends AppCompatActivity
         popup.show();
     }
 
-    public void changeFragment(Class<? extends MusicFragment> fragmentClass) { changeFragment(fragmentClass, null);}
-    public void changeFragment(Class<? extends MusicFragment> fragmentClass, List<MusicItem> songList) {
+    public void changeFragment(Class<? extends MusicFragment> fragmentClass) {
         try {
-            Constructor<? extends MusicFragment> constructor;
-            MusicFragment newFragment;
-            if (songList != null) {
-                constructor = fragmentClass.getConstructor(MainActivity.class, List.class);
-                newFragment = constructor.newInstance(this, songList);
-            } else {
-                constructor = fragmentClass.getConstructor(MainActivity.class);
-                newFragment = constructor.newInstance(this);
-            }
+            Bundle bundl = new Bundle();
+            bundl.putParcelableArrayList("songs", new ArrayList<>(wholeSongList));
+
+            Constructor<? extends MusicFragment> constructor = fragmentClass.getConstructor();
+            MusicFragment newFragment = constructor.newInstance();
+            newFragment.setArguments(bundl);
             MainActivity.currentFragment = newFragment;
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.fragment_container, newFragment);
@@ -407,7 +348,7 @@ public class MainActivity extends AppCompatActivity
         player.playPause();
         showNotification(player.isPlaying());
         if (currentFragment instanceof HasControlBar) {
-            ((HasControlBar) currentFragment).handlePause();
+            ((HasControlBar) currentFragment).handlePause(player.isPlaying());
         }
     }
 

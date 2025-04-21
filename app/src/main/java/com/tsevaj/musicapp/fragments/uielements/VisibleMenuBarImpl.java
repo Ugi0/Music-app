@@ -1,7 +1,6 @@
-package com.tsevaj.musicapp.uielements;
+package com.tsevaj.musicapp.fragments.uielements;
 
 import android.annotation.SuppressLint;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
@@ -11,7 +10,6 @@ import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
 import com.tsevaj.musicapp.fragments.PagerFragment;
 import com.tsevaj.musicapp.fragments.interfaces.HasProgressBar;
-import com.tsevaj.musicapp.fragments.interfaces.RefreshableFragment;
 import com.tsevaj.musicapp.utils.MusicPlayer;
 import com.tsevaj.musicapp.utils.ProgressBarThread;
 import com.tsevaj.musicapp.utils.data.MusicItem;
@@ -22,8 +20,6 @@ public class VisibleMenuBarImpl implements HasProgressBar {
     private SeekBar progressBar;
     private final MusicPlayer player;
     private final View layout;
-    private ProgressBarThread thread;
-
     private final MainActivity main;
     private RefreshableFragment parent;
 
@@ -38,8 +34,7 @@ public class VisibleMenuBarImpl implements HasProgressBar {
 
     public void updateProgress() {
         //TODO Make this not throw error for attempting to call in wrong state
-        return;
-        //progressBar.setProgress((int) (player.getCurrentProgress() * 1000));
+        progressBar.setProgress((int) (player.getCurrentProgress() * 1000));
     }
 
     private void init() {
@@ -59,18 +54,6 @@ public class VisibleMenuBarImpl implements HasProgressBar {
 
     public void showPlayButton() {
         BtnPause.setBackgroundResource(R.drawable.ic_baseline_play_arrow_24);
-    }
-
-    public void stopThread() {
-        try {
-            thread.wait();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void resumeThread() {
-        thread.notify();
     }
 
     private void prepareButtons() {
@@ -135,21 +118,18 @@ public class VisibleMenuBarImpl implements HasProgressBar {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                thread.pause();
+                main.getPThread().pause();
                 player.pause();
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                thread.resume();
+                main.getPThread().resume();
                 player.resume();
             }
         });
-        thread = new ProgressBarThread(this);
-        thread.start();
-        this.layout.setOnClickListener(view -> {
-            main.changeFragment(PagerFragment.class);
-        });
+        main.getPThread().start(this);
+        this.layout.setOnClickListener(view -> main.changeFragment(PagerFragment.class));
         prepareButtons();
     }
 }

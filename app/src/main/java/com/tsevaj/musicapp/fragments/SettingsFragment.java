@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -24,12 +25,10 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.tsevaj.musicapp.MainActivity;
 import com.tsevaj.musicapp.R;
-import com.tsevaj.musicapp.fragments.interfaces.MusicFragment;
+import com.tsevaj.musicapp.fragments.uielements.MusicFragment;
 import com.tsevaj.musicapp.utils.ApplicationConfig;
 import com.tsevaj.musicapp.utils.SharedPreferencesHandler;
 import com.tsevaj.musicapp.utils.files.FileUtils;
@@ -65,15 +64,19 @@ public class SettingsFragment extends MusicFragment {
 
     public static ApplicationConfig config;
 
-    public SettingsFragment(MainActivity main) {
-        super(main);
-        config = main.getConfig();
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, R.layout.settings_fragment);
+        View baseView = super.onCreateView(inflater, container);
+        view = inflater.inflate(R.layout.settings_fragment, contentContainer, false);
+        contentContainer.addView(view);
+
+        doLayout();
+
+        return baseView;
+    }
+
+    private void doLayout() {
 
         colorWheel = view.findViewById(R.id.color_wheel);
         colorWheelText = view.findViewById(R.id.settings_color_text);
@@ -193,8 +196,6 @@ public class SettingsFragment extends MusicFragment {
 
             }
         });
-
-        return view;
     }
 
     public void setTextColors(String color) {
@@ -209,8 +210,10 @@ public class SettingsFragment extends MusicFragment {
         darkModeText.setTextColor(textColor);
         saveStateButton.setTextColor(textColor);
 
-        songLengthSec.setTextColor(textColor);
-        songLengthMin.setTextColor(textColor);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            songLengthSec.setTextColor(textColor);
+            songLengthMin.setTextColor(textColor);
+        }
     }
 
 
@@ -241,7 +244,7 @@ public class SettingsFragment extends MusicFragment {
                         e.printStackTrace();
                     }
                 }
-                SettingsFragment newFragment = new SettingsFragment(main);
+                SettingsFragment newFragment = new SettingsFragment();
                 FragmentTransaction transaction =  getParentFragmentManager().beginTransaction();
                 transaction.replace(R.id.fragment_container, newFragment);
 
